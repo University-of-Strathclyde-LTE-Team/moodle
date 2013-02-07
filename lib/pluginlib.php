@@ -3479,3 +3479,35 @@ class plugininfo_format extends plugininfo_base {
         return parent::get_uninstall_url();
     }
 }
+
+/**
+ * Deadlines plugin.
+ *
+ */
+class plugininfo_deadline extends plugininfo_base {
+
+    /**
+     * Gathers and returns the information about all plugins of the given type
+     *
+     * @param string $type the name of the plugintype, eg. mod, auth or workshopform
+     * @param string $typerootdir full path to the location of the plugin dir
+     * @param string $typeclass the name of the actually called class
+     * @return array of plugintype classes, indexed by the plugin name
+     */
+//     public static function get_plugins($type, $typerootdir, $typeclass) {
+//         global $CFG;
+//         $formats = parent::get_plugins($type, $typerootdir, $typeclass);
+//         require_once($CFG->dirroot.'/course/lib.php');
+//         $order = get_sorted_course_formats();
+//         $sortedformats = array();
+//         foreach ($order as $formatname) {
+//             $sortedformats[$formatname] = $formats[$formatname];
+//         }
+//         return $sortedformats;
+//     }
+
+    public function get_settings_section_name() {
+        return 'deadlinesetting' . $this->name;
+    }
+
+}
