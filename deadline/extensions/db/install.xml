@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Tables in the 2.x version of Extensions are almost totally different to
+    the 1.9 UniSA version. They're a lot simpler in the 2.x version! :)
+ -->
+<XMLDB PATH="local/extensions/db" VERSION="2012121106" COMMENT="XMLDB file for Moodle local/extensions"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+	<TABLES>
+	    <TABLE NAME="deadline_extensions" COMMENT="Stores Extensions that have been added to the system." NEXT="extensions_history">
+	        <FIELDS>
+		        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="TRUE" COMMENT="ID field for tracking individual items" NEXT="ext_type"  />    
+		        <FIELD NAME="ext_type" TYPE="int" LENGTH="1" NOTNULL="TRUE" SEQUENCE="FALSE" DEFAULT="0" COMMENT="this field will be 0 for individual, 1 for global/class" PREVIOUS="id" NEXT="cm_id" /> 
+		        <FIELD NAME="cm_id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="FALSE" DEFAULT="0" COMMENT="Links this item to an existing Course Module ID" PREVIOUS="ext_type" NEXT="deadline_id" />
+		        <FIELD NAME="deadline_id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="FALSE" DEFAULT="0" COMMENT="Links this item to an existing Deadline ID" PREVIOUS="cm_id" NEXT="student_id" />
+		        <FIELD NAME="student_id" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" DEFAULT="0" COMMENT="Student MoodleID, creator for indiv, null for global" PREVIOUS="cm_id" NEXT="staff_id" />
+		        <FIELD NAME="staff_id" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" DEFAULT="0" COMMENT="Staff MoodleID, creator for global - person sent to for indiv" PREVIOUS="student_id" NEXT="request_text" />
+		        <FIELD NAME="request_text" TYPE="text" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Text provided in the request, or why the global was created." PREVIOUS="staff_id" NEXT="response_text" />
+		        <FIELD NAME="response_text" TYPE="text" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Text provided by a staff member" PREVIOUS="request_text" NEXT="date" />
+		        <FIELD NAME="date" TYPE="int" LENGTH="14" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Date for the extension." PREVIOUS="response_text" NEXT="status" />
+		        <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Status of the request." PREVIOUS="date" NEXT="created" />
+		        <FIELD NAME="created" TYPE="int" LENGTH="14" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="Date the extension was created." PREVIOUS="status" />
+	        </FIELDS>
+	        <!-- KEYS - PRIMARY & FOREIGN -->
+	        <KEYS>
+	            <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="student_id_fk1" />
+	            <KEY NAME="student_id_fk1" TYPE="foreign" FIELDS="student_id" REFTABLE="users" REFFIELDS="id" COMMENT="Links the request to a student" PREVIOUS="primary" NEXT="staff_id_fk2" />
+	            <KEY NAME="staff_id_fk2" TYPE="foreign" FIELDS="staff_id" REFTABLE="users" REFFIELDS="id" COMMENT="Links the request to a Staff member" PREVIOUS="student_id_fk1" NEXT="cm_id_fk3" />
+	            <KEY NAME="cm_id_fk3" TYPE="FOREIGN" FIELDS="cm_id" REFTABLE="course_modules" REFFIELDS="id" COMMENT="Links the request to a Course Module ID" PREVIOUS="staff_id_fk2" NEXT="deadline_id_fk4" />
+	            <KEY NAME="deadline_id_fk4" TYPE="FOREIGN" FIELDS="deadline_id" REFTABLE="deadlines" REFFIELDS="id" COMMENT="Links the request to a Deadline ID" PREVIOUS="cm_id_fk3" />
+	        </KEYS>
+	        <!-- INDEXES -->
+	        <INDEXES>
+	            <INDEX NAME="extensions_id_idx" UNIQUE="false" FIELDS="id" NEXT="cm_id_idx" />
+	            <INDEX NAME="cm_id_idx" UNIQUE="false" FIELDS="cm_id" PREVIOUS="extensions_id_idx" NEXT="student_id_idx" />
+	            <INDEX NAME="student_id_idx" UNIQUE="false" FIELDS="student_id" PREVIOUS="cm_id_idx" NEXT="staff_id_idx" />
+	            <INDEX NAME="staff_id_idx" UNIQUE="false" FIELDS="staff_id" PREVIOUS="student_id_idx" />
+	        </INDEXES>
+	    </TABLE>
+	    <!-- 
+	    Add a new journal table here for changes to each Student extension.
+	    -->
+	    <TABLE NAME="extensions_history" COMMENT="Table that tracks changes to individual Extensions. " PREVIOUS="extensions" NEXT="extensions_enabled">
+	        <FIELDS>
+	            <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="TRUE" COMMENT="ID Field" NEXT="extension_id" />
+	            <FIELD NAME="extension_id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="Extension this is the history for" PREVIOUS="id" NEXT="date" />
+	            <FIELD NAME="date" TYPE="int" LENGTH="14" NOTNULL="FALSE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="The old extension date" PREVIOUS="extension_id" NEXT="request_text" />
+	            <FIELD NAME="request_text" TYPE="text" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="The old Request Text when it was changed" PREVIOUS="date" NEXT="response_text"/>
+                <FIELD NAME="response_text" TYPE="text" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="The old text provided by a staff member" PREVIOUS="request_text" NEXT="status" />	            
+	            <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="The new Status in this request" PREVIOUS="response_text" NEXT="change_date" />
+	            <FIELD NAME="change_date" TYPE="int" LENGTH="14" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="Date the change was made" PREVIOUS="status" NEXT="staff_id" />
+	            <FIELD NAME="staff_id" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" DEFAULT="0" COMMENT="Staff MoodleID, creator for global - person sent to for indiv" PREVIOUS="change_date" NEXT="user_id" />
+	            <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="The user ID that made the change" PREVIOUS="staff_id" /> 
+	        </FIELDS>
+	        <!-- KEYS - PRIMARY & FOREIGN -->
+	        <KEYS>
+	            <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="extension_id_fk1" />
+	            <KEY NAME="extension_id_fk1" TYPE="foreign" FIELDS="extension_id" REFTABLE="extensions" REFFIELDS="id" PREVIOUS="primary" NEXT="user_id_fk2" />
+	            <KEY NAME="user_id_fk2" TYPE="foreign" FIELDS="user_id" REFTABLE="users" REFFIELDS="id" PREVIOUS="extension_id_fk1" />
+	        </KEYS>
+	        <!-- INDEXES -->
+	        <INDEXES>
+	            <INDEX NAME="extensions_hist_idx" UNIQUE="false" FIELDS="id" />
+	        </INDEXES>
+	    </TABLE>
+	    <!-- TABLE TO TRACK WHICH ACTIVITIES HAVE EXTENSIONS PERMITTED -->
+	    <TABLE NAME="extensions_enabled" COMMENT="Table that tracks activities with extensions permitted" PREVIOUS="extensions_history">
+	       <FIELDS>
+	           <FIELD SEQUENCE="true"  TYPE="int" LENGTH="10" NOTNULL="true" NAME="id" COMMENT="ID field for this item" NEXT="cm_id"/>
+	           <FIELD SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true" NAME="cm_id" COMMENT="Course Module ID this extension relates to" PREVIOUS="id" NEXT="status"/>
+	           <FIELD SEQUENCE="false" TYPE="int" LENGTH="1"  NOTNULL="true" NAME="status" DEFAULT="0" COMMENT="Status of this item" PREVIOUS="cm_id" NEXT="date_enabled" />
+	           <FIELD SEQUENCE="false" TYPE="int" LENGTH="14" NOTNULL="true" NAME="date_enabled" COMMENT="Date/Time the extensions were allowed" PREVIOUS="status" NEXT="request_cutoff" />
+	           <FIELD SEQUENCE="false" TYPE="int" LENGTH="14" NOTNULL="true" NAME="request_cutoff" DEFAULT="0" COMMENT="Hours Prior to the deadline the extensions are stopped" PREVIOUS="date_enabled" NEXT="staff_id" />
+	           <FIELD SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true" NAME="staff_id" DEFAULT="0" COMMENT="Staff Member who permitted extensions to be requested." PREVIOUS="request_cutoff" />
+	       </FIELDS>
+	       <KEYS>
+	           <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="cm_id_fk1"/>
+	           <KEY NAME="cm_id_fk1" TYPE="foreign" FIELDS="cm_id" REFTABLE="course_modules" REFFIELDS="id" COMMENT="Foreign Key for Course Module ID" PREVIOUS="primary" NEXT="staff_id_fk2" />
+	           <KEY NAME="staff_id_fk2" TYPE="foreign" FIELDS="staff_id" REFTABLE="users" REFFIELDS="id" COMMENT="Staff Member who allowed extensions to be requested" PREVIOUS="cm_id_fk1" />
+	       </KEYS>
+	       <INDEXES>
+	           <INDEX UNIQUE="true" NAME="extensions_enabled_idx1" FIELDS="id" NEXT="extensions_enabled_idx2"/>
+	           <INDEX UNIQUE="true" NAME="extensions_enabled_idx2" FIELDS="cm_id" PREVIOUS="extensions_enabled_idx1" />
+	       </INDEXES>
+	    </TABLE>
+	    <!-- TABLE OF USERS WHO CAN APPROVE EXTENSIONS FOR AN ACTIVITY -->
+	    <!-- DOCUMENTS FOR A INDIVIDUAL REQUEST. -->
+	    <!--  
+	    <TABLE>
+	    </TABLE>
+	    -->
+	</TABLES>
+</XMLDB>

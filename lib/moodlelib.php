@@ -431,6 +431,13 @@ define('FEATURE_BACKUP_MOODLE2', 'backup_moodle2');
 /** True if module can show description on course main page */
 define('FEATURE_SHOW_DESCRIPTION', 'showdescription');
 
+
+// 3580
+/** True if the module supports deadlines stored in core */
+define('FEATURE_DEADLINE', 'deadline');
+// 3580
+
+
 /** Unspecified module archetype */
 define('MOD_ARCHETYPE_OTHER', 0);
 /** Resource-like type module */

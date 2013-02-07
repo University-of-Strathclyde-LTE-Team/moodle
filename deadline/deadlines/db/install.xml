@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMLDB PATH="" VERSION="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd" COMMENT="Table for tracking Deadlines for Course Modules">
+    <TABLES>
+        <TABLE NAME="deadlines" COMMENT="Stores Deadlines that have been added to the system.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="TRUE" COMMENT="ID field for deadline tracking" NEXT="cm_id"  />    
+                <FIELD NAME="cm_id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="Field for tracking the Course Module ID this deadline applies to" PREVIOUS="ID" NEXT="date_open"/>
+                <FIELD NAME="date_open" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the opening date for a course module" PREVIOUS="cm_id" NEXT="date_deadline" />
+                <FIELD NAME="date_deadline" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the actual deadline for a course module" PREVIOUS="date_open" NEXT="date_cutoff" />
+                <FIELD NAME="date_cutoff" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the cutoff for submissions." PREVIOUS="date_deadline" />
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="deadline_id_pk" TYPE="primary" COMMENT="Deadline primary key" FIELDS="id" />
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="deadline_id_idx" UNIQUE="false" COMMENT="Deadline Index" FIELDS="id" />
+            </INDEXES>
+        </TABLE>
+    </TABLES>
+</XMLDB>

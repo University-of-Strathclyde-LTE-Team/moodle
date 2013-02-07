@@ -158,6 +158,11 @@ class mod_assign_mod_form extends moodleform_mod {
         $mform->setDefault('sendlatenotifications', 1);
         $mform->disabledIf('sendlatenotifications', 'sendnotifications', 'eq', 1);
 
+        if ($this->_features->deadlines) {
+            require_once($CFG->libdir . '/deadlinelib.php');
+            deadline_get_form_elements_module($mform, $ctx->get_course_context(), 'assign');
+        }
+
         // Plagiarism enabling form.
         if (!empty($CFG->enableplagiarism)) {
             require_once($CFG->libdir . '/plagiarismlib.php');
