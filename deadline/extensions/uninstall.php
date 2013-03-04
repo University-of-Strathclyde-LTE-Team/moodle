@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file is intentionally left blank.
+ * This file contains code executed when the module is uninstalled from Moodle
  *
  * @package   deadline_extensions
  * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
@@ -23,5 +24,3 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// File is intentionally blank.
-defined('MOODLE_INTERNAL') || die;

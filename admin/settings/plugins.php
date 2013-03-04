@@ -36,6 +36,16 @@ if ($hassiteconfig) {
         $block->load_settings($ADMIN, 'blocksettings', $hassiteconfig);
     }
 
+    // MDL-7315
+    // deadlines
+    $ADMIN->add('modules', new admin_category('deadlinesettings', new lang_string('pluginname', 'deadline_deadlines'))); // TODO: FIX ME
+//     $ADMIN->add('deadlinesettings', new admin_page_managemessageoutputs());
+//     $ADMIN->add('deadlinesettings', new admin_page_defaultmessageoutputs());
+    foreach ($allplugins['deadline'] as $deadline) {
+        $deadline->load_settings($ADMIN, 'deadlinesettings', $hassiteconfig);
+    }
+    // MDL-7315
+
     // message outputs
     $ADMIN->add('modules', new admin_category('messageoutputs', new lang_string('messageoutputs', 'message')));
     $ADMIN->add('messageoutputs', new admin_page_managemessageoutputs());

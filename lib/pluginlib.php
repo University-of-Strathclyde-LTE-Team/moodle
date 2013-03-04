@@ -3485,34 +3485,42 @@ class plugininfo_format extends plugininfo_base {
     }
 }
 
+// MDL-7315
 /**
  * Deadlines plugin.
  *
  */
 class plugininfo_deadline extends plugininfo_base {
 
-    /**
-     * Gathers and returns the information about all plugins of the given type
-     *
-     * @param string $type the name of the plugintype, eg. mod, auth or workshopform
-     * @param string $typerootdir full path to the location of the plugin dir
-     * @param string $typeclass the name of the actually called class
-     * @return array of plugintype classes, indexed by the plugin name
-     */
-//     public static function get_plugins($type, $typerootdir, $typeclass) {
-//         global $CFG;
-//         $formats = parent::get_plugins($type, $typerootdir, $typeclass);
-//         require_once($CFG->dirroot.'/course/lib.php');
-//         $order = get_sorted_course_formats();
-//         $sortedformats = array();
-//         foreach ($order as $formatname) {
-//             $sortedformats[$formatname] = $formats[$formatname];
-//         }
-//         return $sortedformats;
-//     }
+    public function is_enabled() {
+        return !get_config($this->component, 'disabled');
+    }
 
     public function get_settings_section_name() {
         return 'deadlinesetting' . $this->name;
     }
 
+    public function get_uninstall_url() {
+        return new moodle_url("/deadline/{$this->name}/uninstall.php", array('sesskey' => sesskey(), 'action' => 'uninstall'));
+    }
+
+    public function load_settings(part_of_admin_tree $adminroot, $parentnodename, $hassiteconfig) {
+
+        global $CFG;
+
+        $ADMIN = $adminroot;
+        $section = $this->get_settings_section_name();
+
+        // Add the settings page for the installed plugins
+        $settings = new admin_settingpage($section, $this->displayname, 'moodle/site:config', $this->is_enabled() === false);
+        include($this->full_path('settings.php')); // this may also set $settings to null
+
+        if($settings) {
+            $ADMIN->add($parentnodename, $settings);
+        }
+
+    }
+
 }
+// MDL-7315
+

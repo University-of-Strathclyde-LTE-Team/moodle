@@ -162,7 +162,9 @@ function assign_supports($feature) {
         case FEATURE_SHOW_DESCRIPTION:        return true;
         case FEATURE_ADVANCED_GRADING:        return true;
         case FEATURE_PLAGIARISM:              return true;
-        case FEATURE_DEADLINE:               return true;
+        // MDL-7315
+        case FEATURE_DEADLINE:                return true;
+        // MDL-7315
         default: return null;
     }
 }
@@ -360,7 +362,7 @@ function assign_print_overview($courses, &$htmlarray) {
                '</a></div>';
         if ($assignment->duedate) {
             $userdate = userdate($assignment->duedate);
-            $str .= '<div class="info">' . $strduedate . ': ' . $userdate . '</div>';
+            $str .= '<div class="info">' . $strduedate . ': ' . $userdate . ' ## </div>';
         } else {
             $str .= '<div class="info">' . $strduedateno . '</div>';
         }

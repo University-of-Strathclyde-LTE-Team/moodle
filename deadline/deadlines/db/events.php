@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,13 +16,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file is intentionally left blank.
+ * This file contains the events that the deadline_deadlines plugin actions.
  *
- * @package   deadline_extensions
+ * @package   deadline_deadlines
  * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
  * @author    James McLean <james.mclean@unisa.edu.au>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// File is intentionally blank.
-defined('MOODLE_INTERNAL') || die;
+require_once($CFG->dirroot . '/deadline/deadlines/lib.php');
+
+$deadline = new deadlines_plugin();
+
+$handlers = array (
+        'mod_deleted' => array (
+                'handlerfile'      => '/deadline/deadlines/lib.php',
+                'handlerfunction'  => array($deadline, 'module_deleted'),
+                'schedule'         => 'instant',
+                'internal'         => 1,
+        ),
+
+);

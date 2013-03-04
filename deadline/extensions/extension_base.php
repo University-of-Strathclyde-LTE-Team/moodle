@@ -1,5 +1,30 @@
 <?php
 
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * This file is the base class for the Extensions plugin. It contains all methods
+ * to handle displaying and saving extensions and data submitted via it's forms.
+ *
+ * @package   deadline_extensions
+ * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
+ * @author    James McLean <james.mclean@unisa.edu.au>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 class extension_base {
 
     private $loaded_page = false;
@@ -11,6 +36,7 @@ class extension_base {
     private $ext_id      = null;
     private $cm_id       = null;
     private $user_type   = null;
+    private $student_id  = null;
 
     const USR_STUDENT = 1;
     const USR_STAFF   = 2;
@@ -20,16 +46,6 @@ class extension_base {
 
         // Set the form
         $this->form = new stdClass;
-
-        // If the user has the capability of requesting an extension, they
-        // are a student. Show Student pages.
-        // If the user has the capability of approving an extension, they
-        // are a staff member. Show Staff pages.
-        if (has_capability('local/extensions:approveextension', context_system::instance())) {
-            $this->user_type = self::USR_STAFF;
-        } else  if(has_capability('local/extensions:requestextension', context_system::instance())) {
-            $this->user_type = self::USR_STUDENT;
-        }
 
     }
 
@@ -55,17 +71,20 @@ class extension_base {
                     $pageObj->class = 'form_student_requests';
                 break;
                 case 'request_edit':
-                    $pageObj->file  = 'form_edit_request.php';
+                    $pageObj->file  = 'forms/form_edit_request.php';
                     $pageObj->class = 'form_edit_request';
                 break;
                 case 'request_new':
-                    $pageObj->file  = 'form_new_request.php';
-                    $pageObj->class = 'form_new_request';
+                    $pageObj->file  = 'forms/form_request_new.php';
+                    $pageObj->class = 'form_request_new';
                 break;
 
             }
 
-        } else if ($this->user_type == self::USR_STAFF) {
+            return $pageObj;
+        }
+
+        if ($this->user_type == self::USR_STAFF) {
             // Staff/Admin pages are here.
             switch ($page) {
                 case 'requests':
@@ -76,13 +95,25 @@ class extension_base {
                     $pageObj->file  = 'forms/form_staff_request_edit.php';
                     $pageObj->class = 'form_staff_request_edit';
                     break;
+                case 'request_create':
+                    $pageObj->file  = 'forms/form_staff_request_create.php';
+                    $pageObj->class = 'form_staff_request_create';
+                    break;
                 case 'global':
-                    $pageObj->file  = 'form_global.php';
+                    $pageObj->file  = 'forms/form_global.php';
                     $pageObj->class = 'form_global';
                     break;
+                case 'global_add':
+                    $pageObj->file  = 'forms/form_global_add.php';
+                    $pageObj->class = 'form_global_add';
+                    break;
                 case 'global_edit':
-                    $pageObj->file  = 'form_global_edit.php';
+                    $pageObj->file  = 'forms/form_global_edit.php';
                     $pageObj->class = 'form_global_edit';
+                    break;
+                case 'configure_activities':
+                    $pageObj->file  = 'forms/form_configure_activities.php';
+                    $pageObj->class = 'form_configure_activities';
                     break;
                 case 'configure_activity':
                     $pageObj->file  = 'forms/form_configure_activity.php';
@@ -90,9 +121,8 @@ class extension_base {
                     break;
             }
 
+            return $pageObj;
         }
-
-        return $pageObj;
 
     }
 
@@ -149,7 +179,7 @@ class extension_base {
         } else {
 //            $this->unset_page();
 
-            print 'No relevant Form found for Page ' . $page;
+//             print 'No relevant Form found for Page ' . $page;
 
             throw new Exception('No relevant Form found for Page ' . $page);
         }
@@ -191,6 +221,26 @@ class extension_base {
         return $this->page;
     }
 
+    public function set_cmid($cm_id = null) {
+        if(!is_null($cm_id)) {
+            $this->cm_id = $cm_id;
+        }
+    }
+
+    public function get_cmid() {
+        return $this->cm_id;
+    }
+
+    public function set_student_id($sid = null) {
+        if(!is_null($sid)) {
+            $this->student_id = $sid;
+        }
+    }
+
+    public function get_student_id() {
+        return $this->student_id;
+    }
+
     /**
      *
      * Build the navigation used for breadcrumbs.
@@ -204,12 +254,13 @@ class extension_base {
         $page = $this->get_page();
 
         $navlinks = array();
-        $navlinks[] = array('name' => get_string("ext_module", Extensions::LANG_EXTENSIONS), 'link' => '/local/extension/?id=' . $this->get_course()->id, 'type' => 'activity');
+        $navlinks[] = array('name' => get_string("ext_module", extensions_plugin::EXTENSIONS_LANG), 'link' => '/local/extension/?id=' . $this->get_course()->id, 'type' => 'activity');
         $navlinks[] = array('name' => $this->get_form($page)->get_page_name(), 'link' => '', 'type' => 'activity');
         return build_navigation($navlinks);
     }
 
     public function load_form($page = null) {
+
 
         $mform = $this->get_form($page);
 
@@ -219,6 +270,15 @@ class extension_base {
 
         if(!is_null($this->get_extension_id())) {
             $mform->set_extension_id($this->get_extension_id());
+        }
+
+        if($this->get_cmid() != 0) {
+            $mform->set_cmid($this->get_cmid());
+            $mform->load_activity_detail($this->get_cmid());
+        }
+
+        if($this->get_student_id() != 0) {
+            $mform->set_student_id($this->get_student_id());
         }
 
 //         if(!is_null($this->get_asmnt_id())) {
@@ -231,11 +291,35 @@ class extension_base {
 //             }
 //         }
 
+        $mform->post_form_load();
+
         return $mform;
+    }
+
+    private function load_user_data() {
+        // If the user has the capability of requesting an extension, they
+        // are a student. Show Student pages.
+        // If the user has the capability of approving an extension, they
+        // are a staff member. Show Staff pages.
+        $course_id = $this->get_course()->id;
+
+        if($course_id != 0) {
+            if (has_capability('deadline/extensions:approveextension', context_course::instance($this->get_course()->id))) {
+                $this->user_type = self::USR_STAFF;
+            } else if(has_capability('deadline/extensions:requestextension', context_course::instance($this->get_course()->id))) {
+                $this->user_type = self::USR_STUDENT;
+            }
+        } else {
+            if (has_capability('deadline/extensions:approveextension', context_system::instance())) {
+                $this->user_type = self::USR_STAFF;
+            }
+        }
     }
 
     public function display() {
         global $PAGE, $USER;
+
+        $this->load_user_data();
 
         try {
             $mform = $this->load_form();
@@ -248,11 +332,8 @@ class extension_base {
 
         // process form here.
         if ($mform->is_cancelled()) {
-            // this needs to confirm!
-//            $this->unset_page();
-//            $this->unset_data();
 
-            redirect($CFG->wwwroot . '/u_custom/u_extension/index.php?id=' . $this->get_course()->id);
+            redirect(new moodle_url('/deadline/extensions', array('id' => $this->get_course()->id)));
 
         } elseif ($fromform = $mform->get_data()) {
 
@@ -264,7 +345,7 @@ class extension_base {
                     if(method_exists($mform, 'save_hook')) {
 
                         if(!$mform->save_hook($fromform)) {
-                            error('Error saving data.');
+                            print_error('Error saving data.');
                         } else {
                             $this->saved = true;
 
@@ -301,28 +382,28 @@ class extension_base {
         $url_params = array('id' => $this->get_course()->id);
 
         // Make sure the user is NOT a student, and the menu is enabled.
-        if($this->user_type != 'student' && get_config(Extensions::EXTENSIONS_MOD_NAME, 'show_indiv_global')) {
+        if($this->user_type == self::USR_STAFF && get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_indiv_group')) {
 
             $content = "<div style=\"display: block; width: 450px; padding-bottom: 40px;\">";
 
-            $img_params['src']  = Extensions::EXTENSIONS_URL_PATH . "/assets/images/indiv_ext.png";
+            $img_params['src']  = extensions_plugin::EXTENSIONS_URL_PATH . "/assets/images/indiv_ext.png";
             $url_params['page'] = 'requests';
 
             $content .= "<div style=\"display: block; background-color: white; width: auto; float: left; padding: 5px;\">";
             $content .= html_writer::tag('img', null, $img_params);
-            $content .= html_writer::link(new moodle_url($url, $url_params), get_string("ext_indiv_exts", Extensions::LANG_EXTENSIONS));
+            $content .= html_writer::link(new moodle_url($url, $url_params), get_string("ext_indiv_exts", extensions_plugin::EXTENSIONS_LANG));
 
             // insert pending count text here.
-            $content .= Extensions::get_pending_count_text($USER, null);
+            $content .= extensions_plugin::get_pending_count_text($USER, null);
 
             $content .= "</div>";
 
-            $img_params['src']  = Extensions::EXTENSIONS_URL_PATH . "/assets/images/global_ext.png";
+            $img_params['src']  = extensions_plugin::EXTENSIONS_URL_PATH . "/assets/images/global_ext.png";
             $url_params['page'] = 'global';
 
             $content .= "<div style=\"display: block; background-color: white; width: 165px; float: right; padding: 5px;\">";
             $content .= html_writer::tag('img', null, $img_params);
-            $content .= html_writer::link(new moodle_url($url, $url_params), get_string("ext_glob_exts", Extensions::LANG_EXTENSIONS));
+            $content .= html_writer::link(new moodle_url($url, $url_params), get_string("ext_glob_exts", extensions_plugin::EXTENSIONS_LANG));
             $content .= "</div>";
 
             $content .= "</div>";

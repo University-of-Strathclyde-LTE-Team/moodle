@@ -511,6 +511,7 @@ class mod_assign_renderer extends plugin_renderer_base {
 
         $duedate = $status->duedate;
         if ($duedate > 0) {
+
             // Due date.
             $row = new html_table_row();
             $cell1 = new html_table_cell(get_string('duedate', 'assign'));
@@ -529,15 +530,29 @@ class mod_assign_renderer extends plugin_renderer_base {
                 }
             }
 
-            if ($status->extensionduedate) {
-                // Extension date.
+            // MDL-7315
+            if(get_config('deadline_extensions', 'enabled') == 1) {
+
                 $row = new html_table_row();
-                $cell1 = new html_table_cell(get_string('extensionduedate', 'assign'));
-                $cell2 = new html_table_cell(userdate($status->extensionduedate));
+                $cell1 = new html_table_cell('Extension');
+                $ext_url  = new moodle_url('/deadline/extensions/', array('cmid' => $status->coursemoduleid, 'page' => 'request_new', 'id' => 2));
+                $ext_link = html_writer::link($ext_url, get_string('extsubmitreq', 'deadline_extensions'));
+                $cell2 = new html_table_cell($ext_link);
                 $row->cells = array($cell1, $cell2);
                 $t->data[] = $row;
-                $duedate = $status->extensionduedate;
+
+            } else {
+                if ($status->extensionduedate) {
+                    // Extension date.
+                    $row = new html_table_row();
+                    $cell1 = new html_table_cell(get_string('extensionduedate', 'assign'));
+                    $cell2 = new html_table_cell(userdate($status->extensionduedate));
+                    $row->cells = array($cell1, $cell2);
+                    $t->data[] = $row;
+                    $duedate = $status->extensionduedate;
+                }
             }
+            // MDL-7315
 
             // Time remaining.
             $row = new html_table_row();

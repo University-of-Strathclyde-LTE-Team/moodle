@@ -1,5 +1,30 @@
 <?php
 
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * This file contains a custom group element for showing a table of extensions
+ * using standard Moodle forms functions and methods.
+ *
+ * @package   deadline_extensions
+ * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
+ * @author    James McLean <james.mclean@unisa.edu.au>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
@@ -49,42 +74,55 @@ class MoodleQuickForm_extension_configure extends MoodleQuickForm_group {
 
         global $USER;
 
+        if(is_null($this->table_data)) {
+            return null;
+        }
 
+        if(!is_object($this->table_data)) {
+            return null;
+        }
 
-        if(!is_null($this->table_data)) {
-            if(is_object($this->table_data)) {
-                foreach($this->table_data as $key => $data) {
-                    if($key == 'data') {
-                        foreach($data as $key => $row) {
-//                             var_dump($key, $row);
+        foreach($this->table_data as $key => $data) {
 
-                            // For each row, add the options to enable/disable
-                            // extensions for each item.
+            if($key != 'data') {
+                continue;
+            }
 
-                            foreach($row->cells as $cell) {
-                                if(strcmp($cell->text, '##ext_enabled##') == 0) {
+            foreach($data as $key => $row) {
+                // For each row, add the options to enable/disable
+                // extensions for each item.
 
-                                    $thisItem = $key . '-enabled';
+                foreach($row->cells as $cell) {
+                    if(strcmp($cell->text, '##ext_enabled##') == 0) {
 
-                                    $element = new HTML_QuickForm_select('enabled['.$key.']', null, Extensions::get_extension_enable_items());
-                                    $element->setSelected(Extensions::get_extension_status_by_cmid($key));
+                        $thisItem = $key . '-enabled';
 
-                                    $this->_elements[$thisItem] = $element;
-                                }
+                        $element = new HTML_QuickForm_select('enabled['.$key.']', null, extensions_plugin::get_extension_enable_items());
 
-                                if(strcmp($cell->text, '##ext_cutoff##') == 0) {
-
-                                    $thisItem = $key . '-cutoff';
-
-                                    $element = new HTML_QuickForm_select('cutoff_date['.$key.']', null, Extensions::get_cutoff_options());
-                                    $element->setSelected(Extensions::get_extension_cutoff_by_cmid($key));
-
-                                    $this->_elements[$thisItem] = $element;
-
-                                }
-
-                            }
+                        if(get_config('deadline_extensions','force_extension_enabled') == '1') {
+                            $element->setSelected(1);
+                            $element->freeze();
+                        } else {
+                            $element->setSelected(extensions_plugin::extensions_enabled_cmid($cm_id));
                         }
+
+                        $this->_elements[$thisItem] = $element;
+                    }
+
+                    if(strcmp($cell->text, '##ext_cutoff##') == 0) {
+
+                        $thisItem = $key . '-cutoff';
+
+                        $element = new HTML_QuickForm_select('cutoff_date['.$key.']', null, extensions_plugin::get_cutoff_options());
+                        if(get_config('deadline_extensions', 'req_cut_off') == '-1') {
+                            $element->setSelected(get_config('deadline_extensions', 'req_cut_off'));
+                            $element->freeze();
+                        } else {
+                            $element->setSelected(extensions_plugin::get_extension_cutoff_by_cmid($key));
+                        }
+
+                        $this->_elements[$thisItem] = $element;
+
                     }
                 }
             }
@@ -115,7 +153,7 @@ class MoodleQuickForm_extension_configure extends MoodleQuickForm_group {
         }
 
         if(is_null($this->table_data)) {
-            return get_string("ext_none_exist", Extensions::LANG_EXTENSIONS);
+            return get_string("ext_none_exist", extensions_plugin::EXTENSIONS_LANG);
         } else {
             return html_writer::table($this->table_data, TRUE);
             //return print_table($this->table_data, TRUE);

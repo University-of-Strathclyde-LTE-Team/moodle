@@ -1,57 +1,31 @@
 <?php
-// This file contains all the capabilities for Extensions
 
-/*
- * $string['extensions:requestextension']  = 'Request Extension';
- * $string['extensions:modifyextension']   = 'Modify Extension';
- * $string['extensions:withdrawextension'] = 'Withdraw Extension';
- * $string['extensions:revokeextension']   = 'Revoke Extension';
- * $string['extensions:approveextension']  = 'Approve Extension';
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * This file contains all the capabilities for Extensions
  *
- * $string['extensions:readextension']     = 'Read Extension';
- */
-
-// /** No capability change */
-// define('CAP_INHERIT', 0);
-// /** Allow permission, overrides CAP_PREVENT defined in parent contexts */
-// define('CAP_ALLOW', 1);
-// /** Prevent permission, overrides CAP_ALLOW defined in parent contexts */
-// define('CAP_PREVENT', -1);
-// /** Prohibit permission, overrides everything in current and child contexts */
-// define('CAP_PROHIBIT', -1000);
-
-// /** System context level - only one instance in every system */
-// define('CONTEXT_SYSTEM', 10);
-// /** User context level -  one instance for each user describing what others can do to user */
-// define('CONTEXT_USER', 30);
-// /** Course category context level - one instance for each category */
-// define('CONTEXT_COURSECAT', 40);
-// /** Course context level - one instances for each course */
-// define('CONTEXT_COURSE', 50);
-// /** Course module context level - one instance for each course module */
-// define('CONTEXT_MODULE', 70);
-// /**
-//  * Block context level - one instance for each block, sticky blocks are tricky
-//  * because ppl think they should be able to override them at lower contexts.
-//  * Any other context level instance can be parent of block context.
-//  */
-// define('CONTEXT_BLOCK', 80);
-
-// /** Capability allow management of trusts - NOT IMPLEMENTED YET - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
-// define('RISK_MANAGETRUST', 0x0001);
-// /** Capability allows changes in system configuration - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
-// define('RISK_CONFIG',      0x0002);
-// /** Capability allows user to add scripted content - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
-// define('RISK_XSS',         0x0004);
-// /** Capability allows access to personal user information - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
-// define('RISK_PERSONAL',    0x0008);
-// /** Capability allows users to add content others may see - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
-// define('RISK_SPAM',        0x0010);
-// /** capability allows mass delete of data belonging to other users - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
-// define('RISK_DATALOSS',    0x0020);
+ * @package   deadline_extensions
+ * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
+ * @author    James McLean <james.mclean@unisa.edu.au>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 
 $capabilities = array(
-        'local/extensions:accessextension' => array(
+        'deadline/extensions:accessextension' => array(
                 'riskbitmask'  => RISK_PERSONAL,
                 'captype'      => 'read',
                 'contextlevel' => CONTEXT_COURSE,
@@ -63,7 +37,7 @@ $capabilities = array(
                         'manager' => CAP_ALLOW,
                 ),
         ),
-        'local/extensions:requestextension'  => array(
+        'deadline/extensions:requestextension'  => array(
                 'captype'      => 'write',
                 'contextlevel' => CONTEXT_COURSE,
                 'archetypes'   => array(
@@ -74,7 +48,7 @@ $capabilities = array(
                         'manager' => CAP_ALLOW,
                 ),
         ),
-        'local/extensions:modifyextension'   => array(
+        'deadline/extensions:modifyextension'   => array(
                 'riskbitmask'  => RISK_PERSONAL,
                 'captype'      => 'write',
                 'contextlevel' => CONTEXT_COURSE,
@@ -86,7 +60,7 @@ $capabilities = array(
                         'manager' => CAP_ALLOW,
                 ),
         ),
-        'local/extensions:withdrawextension' => array(
+        'deadline/extensions:withdrawextension' => array(
                 'captype'      => 'write',
                 'contextlevel' => CONTEXT_COURSE,
                 'archetypes'   => array(
@@ -97,7 +71,7 @@ $capabilities = array(
                         'manager' => CAP_ALLOW,
                 ),
         ),
-        'local/extensions:revokeextension'   => array(
+        'deadline/extensions:revokeextension'   => array(
                 'captype'      => 'write',
                 'contextlevel' => CONTEXT_COURSE,
                 'archetypes'   => array(
@@ -108,7 +82,7 @@ $capabilities = array(
                         'manager' => CAP_ALLOW,
                 ),
         ),
-        'local/extensions:approveextension'  => array(
+        'deadline/extensions:approveextension'  => array(
                 'captype'      => 'write',
                 'contextlevel' => CONTEXT_COURSE,
                 'archetypes'   => array(
@@ -119,7 +93,7 @@ $capabilities = array(
                         'manager' => CAP_ALLOW,
                 ),
         ),
-        'local/extensions:readextension'     => array(
+        'deadline/extensions:readextension'     => array(
                 'riskbitmask'  => RISK_PERSONAL,
                 'captype'      => 'read',
                 'contextlevel' => CONTEXT_COURSE,
@@ -131,7 +105,7 @@ $capabilities = array(
                         'manager' => CAP_ALLOW,
                 ),
         ),
-        'local/extensions:modifyextension'   => array(
+        'deadline/extensions:modifyextension'   => array(
                 'captype'      => 'read',
                 'contextlevel' => CONTEXT_COURSE,
                 'archetypes'   => array(
@@ -142,7 +116,7 @@ $capabilities = array(
                         'manager' => CAP_ALLOW,
                 ),
         ),
-        'local/extensions:deleteextension' => array(
+        'deadline/extensions:deleteextension' => array(
                 'captype'      => 'read',
                 'contextlevel' => CONTEXT_COURSE,
                 'archetypes'   => array(
