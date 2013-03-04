@@ -268,6 +268,24 @@ class deadlines_plugin extends deadline_plugin {
         }
     }
 
+    public function get_my_open_date($cm_id, $user_id = null) {
+
+        // As this is the 'deadlines' plugin, the deadlines here should be
+        // considered to be 'global' hence the $user_id being ignored here.
+
+        $params = array(
+                'cm_id' => $cm_id
+        );
+
+        if($DB->record_exists('deadline_deadlines', $params)) {
+            $record = $DB->get_record('deadline_deadlines', $params, '*', MUST_EXIST);
+
+            return $record->date_open;
+        } else {
+            return false;
+        }
+    }
+
     public function get_my_cutoff_date($cm_id, $user_id = null) {
         global $DB;
 
