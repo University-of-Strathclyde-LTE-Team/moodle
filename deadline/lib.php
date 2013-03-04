@@ -49,6 +49,15 @@ abstract class deadline_plugin {
     abstract public function save_form_elements($data);
 
     /**
+     * Abstract function to allow an activity to have it's own open
+     * date specific to a user.
+     *
+     * @param int $cm_id Course Module ID
+     * @param int $user_id User ID.
+     */
+    abstract public function get_my_open_date($cm_id, $user_id);
+
+    /**
      * Abstract function to allow a an activity to check with Deadline if there
      * is a deadline specific to this user.
      *
@@ -58,15 +67,6 @@ abstract class deadline_plugin {
     abstract public function get_my_due_date($cm_id, $user_id);
 
     /**
-     * Abstract function to get a specific time limit extension for an Activity and User.
-     * Only used by Quiz module for now.
-     *
-     * @param int $cm_id Course Module ID to be checked.
-     * @param int $user_id User ID to be checked.
-     */
-    abstract public function get_my_time_limit($cm_id, $user_id);
-
-    /**
      * Abstracti function to allow plugins to return a specific cutoff date for
      * and activity and User.
      *
@@ -74,6 +74,15 @@ abstract class deadline_plugin {
      * @param int $user_id User to pass through to plugin for checking.
      */
     abstract public function get_my_cutoff_date($cm_id, $user_id);
+
+    /**
+     * Abstract function to get a specific time limit extension for an Activity and User.
+     * Only used by Quiz module for now.
+     *
+     * @param int $cm_id Course Module ID to be checked.
+     * @param int $user_id User ID to be checked.
+     */
+    abstract public function get_my_time_limit($cm_id, $user_id);
 
     /**
      * Abstract function to check if a deadline plugin has items to delete when
@@ -195,7 +204,40 @@ abstract class deadline_plugin {
     public function get_open_date($cm_id, $user_id) {
         $plugins = $this->get_installed_plugins();
 
-        return 1357002061;
+        if(!$plugins = $this->get_installed_plugins()) {
+            return 0;
+        }
+
+        $dates = array();
+
+        // check the installed plugins for due dates.
+        foreach($plugins as $plugin => $path) {
+
+            $plugin_code = $CFG->dirroot . '/deadline/' . $plugin . '/lib.php';
+
+            if(file_exists($plugin_code)) {
+                require_once($plugin_code);
+            } else {
+                // Skip this plugin. It's either some kind of ghost, or it's
+                // totally broken!
+                continue;
+            }
+
+            $plugin_class = $plugin . '_plugin';
+            $this_plugin = new $plugin_class;
+
+            // Call the function from the plugin which will find the dates
+            // that apply to this student.
+            $dates[$plugin] = new stdClass;
+            $dates[$plugin]->date_open = (int)$this_plugin->get_my_open_date($cm_id, $user_id);
+
+        }
+
+        // find the longest date they have, as they may have multiple extensions
+        // - individual
+        // - global
+        // - group
+        return $this->get_longest_date($dates);
     }
 
     /**

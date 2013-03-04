@@ -1519,6 +1519,19 @@ class extensions_plugin extends deadline_plugin {
         }
     }
 
+    public function get_my_open_date($cm_id, $user_id = null) {
+
+        // For now Extensions isn't modifying any open dates for specific users.
+        // This will simply return 0 when called; and deadline will essentially
+        // ignore this, as the open date from the Deadlines plugin will always
+        // be later, and hence used over this date.
+
+        // This will allow for modifications to either this plugin, or to allow
+        // other plugins that allow for a certain earlier open date for example
+        // as may be required in the case of a special needs student.
+        return 0;
+    }
+
     /**
      * Get the due date this module believes is the longest date.
      *
