@@ -1,5 +1,30 @@
 <?php
 
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * This file contains the main plugin methods as used by the deadline_extensions
+ * plugin.
+ *
+ * @package   deadline_extensions
+ * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
+ * @author    James McLean <james.mclean@unisa.edu.au>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once($CFG->dirroot . '/deadline/lib.php');
 
 class extensions_plugin extends deadline_plugin {
@@ -9,7 +34,8 @@ class extensions_plugin extends deadline_plugin {
     // Define the constants for Individual
     // and Class level extensions.
     const EXT_INDIVIDUAL = 0;
-    const EXT_CLASS      = 1;
+    const EXT_GROUP      = 1;
+    const EXT_GLOBAL     = 2;
 
     const EXT_NO_SEL     = -1;
     const EXT_DISABLED   =  0;
@@ -25,7 +51,7 @@ class extensions_plugin extends deadline_plugin {
     const STATUS_MOREINFO  = 6;
     const STATUS_DELETED   = 7;
 
-    const LANG_EXTENSIONS     = 'deadline_extensions';
+    const EXTENSIONS_LANG     = 'deadline_extensions';
     const EXTENSIONS_MOD_NAME = 'deadline_extensions';
     const EXTENSIONS_URL_PATH = '/deadline/extensions';
 
@@ -33,7 +59,33 @@ class extensions_plugin extends deadline_plugin {
 
     public function get_form_elements($mform, $context, $modulename = "") {
 
-        $mform->addElement('selectyesno','extensions_allowed', 'Extensions allowed?');
+        // If deadline_extensions isn't explicitly enabled site-wide, don't
+        // show the activity config items.
+        if(!$this->is_enabled()) {
+            return false;
+        }
+
+        $mform->addElement('header', 'general', get_string('settings', self::EXTENSIONS_LANG));
+
+        // Add the extension form item.
+        $this->extensions_form_item($mform);
+
+        if(get_config('deadline_extensions', 'req_cut_off') != '-1') {
+            $mform->addElement('select', 'extensions_cutoff', get_string('extensions_cutoff', extensions_plugin::EXTENSIONS_LANG), extensions_plugin::get_cutoff_options());
+        }
+
+//         $usersPicker = $mform->addElement('select_picker', 'users', 'Users');
+    }
+
+    public function extensions_form_item($mform) {
+        $mform->addElement('selectyesno','extensions_allowed', get_string('allow_ext_requests', self::EXTENSIONS_LANG));
+
+        if(get_config('deadline_extensions','force_extension_enabled') == '1') {
+            $mform->setDefault('extensions_allowed', 1);
+            $mform->freeze('extensions_allowed');
+        } else {
+            $mform->setDefault('extensions_allowed', extensions_plugin::extensions_enabled_cmid($cm_id));
+        }
 
     }
 
@@ -43,30 +95,61 @@ class extensions_plugin extends deadline_plugin {
      */
     public function save_form_elements($data) {
 
+        global $DB, $USER;
+
+        if(isset($data->extensions_allowed)) {
+
+            $params = array(
+                    'cm_id' => $data->coursemodule
+            );
+
+            $ext_enabled = new stdClass();
+            $ext_enabled->cm_id    = $data->coursemodule;
+            $ext_enabled->status   = $data->extensions_allowed;
+            $ext_enabled->staff_id = $USER->id;
+
+            if(!$DB->record_exists('deadline_extensions_enabled', $params)) {
+
+                // add the record.
+                $ext_enabled->date_enabled = date('U');
+
+                $DB->insert_record('deadline_extensions_enabled', $ext_enabled);
+            } else {
+
+                $ext_enabled->id = $DB->get_record('deadline_extensions_enabled', array('cm_id' => $data->coursemodule), 'id')->id;
+
+                $DB->update_record('deadline_extensions_enabled', $ext_enabled);
+            }
+
+            return true;
+        }
+
+    }
+
+    /**
+     * Save an extension request.
+     */
+    public function save_extension_request() {
+
+
     }
 
     /**
      * Hook for getting a deadline for a course module id
-     * @param int $cmid
      *
+     * @param int $cmid
      */
     public function get_deadline($cmid, $deadline_type) {
-
-    }
-
-    /**
-     * hook for cron
-     *
-     */
-    public function deadline_cron() {
 
     }
 
     // ------
 
     /**
-    * @param unknown_type $status
-    */
+     * Method for getting the string version of a status.
+     *
+     * @param int $status
+     */
     public static function get_status_string($status = null) {
 
         if(is_null($status)) {
@@ -74,47 +157,75 @@ class extensions_plugin extends deadline_plugin {
         }
 
         switch($status) {
-            case '0':
-                return get_string('status_none', self::LANG_EXTENSIONS);
+            case self::STATUS_NONE:
+                return get_string('status_none', self::EXTENSIONS_LANG);
                 break;
-            case '1':
-                return get_string('status_pending', self::LANG_EXTENSIONS);
+            case self::STATUS_PENDING:
+                return get_string('status_pending', self::EXTENSIONS_LANG);
                 break;
-            case '2':
-                return get_string('status_approved', self::LANG_EXTENSIONS);
+            case self::STATUS_APPROVED:
+                return get_string('status_approved', self::EXTENSIONS_LANG);
                 break;
-            case '3':
-                return get_string('status_denied', self::LANG_EXTENSIONS);
+            case self::STATUS_DENIED:
+                return get_string('status_denied', self::EXTENSIONS_LANG);
                 break;
-            case '4':
-                return get_string('status_withdrawn', self::LANG_EXTENSIONS);
+            case self::STATUS_WITHDRAWN:
+                return get_string('status_withdrawn', self::EXTENSIONS_LANG);
                 break;
-            case '5':
-                return get_string('status_revoked', self::LANG_EXTENSIONS);
+            case self::STATUS_REVOKED:
+                return get_string('status_revoked', self::EXTENSIONS_LANG);
                 break;
-            case '6':
-                return get_string('status_moreinfo', self::LANG_EXTENSIONS);
+            case self::STATUS_MOREINFO:
+                return get_string('status_moreinfo', self::EXTENSIONS_LANG);
                 break;
-            case '7':
-                return get_string('status_deleted', self::LANG_EXTENSIONS);
+            case self::STATUS_DELETED:
+                return get_string('status_deleted', self::EXTENSIONS_LANG);
                 break;
         }
 
     }
 
+    /**
+     * Method to convert an extension type into the relevant string.
+     * @param unknown_type $type
+     */
+    public static function get_type_string($type) {
+        switch($type) {
+            case self::EXT_INDIVIDUAL:
+                return get_string('ext_individual', self::EXTENSIONS_LANG);
+                break;
+            case self::EXT_GROUP:
+                return get_string('ext_group', self::EXTENSIONS_LANG);
+                break;
+            case self::EXT_GLOBAL:
+                return get_string('ext_global', self::EXTENSIONS_LANG);
+                break;
+        }
+    }
+
+    /**
+     * Function to retrieve all available status as an array of strings.
+     *
+     * @return array $status
+     */
     public static function get_all_extension_status() {
         $status = array();
-        $status[self::STATUS_NONE]      = get_string('status_none',      self::LANG_EXTENSIONS);
-        $status[self::STATUS_PENDING]   = get_string('status_pending',   self::LANG_EXTENSIONS);
-        $status[self::STATUS_APPROVED]  = get_string('status_approved',  self::LANG_EXTENSIONS);
-        $status[self::STATUS_DENIED]    = get_string('status_denied',    self::LANG_EXTENSIONS);
-        $status[self::STATUS_WITHDRAWN] = get_string('status_withdrawn', self::LANG_EXTENSIONS);
-        $status[self::STATUS_REVOKED]   = get_string('status_revoked',   self::LANG_EXTENSIONS);
-        $status[self::STATUS_MOREINFO]  = get_string('status_moreinfo',  self::LANG_EXTENSIONS);
+        $status[self::STATUS_NONE]      = get_string('status_none',      self::EXTENSIONS_LANG);
+        $status[self::STATUS_PENDING]   = get_string('status_pending',   self::EXTENSIONS_LANG);
+        $status[self::STATUS_APPROVED]  = get_string('status_approved',  self::EXTENSIONS_LANG);
+        $status[self::STATUS_DENIED]    = get_string('status_denied',    self::EXTENSIONS_LANG);
+        $status[self::STATUS_WITHDRAWN] = get_string('status_withdrawn', self::EXTENSIONS_LANG);
+        $status[self::STATUS_REVOKED]   = get_string('status_revoked',   self::EXTENSIONS_LANG);
+        $status[self::STATUS_MOREINFO]  = get_string('status_moreinfo',  self::EXTENSIONS_LANG);
 
         return $status;
     }
 
+    /**
+     * Method to get a list of extension module enable/disable status
+     *
+     * @return array $options
+     */
     public static function get_extension_enable_items() {
         return array(
                 self::EXT_NO_SEL   => '&nbsp;',
@@ -123,6 +234,12 @@ class extensions_plugin extends deadline_plugin {
         );
     }
 
+    /**
+     * Method to get a consistant date length for start year and end year for
+     * date selectors.
+     *
+     * @return array $options
+     */
     public static function get_date_options() {
         return array(
                 'startyear' => date('Y') - 1,
@@ -132,13 +249,26 @@ class extensions_plugin extends deadline_plugin {
         );
     }
 
+    /**
+     * Method to get the currently defined date display format.
+     * This will need to be modified to use a moodle-defined format over our own.
+     *
+     * @return string $date_format
+     */
     public static function get_date_format() {
         return self::DATE_FORMAT;
     }
 
+    /**
+     * Method returns a list of options selectable for the date/time cutoff of
+     * extension submission.
+     *
+     * @return array $options
+     */
     public static function get_cutoff_options() {
         // TODO: Translate these strings.
         return array(
+                '-1' => 'Disabled',
                 '0'  => 'No Cutoff',
                 '1'  => '1 Hour',
                 '2'  => '2 Hours',
@@ -151,6 +281,31 @@ class extensions_plugin extends deadline_plugin {
         );
     }
 
+    /**
+     * Method gets a list of the default extension date options for selection on
+     * the settings page.
+     *
+     * @return array $options
+     */
+    public static function get_default_extension_options() {
+        // TODO: Translate these strings.
+        return array(
+                '24'  => '1 Day',
+                '48'  => '2 Days',
+                '72'  => '3 Days',
+                '96'  => '4 Days',
+                '120' => '5 Days',
+                '168' => 'One week',
+                '336' => 'Two weeks'
+        );
+    }
+
+    /**
+     * Method to determine if extensions are enabled for a specific course module
+     * ID.
+     *
+     * @param int $enable_id
+     */
     public static function get_extension_enable_id_by_cmid($cm_id = null) {
 
         global $DB;
@@ -159,73 +314,146 @@ class extensions_plugin extends deadline_plugin {
             return false;
         }
 
-        return $DB->get_field('extensions_enabled', 'id', array('cm_id' => $cm_id));
+        return $DB->get_field('deadline_extensions_enabled', 'id', array('cm_id' => $cm_id));
     }
 
+    /**
+     * Extensions enabled for specific course module: DUPLICATE FUNCTIONALITY OF ABOVE!
+     *
+     * @param unknown_type $cm_id
+     * @return boolean
+     */
+    public function extensions_enabled_cmid($cm_id) {
+        global $DB;
+
+        $conditions = array(
+                'cm_id'  => $cm_id,
+                'status' => self::EXT_ENABLED
+        );
+
+        return $DB->record_exists('deadline_extensions_enabled', $conditions);
+    }
+
+    /**
+     * Get the extension status based on course module ID. DUPLICATE FUNCTIONALITY OF ABOVE.
+     * @param unknown_type $cm_id
+     */
+    public static function get_extension_status_by_cmid($cm_id = null) {
+        global $DB;
+
+        $cm_id = clean_param($cm_id, PARAM_INT);
+
+        return $DB->get_field('deadline_extensions_enabled', 'status', array('cm_id' => $cm_id));
+    }
+
+    /**
+     * Method to get the module name for a specific course module ID.
+     *
+     * @param string $modulename
+     */
     public static function get_activity_mod_by_cmid($cm_id = null) {
-        return Extensions::get_activity_detail_by_cmid($cm_id)->modname;
+        return extensions_plugin::get_activity_detail_by_cmid($cm_id)->modname;
     }
 
+    /**
+     * Method to get the name of an activity based on the course module ID.
+     *
+     * @param string $activity_name
+     */
     public static function get_activity_name($cm_id = null) {
-        return Extensions::get_activity_detail_by_cmid($cm_id)->name;
+        return extensions_plugin::get_activity_detail_by_cmid($cm_id)->name;
     }
 
+    /**
+     * Method to get an extension by it's extension ID in the deadline_extensions
+     * table
+     *
+     * @param int $id Extension ID
+     * @throws coding_exception
+     */
     public static function get_extension_by_id($id = null) {
 
         if(is_null($id)) {
             throw new coding_exception('Extension ID Cannot be null. This must be fixed by a developer');
         }
 
-        $detail = new Extension();
+        $detail = new extensions_plugin();
         $detail->id = $id;
 
-        $ext = new Extensions();
+        $ext = new extensions_plugin();
         return $ext->get_extension($detail);
     }
 
-    public static function get_extension_status_by_cmid($cm_id = null) {
-        global $DB;
-
-        $cm_id = clean_param($cm_id, PARAM_INT);
-
-        return $DB->get_field('extensions_enabled', 'status', array('cm_id' => $cm_id));
-    }
-
+    /**
+     * Gets the details of the extension being enabled based on the course module ID.
+     *
+     * @param object $extensiondetail
+     */
     public static function get_activity_extension_detail($cm_id = null) {
         global $DB;
 
         $cm_id = clean_param($cm_id, PARAM_INT);
 
-        return $DB->get_record('extensions_enabled', array('cm_id' => $cm_id));
+        return $DB->get_record('deadline_extensions_enabled', array('cm_id' => $cm_id));
     }
 
+    /**
+     * Get extension request cutoff by course module ID.
+     *
+     * @param int $request_cutoff
+     */
     public static function get_extension_cutoff_by_cmid($cm_id = null) {
 
         global $DB;
 
         $cm_id = clean_param($cm_id, PARAM_INT);
+        $params = array('cm_id' => $cm_id);
 
-        if($extension = $DB->get_record('extensions_enabled', array('cm_id' => $cm_id), 'request_cutoff')) {
+        if($extension = $DB->get_record('deadline_extensions_enabled', $params, 'request_cutoff')) {
             return $extension->request_cutoff;
         }
 
         return false;
     }
 
-    public static function get_extension_by_cmid($cm_id = null) {
-
-    }
-
+    /**
+     * Get the activity detail by course module ID.
+     *
+     * @param int $cm_id
+     *
+     * @return array $cm
+     */
     public static function get_activity_detail_by_cmid($cm_id = null) {
 
         if(is_null($cm_id)) {
             return false;
         }
 
-        $modinfo = get_fast_modinfo(Extensions::get_courseid_for_cmid($cm_id)->course);
+        $modinfo = get_fast_modinfo(extensions_plugin::get_courseid_for_cmid($cm_id)->course);
         return $modinfo->get_cm($cm_id);
     }
 
+    public static function get_activity_id_by_extid($ext_id) {
+        global $DB;
+
+        if(is_null($ext_id)) {
+            return false;
+        }
+
+        $params = array(
+                'id' => $ext_id
+        );
+
+        return $DB->get_field('deadline_extensions', 'cm_id', $params);
+    }
+
+    /**
+     * Method to get the current activity open date based on the course module
+     * ID and modules own table.
+     *
+     * @param int $cm_id Course Module ID to find the open date for.
+     * @return int $open_date Open Date of the specific activity as defined in the activity
+     */
     public static function get_activity_open_date($cm_id = null) {
         global $DB;
 
@@ -233,7 +461,7 @@ class extensions_plugin extends deadline_plugin {
             return false;
         }
 
-        $activity_detail = Extensions::get_activity_detail_by_cmid($cm_id);
+        $activity_detail = extensions_plugin::get_activity_detail_by_cmid($cm_id);
 
         // Column names are as follows:
         // assign:
@@ -274,11 +502,17 @@ class extensions_plugin extends deadline_plugin {
             case 'workshop':
                 return $DB->get_field('workshop', 'assessmentstart', $conditions);
                 break;
-
         }
 
+        return -1;
     }
 
+    /**
+     * Get the current activity due date as defined in the activities own table.
+     *
+     * @param int $cm_id Course Module ID.
+     * @return int $due_date Current Due Date for the course module.
+     */
     public static function get_activity_due_date($cm_id = null) {
         global $DB;
 
@@ -286,7 +520,7 @@ class extensions_plugin extends deadline_plugin {
             return false;
         }
 
-        $activity_detail = Extensions::get_activity_detail_by_cmid($cm_id);
+        $activity_detail = extensions_plugin::get_activity_detail_by_cmid($cm_id);
 
         // Column names are as follows:
         // assign: duedate
@@ -348,7 +582,14 @@ class extensions_plugin extends deadline_plugin {
 
     }
 
-    public static function get_count_all_extensions_by_staffid($staff_id = null, $status = null, $course_id = null) {
+    /**
+     * Count of extensions for a specific user, of a specific status (optional)
+     *
+     * @param int $staff_id ID Of the staff member to count extensions for.
+     * @param int $status Status of the extensions to search for.
+     * @return number
+     */
+    public static function get_count_all_extensions_by_staffid($staff_id = null, $status = null) {
 
         global $DB;
 
@@ -362,30 +603,22 @@ class extensions_plugin extends deadline_plugin {
             $criteria['status'] = $status;
         }
 
-        //         if(!is_null($course_id)) {
-
-        //             $ids = $DB->get_records('course_modules', array('course' => $course_id), '', 'id');
-
-        //             foreach($ids as $id) {
-        //                 $items[] = $id->id;
-        //             }
-
-        //             var_dump($items);
-
-        //             $criteria['cm_id'] = ' IN ' . implode($items, ',');
-        //         }
-
         // This will return ONLY the content of the COUNT column, as defined below
-        return $DB->get_record('extensions', $criteria, 'COUNT(*) COUNT')->count;
-
+        return $DB->get_record('deadline_extensions', $criteria, 'COUNT(*) COUNT')->count;
     }
 
     public static function get_count_all_extensions_by_status($status = null) {
 
     }
 
+    /**
+     * Get all extensions based on a specific filter.
+     *
+     * @param array $filters Filters to apply to the search.
+     * @return object $extensions Extensions discovered with the required criteria.
+     */
     public static function get_count_all_extensions_by_filter($filters = null) {
-        global $DB;
+        global $DB, $COURSE;
 
         if(isset($SESSION->ext_filters)) {
             $filters = $SESSION->ext_filters;
@@ -393,31 +626,49 @@ class extensions_plugin extends deadline_plugin {
             $filters = null;
         }
 
-        $filter_string = '';
-
-        // TODO: ALL THIS WILL NEED TO CHANGE, THESE COLUMNS ARE INCORRECT.
+        $params = array();
 
         if(!is_null($filters)) {
             if(isset($filters->activity_id) && $filters->activity_id != 0) {
-                $filter_string .= " AND mex.unisa_asmnt_id = '{$filters->activity_id}' ";
+                $params['cm_id'] = $filters->activity;
             }
 
             if(isset($filters->status_id) && $filters->status_id != 0) {
-                $filter_string .= " AND mex.ext_status_code = '{$filters->status_id}' ";
+                $params['status'] = $filters->status;
             }
 
             if(isset($filters->class_id) && $filters->class_id != 0) {
-                $filter_string .= " AND MGG.GROUPID = '{$filters->class_id}' ";
+//                 $filter_string .= " AND MGG.GROUPID = '{$filters->class_id}' ";
             }
 
-            if(isset($filters->user_id) && $filters->user_id != 0) {
-                $filter_string .= " AND mex.ext_staffmember_id = '{$filters->user_id}' ";
+            if(isset($filters->users) && $filters->users != 0) {
+                $params['staff_id'] = $filters->users;
             }
         }
 
-        return $DB->get_records('extensions');
+        $types = array(
+                extensions_plugin::EXT_INDIVIDUAL,
+                extensions_plugin::EXT_GROUP
+        );
+
+        list($ext_type, $params) = $DB->get_in_or_equal($types, SQL_PARAMS_NAMED);
+
+        $params['course'] = $COURSE->id;
+
+        $sql = "SELECT de.* " .
+               "FROM {deadline_extensions} de, {course_modules} cm " .
+               "WHERE de.cm_id = cm.id AND de.ext_type " . $ext_type . " AND cm.course = :course";
+
+        return $DB->get_records_sql($sql, $params);
     }
 
+    /**
+     * Get a count of all extensions for a specific course module id and status (optional).
+     *
+     * @param int $cm_id
+     * @param int $status
+     * @return object extensions found as with the specified parameterss
+     */
     public static function get_extensions_count($cm_id = null, $status = null) {
 
         global $DB;
@@ -433,14 +684,33 @@ class extensions_plugin extends deadline_plugin {
         }
 
         // This will return ONLY the content of the COUNT column, as defined below
-        return $DB->get_record('extensions', $criteria, 'COUNT(*) COUNT')->count;
+        return $DB->get_record('deadline_extensions', $criteria, 'COUNT(*) COUNT')->count;
     }
 
-    public static function is_extension_approver($ext = null, $user = null) {
+
+    public static function is_extension_approver($ext = null, $user = null, $cmid = null) {
         // TODO: IMPLEMENT THIS!
         return true;
     }
 
+    /**
+     * Discover if the extensions module is enabled globally.
+     *
+     * @return boolean True of the module is enabled, otherwise false.
+     */
+    public function is_enabled() {
+        if (get_config('deadline_extensions', 'enabled') == 1) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Depending on the supplied status returns a string denoting weather that
+     * status is enabled or not.
+     *
+     * @param string $status Yes for enabled, No for not enabled.
+     */
     public static function extensions_enabled($status = NULL) {
 
         if(is_null($status)) {
@@ -454,6 +724,12 @@ class extensions_plugin extends deadline_plugin {
         }
     }
 
+    /**
+     * Based on the Course Module ID find the Course ID it is associated with.
+     *
+     * @param int $cm_id
+     * @return object $course Object is returned containing a single course item with the course ID.
+     */
     public static function get_courseid_for_cmid($cm_id = null) {
 
         global $DB;
@@ -462,9 +738,16 @@ class extensions_plugin extends deadline_plugin {
             return false;
         }
 
-        return $DB->get_record('course_modules', array('id' => $cm_id), 'course');
+        $params = array('id' => $cm_id);
+
+        return $DB->get_record('course_modules', $params, 'course');
     }
 
+    /**
+     * Get the course with extensions for the supplied User.
+     *
+     * @param object $user User object containing a valid user ID.
+     */
     public static function get_courses_with_extensions_for_userid($user = null) {
 
         global $DB;
@@ -473,9 +756,17 @@ class extensions_plugin extends deadline_plugin {
             return false;
         }
 
+        if(!isset($user->id)) {
+            return false;
+        }
+
+        if(!$DB->record_exists('user', array('id' => $user->id))) {
+            return false;
+        }
+
         $sql = "SELECT DISTINCT mcm.course id " .
-                "FROM {extensions} me, {course_modules} mcm " .
-                "WHERE me.staff_id = ? and me.cm_id = mcm.id";
+                "FROM {deadline_extensions} mde, {course_modules} mcm " .
+                "WHERE mde.staff_id = ? and mde.cm_id = mcm.id";
 
         $params = array($user->id);
 
@@ -484,8 +775,14 @@ class extensions_plugin extends deadline_plugin {
         return $courses;
     }
 
-
-
+    /**
+     * Get a count of how many pending extensions there are for a specific
+     * user in a specific course.
+     *
+     * @param int $user_id User ID to search for.
+     * @param int $course_id Course ID to search for.
+     * @return int $count Number of pending extension requests for the supplied user/course IDs.
+     */
     public static function get_pending_count_for_user($user_id = null, $course_id = null) {
 
         if(is_null($user_id)) {
@@ -496,17 +793,22 @@ class extensions_plugin extends deadline_plugin {
             return false;
         }
 
-        if(!is_null($course_id)) {
-            return 23939283;
-        }
+        return extensions_plugin::get_count_all_extensions_by_staffid($user_id, extensions_plugin::STATUS_PENDING, $course_id);
     }
 
 
-    public function get_extension(Extension $detail) {
+    /**
+     * Get a specific extension record based on the extension ID.
+     *
+     * @param extensions_plugin $detail
+     * @return object $extension Extensions specific detail.
+     */
+    public function get_extension(extensions_plugin $detail) {
         global $DB;
 
-        return $DB->get_record('extensions', array('id' => $detail->id));
-        // get the extension here.
+        $params = array('id' => $detail->id);
+
+        return $DB->get_record('deadline_extensions', $params);
     }
 
     public function send_response_email($ext_id = null) {
@@ -521,40 +823,77 @@ class extensions_plugin extends deadline_plugin {
 
     }
 
-    public static function duplicate_requests($cm_id = null, $student_id = null, $existing_id) {
+    /**
+     * Check for duplicate requests with the provided details.
+     *
+     * @param int $cm_id Course Module ID. Required.
+     * @param int $student_id Student ID. Required.
+     * @param int $existing_id Existing ID to exclude from current search. Optional.
+     * @return object $extensions Returns an object containing all the duplicate extensions.
+     */
+    public static function duplicate_requests($cm_id = null, $student_id = null, $existing_id = null, $status = null) {
         global $DB;
 
-        $sql = "SELECT id, cm_id, staff_id, status " .
-                "FROM {extensions} " .
-                "WHERE cm_id = ? AND student_id = ? AND id != ?";
+        // We sometimes want to see if there's duplicates that are not this ID
+        if(!is_null($existing_id)) {
 
-        $vars = array($cm_id, $student_id, $existing_id);
+            $sql = "SELECT id, cm_id, staff_id, status, date " .
+                    "FROM {deadline_extensions} " .
+                    "WHERE cm_id = ? AND student_id = ? AND id != ?";
+
+            $vars = array($cm_id, $student_id, $existing_id);
+
+        } else {
+            // Other times we want to see if there is already a request, such as
+            // as when requesting a new extension, and duplicates are dis-allowed.
+
+            $sql = "SELECT id, cm_id, staff_id, status, date " .
+                    "FROM {deadline_extensions} " .
+                    "WHERE cm_id = ? AND student_id = ?";
+
+            $vars = array($cm_id, $student_id);
+
+        }
+
+        if(!is_null($status)) {
+            $sql = $sql . " AND status = ? ";
+            $vars[] = $status;
+        }
 
         return $DB->get_records_sql($sql, $vars);
     }
 
+    /**
+     * Generate a formatted string suitable for use in a text link containing
+     * the current pending count, for the specific user details provided.
+     *
+     * @param int $user User to use in query.
+     * @param int $course Course ID to use in query.
+     * @param bool $tags
+     * @return mixed $text Returns a text string if show_pending_count is enabled, otherwise
+     */
     public static function get_pending_count_text($user = null, $course = null, $tags = true) {
 
         if(is_null($user)) {
-            return 0;
+            return false;
         }
 
-        if(get_config(Extensions::EXTENSIONS_MOD_NAME, 'show_pending_count')) {
+        if(get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_pending_count')) {
 
             $count = 0;
 
             if(is_null($course) || $course->id == '0') {
                 // find all courses the user is associated with.
-                $courses = Extensions::get_courses_with_extensions_for_userid($user);
+                $courses = extensions_plugin::get_courses_with_extensions_for_userid($user);
 
                 // get the courses
                 foreach($courses as $course) {
-                    $count += Extensions::get_count_all_extensions_by_staffid($user->id, Extensions::STATUS_PENDING, $course->id);
+                    $count += extensions_plugin::get_count_all_extensions_by_staffid($user->id, extensions_plugin::STATUS_PENDING, $course->id);
                 }
 
             } else {
                 // just get the count for a single course.
-                $count = Extensions::get_count_all_extensions_by_staffid($user->id, Extensions::STATUS_PENDING, $course->id);
+                $count = extensions_plugin::get_count_all_extensions_by_staffid($user->id, extensions_plugin::STATUS_PENDING, $course->id);
 
             }
 
@@ -564,18 +903,50 @@ class extensions_plugin extends deadline_plugin {
 
             if($tags) {
                 $count_tag   = html_writer::tag('b',   $count);
-                $content_tag = html_writer::tag('i',   $count_tag . ' ' . get_string('status_pending', Extensions::LANG_EXTENSIONS));
+                $content_tag = html_writer::tag('i',   $count_tag . ' ' . get_string('status_pending', extensions_plugin::EXTENSIONS_LANG));
                 $main_tag    = html_writer::tag('sup', $content_tag);
                 return $main_tag;
             } else {
-                return $count . ' ' . get_string('status_pending', Extensions::LANG_EXTENSIONS);
+                return $count . ' ' . get_string('status_pending', extensions_plugin::EXTENSIONS_LANG);
             }
 
 
         }
-
+        return false;
     }
 
+    public function get_group_submission_for_cmid($cmid = null) {
+        global $DB;
+        // check if this cm_id allows a group submission
+        // is m_assign the only group submission item? Hopefully.
+
+        // table m_assign
+        // field teamsubmission == 1
+        // field teamsubmissiongroupingid == grouping id that the groups come from (ID is valid grouping, 0 is all?)
+
+        $mod = $this->get_activity_detail_by_cmid($cmid);
+
+        switch ($mod->modname) {
+            case 'assign':
+                $params = array(
+                    'id' => $mod->instance
+                );
+                $detail = $DB->get_record('assign', $params, 'id, teamsubmission, teamsubmissiongroupingid', MUST_EXIST);
+                break;
+        }
+
+        if($detail->teamsubmission == 0) {
+            return false;
+        } else {
+            return $detail;
+        }
+    }
+
+    /**
+     * Save the data posted from the 'Quick Approve' function.
+     *
+     * @param object $form_data Form data as supplied from MoodleForm.
+     */
     public static function save_quick_approve($form_data) {
 
         global $DB, $USER;
@@ -585,25 +956,20 @@ class extensions_plugin extends deadline_plugin {
             // Update main record.
             $item = new stdClass;
             $item->id = $ext_id;
-            $item->status = Extensions::STATUS_APPROVED;
+            $item->status = extensions_plugin::STATUS_APPROVED;
 
-            if($DB->update_record('extensions', $item)) {
+            if($DB->update_record('deadline_extensions', $item)) {
 
-                // Add item to history table
-                $hist = new stdClass;
-                $hist->extension_id = $ext_id;
-                $hist->status       = Extensions::STATUS_APPROVED;
-                $hist->user_id      = $USER->id;
-                $hist->change_date  = date("U");
+                // Add to the extensions history table.
+                extensions_plugin::add_history($form_data);
 
-                if(!$DB->insert_record('extensions_history', $hist)) {
-                    return false;
-                }
+                // Send a message to the user to notify of the update.
+                extensions_plugin::notify_user($form_data);
 
-                $ext = Extensions::get_extension_by_id($item->id);
+                $ext = extensions_plugin::get_extension_by_id($item->id);
 
                 // add item to the calendar.
-                $cal              = new object;
+                $cal              = new stdClass();
                 $cal->name        = '';
                 $cal->description = '';
                 $cal->userid      = '';
@@ -612,7 +978,7 @@ class extensions_plugin extends deadline_plugin {
                 $cal->eventtype   = '';
                 $cal->timestart   = $ext->date;
 
-                calendar_event::create($properties);
+                calendar_event::create($cal);
 
             } else {
                 return false;
@@ -624,11 +990,33 @@ class extensions_plugin extends deadline_plugin {
 
     }
 
+    public function get_activity_group_extensions($cm_id) {
+        global $DB;
+
+        if(is_null($cm_id)) {
+            return false;
+        }
+
+        $params = array(
+                'cm_id' => $cm_id,
+                'ext_type' => extensions_plugin::EXT_GROUP
+        );
+
+        return $DB->get_records('deadline_extensions', $params);
+    }
+
     public static function get_extension_documents($ext_id = null) {
 
         return false;
     }
 
+    /**
+     * Determine the difference in due date and extension date, in days.
+     *
+     * @param int $due_date Due date for the activity.
+     * @param int $extension_date Extension date for the activity.
+     * @return int $days Number of days between Due Date and Extension date.
+     */
     public static function date_difference($due_date = null, $extension_date = null) {
 
         if(is_null($due_date)) {
@@ -646,10 +1034,16 @@ class extensions_plugin extends deadline_plugin {
     // Methods to build Tables as used in Extensions.
     // --
 
+    /**
+     * Build a UI table displaying the history of a specific Extension.
+     *
+     * @param int $ext_id Extension ID to get the history for.
+     * @return object $table Table containing the data to be rendered.
+     */
     public static function build_extension_history_table($ext_id) {
         global $DB;
 
-        $items = $DB->get_records('extensions_history', array('extension_id' => $ext_id), 'change_date desc');
+        $items = $DB->get_records('deadline_extensions_history', array('extension_id' => $ext_id), 'change_date desc');
 
         // Create the table
         $table = new html_table();
@@ -670,10 +1064,7 @@ class extensions_plugin extends deadline_plugin {
         foreach($items as $item) {
             // build a table here to return.
 
-
             $userDetail  = $DB->get_record('user', array('id' => $item->user_id),  '*', MUST_EXIST);
-
-
             $userLink    = new moodle_url('/user/view.php', array('id' => $item->user_id));
 
             // Create cells
@@ -685,7 +1076,7 @@ class extensions_plugin extends deadline_plugin {
             $userId        = new html_table_cell();
             $dateChanged   = new html_table_cell();
 
-            $noChangeText = html_writer::tag('i', get_string('no_change', Extensions::LANG_EXTENSIONS));
+            $noChangeText = html_writer::tag('i', get_string('no_change', extensions_plugin::EXTENSIONS_LANG));
 
             // Populate the cells with data
             if($item->date == 0) {
@@ -697,7 +1088,7 @@ class extensions_plugin extends deadline_plugin {
             if($item->status == '') {
                 $statusText->text    = $noChangeText;
             } else {
-                $statusText->text    = Extensions::get_status_string($item->status);
+                $statusText->text    = extensions_plugin::get_status_string($item->status);
             }
 
             if(is_null($item->request_text)) {
@@ -744,6 +1135,11 @@ class extensions_plugin extends deadline_plugin {
         return $table;
     }
 
+    /**
+     * Build UI table to be displayed showing all extension requests for a specific course.
+     *
+     * @param array $filters Filters to be applied to the table display.
+     */
     public static function build_extensions_table($filters = null) {
 
         global $DB, $OUTPUT;
@@ -754,19 +1150,20 @@ class extensions_plugin extends deadline_plugin {
 
         $table->head  = array (
                 '&nbsp;', // this column left intentionally blank.
-                get_string("extstudentname",    self::LANG_EXTENSIONS),
-                get_string("extusername",       self::LANG_EXTENSIONS),
-                get_string("extassessmentname", self::LANG_EXTENSIONS),
-                get_string("extduedate",        self::LANG_EXTENSIONS),
-                get_string("extensiondate",     self::LANG_EXTENSIONS),
-                get_string("extrequestdate",    self::LANG_EXTENSIONS),
-                get_string("extstatus",         self::LANG_EXTENSIONS),
-                get_string("extclass",          self::LANG_EXTENSIONS),
-                get_string("extsentto",         self::LANG_EXTENSIONS),
-                get_string("extapprove",        self::LANG_EXTENSIONS),
+                get_string("extstudentname",    self::EXTENSIONS_LANG),
+                get_string("extusername",       self::EXTENSIONS_LANG),
+                get_string("exttype",           self::EXTENSIONS_LANG),
+                get_string("extassessmentname", self::EXTENSIONS_LANG),
+                get_string("extduedate",        self::EXTENSIONS_LANG),
+                get_string("extensiondate",     self::EXTENSIONS_LANG),
+                get_string("extrequestdate",    self::EXTENSIONS_LANG),
+                get_string("extstatus",         self::EXTENSIONS_LANG),
+//                 get_string("extclass",          self::EXTENSIONS_LANG),
+                get_string("extsentto",         self::EXTENSIONS_LANG),
+                get_string("extapprove",        self::EXTENSIONS_LANG),
         );
 
-        if($extensions = Extensions::get_count_all_extensions_by_filter($filters)) {
+        if($extensions = extensions_plugin::get_count_all_extensions_by_filter($filters)) {
 
             foreach($extensions as $extension) {
 
@@ -775,41 +1172,43 @@ class extensions_plugin extends deadline_plugin {
                 $staffDetail   = $DB->get_record('user', array('id' => $extension->staff_id),   '*', MUST_EXIST);
 
                 // Activity detail
-                $activity = Extensions::get_activity_detail_by_cmid($extension->cm_id);
+                $activity = extensions_plugin::get_activity_detail_by_cmid($extension->cm_id);
 
                 // Define the links used in the table below here.
                 $studentNameLink     = new moodle_url('/user/profile.php', array('id' => $studentDetail->id));
                 $studentUserNameLink = new moodle_url('/user/profile.php', array('id' => $studentDetail->id));
                 $activityLink        = new moodle_url("/mod/{$activity->modname}/view.php", array('id' => $extension->cm_id));
                 $staffLink           = new moodle_url('/user/view.php', array('id' => $staffDetail->id));
-                $extensionEditUrl    = new moodle_url(Extensions::EXTENSIONS_URL_PATH . '/', array('page' => 'request_edit', 'eid' => $extension->id));
+                $extensionEditUrl    = new moodle_url(extensions_plugin::EXTENSIONS_URL_PATH . '/', array('page' => 'request_edit', 'eid' => $extension->id));
 
                 // Create the cell objects
                 $pictureCell         = new html_table_cell();
                 $studentNameCell     = new html_table_cell();
                 $studentUserNameCell = new html_table_cell();
+                $requestTypeCell     = new html_table_cell();
                 $activityLinkCell    = new html_table_cell();
                 $activityTimeDueCell = new html_table_cell();
                 $requestedDateCell   = new html_table_cell();
                 $createdDateCell     = new html_table_cell();
                 $statusCell          = new html_table_cell();
-                $blankCell           = new html_table_cell();
+//                 $blankCell           = new html_table_cell();
                 $staffNameCell       = new html_table_cell();
                 $checkboxCell        = new html_table_cell();
 
-                $due_date = Extensions::get_activity_due_date($activity->id);
-                $date_diff = html_writer::tag('i', Extensions::date_difference($due_date, $extension->date) . ' days', array('class' => 'days_extension'));
+                $due_date = extensions_plugin::get_activity_due_date($activity->id);
+                $date_diff = html_writer::tag('i', extensions_plugin::date_difference($due_date, $extension->date) . ' days', array('class' => 'days_extension'));
 
                 // Add the text to each cell in the table.
                 $pictureCell->text         = $OUTPUT->user_picture($studentDetail, array('size' => 50));
                 $studentNameCell->text     = html_writer::link($studentNameLink, $studentDetail->firstname . " " . $studentDetail->lastname);
                 $studentUserNameCell->text = html_writer::link($studentUserNameLink, $studentDetail->username);
+                $requestTypeCell->text     = extensions_plugin::get_type_string($extension->ext_type);
                 $activityLinkCell->text    = html_writer::link($activityLink, $activity->name);
                 $activityTimeDueCell->text = userdate($due_date);
                 $requestedDateCell->text   = userdate($extension->date) . ' ' . $date_diff;
                 $createdDateCell->text     = userdate($extension->created);
-                $statusCell->text          = html_writer::link($extensionEditUrl, Extensions::get_status_string($extension->status));
-                $blankCell->text           = "&nbsp;";
+                $statusCell->text          = html_writer::link($extensionEditUrl, extensions_plugin::get_status_string($extension->status));
+//                 $blankCell->text           = "&nbsp;";
                 $staffNameCell->text       = html_writer::link($staffLink, $staffDetail->firstname . " " . $staffDetail->lastname);
                 $checkboxCell->text        = "{element}";
 
@@ -818,24 +1217,44 @@ class extensions_plugin extends deadline_plugin {
                         $pictureCell,
                         $studentNameCell,
                         $studentUserNameCell,
+                        $requestTypeCell,
                         $activityLinkCell,
                         $activityTimeDueCell,
                         $requestedDateCell,
                         $createdDateCell,
                         $statusCell,
-                        $blankCell,
+//                         $blankCell,
                         $staffNameCell,
                         $checkboxCell
                 );
 
                 $table->data[$extension->id] = $thisRow;
             }
+        } else {
+            // No requests found
+
+            $noRecordsCell = new html_table_cell();
+
+            $noRecordsCell->text = "No records found";
+            $noRecordsCell->colspan = 12;
+
+            $thisRow = new html_table_row();
+            $thisRow->cells = array($noRecordsCell);
+
+            $table->data[0] = $thisRow;
         }
 
         return $table;
 
     }
 
+    /**
+     * Generate UI table contents containing all activities in a specific course
+     * and their current status, with some statistics for the activity.
+     *
+     * @param object $activities Activities to be rendered in this table.
+     * @return object $table Table content to be later rendered.
+     */
     public static function build_activity_table($activities) {
 
         global $DB, $OUTPUT, $USER, $COURSE;
@@ -852,7 +1271,8 @@ class extensions_plugin extends deadline_plugin {
                 'Extensions',
                 'Pending',
                 'Approved',
-                'Denied'
+                'Denied',
+                ' '
         );
 
         // Get the list of activities for this course. This will need to be
@@ -861,7 +1281,7 @@ class extensions_plugin extends deadline_plugin {
         foreach($activities as $activity) {
 
             // Get any extension details from the database for this activity.
-            $extensionDetail = Extensions::get_activity_extension_detail($activity->id);
+            $extensionDetail = extensions_plugin::get_activity_extension_detail($activity->id);
 
             // Define cells for each column.
             $activityNameCell   = new html_table_cell();
@@ -874,10 +1294,10 @@ class extensions_plugin extends deadline_plugin {
             $editLink           = new html_table_cell();
 
             $activityLink = new moodle_url("/mod/{$activity->modname}/view.php", array('id' => $activity->id));
-            $editUrl      = new moodle_url(Extensions::EXTENSIONS_URL_PATH . '/', array('page' => 'activity_edit', 'cm_id' => $activity->id));
+            $editUrl      = new moodle_url(extensions_plugin::EXTENSIONS_URL_PATH . '/', array('page' => 'configure_activity', 'cmid' => $activity->id));
 
             // Populate the columns.
-            $activityNameCell->text  = html_writer::link($activityLink, $activity->name);
+            $activityNameCell->text   = html_writer::link($activityLink, $activity->name);
             $activityExtensions->text = '##ext_enabled##'; // placeholder for the dropdown
             $activityCutoffDate->text = '##ext_cutoff##';  // placeholder for the dropdown
 
@@ -891,10 +1311,10 @@ class extensions_plugin extends deadline_plugin {
 
             if($activity->ext_status) { // if the activity has extensions enabled.
 
-                $extensionsCount->text = Extensions::get_extensions_count($activity->id);
-                $pendingCount->text    = Extensions::get_extensions_count($activity->id, self::STATUS_PENDING);
-                $approvedCount->text   = Extensions::get_extensions_count($activity->id, self::STATUS_APPROVED);
-                $deniedCount->text     = Extensions::get_extensions_count($activity->id, self::STATUS_DENIED);
+                $extensionsCount->text = extensions_plugin::get_extensions_count($activity->id);
+                $pendingCount->text    = extensions_plugin::get_extensions_count($activity->id, self::STATUS_PENDING);
+                $approvedCount->text   = extensions_plugin::get_extensions_count($activity->id, self::STATUS_APPROVED);
+                $deniedCount->text     = extensions_plugin::get_extensions_count($activity->id, self::STATUS_DENIED);
 
             } else {
 
@@ -923,6 +1343,327 @@ class extensions_plugin extends deadline_plugin {
 
 
         return $table;
+    }
+
+
+
+    public function build_global_extensions_table($course_id = null) {
+
+        global $DB, $OUTPUT, $USER, $COURSE;
+
+        $table = new html_table();
+
+        $table->width = "100%";
+
+        $table->head = array (
+                get_string("extassessmentname", extensions_plugin::EXTENSIONS_LANG),
+                get_string("extgrouping",       extensions_plugin::EXTENSIONS_LANG),
+                get_string("startdate",         extensions_plugin::EXTENSIONS_LANG),
+                get_string("extduedate",        extensions_plugin::EXTENSIONS_LANG),
+                get_string("extdate",           extensions_plugin::EXTENSIONS_LANG),
+                get_string("extcreator",        extensions_plugin::EXTENSIONS_LANG),
+                get_string("extedit",           extensions_plugin::EXTENSIONS_LANG),
+        );
+
+        $table->align = array ("left", "left", "left", "left", "center","center","center");
+
+        $ext = new extensions_plugin;
+
+        $activities = $ext->get_activity_names($this->get_course($course_id));
+
+        $deadlines = new deadlines_plugin();
+        foreach($activities as $activity) {
+
+            $activity_detail = $ext->activity_detail($activity->id);
+
+            // Add a row here for each activity.
+            $activityName       = new html_table_cell();
+            $activityGrouping   = new html_table_cell();
+            $activityStartDate  = new html_table_cell();
+            $activityDueDate    = new html_table_cell();
+            $activityExtDate    = new html_table_cell();
+            $activityExtCreator = new html_table_cell();
+            $activityExtEdit    = new html_table_cell();
+
+            // Activity name
+            $params = array('id' => $activity->id);
+            $activity_link = new moodle_url('/mod/' . $activity->modname . '/view.php', $params);
+            $activityName->text = html_writer::link($activity_link, $activity->name);
+
+            // Grouping
+            if(isset($activity_detail->groupingid) && $activity_detail->groupingid != 0) {
+                $params = array('id' => $activity_detail->course);
+                $grouping_link = new moodle_url('/group/groupings.php', $params);
+                $grouping_name = html_writer::link($grouping_link, groups_get_grouping_name($activity_detail->groupingid));
+                $activityGrouping->text = $grouping_name;
+            } else {
+                $activityGrouping->text = html_writer::tag('i', get_string('no_grouping_assigned_short', extensions_plugin::EXTENSIONS_LANG));
+            }
+
+            // Open Date
+            $activityStartDate->text = userdate($deadlines->get_date_open($activity->id));
+
+            // Due Date
+            if($deadline = $deadlines->get_date_deadline($activity->id)) {
+                $activityDueDate->text = userdate($deadline);
+            } else {
+                $activityDueDate->text = html_writer::tag('i', 'No central deadline found.');
+            }
+
+            // Global Extension Date
+            $activityExtDate->text = ' '; // nothing at this level.
+
+            // Creator
+            $activityExtCreator->text = ' ';
+
+            // Edit/Create
+            $params = array(
+                    'cmid' => $activity->id,
+                    'page' => 'global_add'
+            );
+            $link_url = new moodle_url('/deadline/extensions/', $params);
+            $link_text = html_writer::link($link_url, get_string('create', extensions_plugin::EXTENSIONS_LANG));
+            $activityExtEdit->text = $link_text;
+
+
+            $thisRow = new html_table_row();
+            $thisRow->cells = array(
+                    $activityName,
+                    $activityGrouping,
+                    $activityStartDate,
+                    $activityDueDate,
+                    $activityExtDate,
+                    $activityExtCreator,
+                    $activityExtEdit
+            );
+
+            $table->data[$activity->id] = $thisRow;
+
+            // Check if any Group extensions exist for this activity & course.
+
+            $params = array(
+                    'cm_id'    => $activity->id,
+                    'ext_type' => extensions_plugin::EXT_GLOBAL
+            );
+
+            if($global_exts = $DB->get_records('deadline_extensions', $params)) {
+
+                foreach($global_exts as $global_ext) {
+
+                    $extensionDateCell = new html_table_cell();
+                    $creatorCell       = new html_table_cell();
+                    $editCell          = new html_table_cell();
+
+                    $extensionDateCell->text = userdate($global_ext->date);
+                    $creatorCell->text = $global_ext->staff_id;
+
+                    $params = array('eid' => $global_ext->id, 'cmid' => $activity->id,  'page' => 'global_edit');
+                    $edit_url  = new moodle_url('/deadline/extensions/', $params);
+                    $edit_link = html_writer::link($edit_url, get_string('edit', extensions_plugin::EXTENSIONS_LANG));
+                    $editCell->text = $edit_link;
+
+                    $ext_row = new html_table_row();
+                    $ext_row->cells = array(
+                            '','','','',
+                            $extensionDateCell,
+                            $creatorCell,
+                            $editCell,
+                            );
+
+                    $table->data[$global_ext->id] = $ext_row;
+
+                }
+
+            }
+
+
+        }
+
+        return $table;
+    }
+
+    /**
+     * Delete specific data stored by this module for a specific course module ID.
+     *
+     * @see deadline_plugin::delete_cmid()
+     *
+     * @param int $cmid Course Module ID to delete data for.
+     * @return bool True returned if successful.
+     */
+    protected function delete_cmid($cm_id) {
+        global $DB;
+
+        $params = array('cmid' => $cm_id);
+
+        if(!$DB->delete_records('deadline_extensions', $params)) {
+            print_error('cannotdeletedeadlines', '', course_get_url($data->course, $data->section), $data->modulename);
+        }
+
+        return true;
+    }
+
+    public function get_individual_approved_extensions($cm_id, $user_id) {
+
+        global $DB;
+
+        $params = array(
+                'cm_id'      => $cm_id,
+                'student_id' => $user_id,
+                'status'     => extensions_plugin::STATUS_APPROVED,
+                'ext_type'   => extensions_plugin::EXT_INDIVIDUAL
+        );
+
+        if($exts = $DB->get_records('deadline_extensions', $params)) {
+            $exts = $this->date_sort($exts, 'date');
+            return $exts['0']->date;
+        }
+    }
+
+    /**
+     * Get the due date this module believes is the longest date.
+     *
+     * @see deadline_plugin::get_my_due_date()
+     * @param int $cm_id Course Module ID to check for the specific dates for.
+     * @param int $user_id User ID to use in generating the data for.
+     * @return int $due_date Due date for this user for this activity.
+     */
+    public function get_my_due_date($cm_id, $user_id = null) {
+
+        // Extensions are only valid in the context of a user. Weather that's
+        // individual, global, or group based, there will always be a user. If
+        // no user is specified then we simply return 0, deadline will then
+        // ignore the result as it's always going to be WAY less than any other
+        // specified deadline from any other module.
+        if(is_null($user_id)) {
+            return 0;
+        }
+
+        // We need to find any/all extensions on this activity that exist
+        // for this user. They could be:
+        // 1) Individual Extension
+        $dates['indiv'] = $this->get_individual_approved_extensions($cm_id, $user_id);
+        // 2) Global Extension
+        // 3) Group extension (for a group submission in mod_assign)
+        // 4) Quiz. Time limit extensions?
+        // 5) Quiz. Submission extension?
+
+        return $dates['indiv'];
+    }
+
+    public function get_my_time_limit($cm_id, $user_id = null) {
+
+        // Insert code here for returning a specific time limit for activities
+        // that allow a specific time limit (ie Quiz).
+
+        return 0;
+    }
+
+    public function get_my_cutoff_date($cm_id, $user_id = null) {
+        return 0;
+    }
+
+    public static function add_history($form_data) {
+        global $DB, $USER;
+
+        // ADD TO HISTORY.
+        // Add item to history table
+        $hist                = new stdClass;
+        $hist->extension_id  = $form_data->eid;
+        $hist->status        = $form_data->ext_status_code;
+        $hist->user_id       = $USER->id;
+        $hist->response_text = $form_data->response_text;
+        $hist->change_date   = date("U");
+
+        if(!$DB->insert_record('deadline_extensions_history', $hist)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function notify_user($form_data) {
+        global $DB;
+
+        // SEND USER NOTIFICATION OF UPDATE
+        // Moodle2 ways:
+        // http://docs.moodle.org/dev/Messaging_2.0
+        // http://docs.moodle.org/dev/Events
+
+        $data = extensions_plugin::get_extension_by_id($form_data->eid);
+
+        $staff_detail   = $DB->get_record('user', array('id' => $data->staff_id));
+        $student_detail = $DB->get_record('user', array('id' => $data->student_id));
+
+        // Message generated below is very generic. Simply directs the user
+        // back to Extensions to view the updated information.
+        $message_data            = new stdClass;
+        $message_data->component = extensions_plugin::EXTENSIONS_MOD_NAME;
+        $message_data->name      = 'posts';
+        $message_data->userfrom  = $staff_detail;
+        $message_data->userto    = $student_detail;
+
+        // If the status has just been set to Revoked or Withdrawn,
+        // we don't want to add a calendar item etc.
+        if($form_data->ext_status_code == extensions_plugin::STATUS_APPROVED) {
+
+            // Check to see if there is already a calendar event.
+            // Add a calendar event.
+
+            // ADD EVENT TO USER CALENDAR.
+            $email_subject = get_config('deadline_extensions', 'approved_subject');
+            $email_content = get_config('deadline_extensions', 'approved_text');
+        }
+
+        if($form_data->ext_status_code == extensions_plugin::STATUS_DENIED) {
+
+            // Remove any calendar events this user may have for this extension.
+
+            $email_subject = get_config('deadline_extensions', 'denied_subject');
+            $email_content = get_config('deadline_extensions', 'denied_text');
+        }
+
+        if($form_data->ext_status_code == extensions_plugin::STATUS_WITHDRAWN) {
+
+            // Remove any calendar events this user may have for this extension.
+
+            $email_subject = get_config('deadline_extensions', 'withdrawn_subject');
+            $email_content = get_config('deadline_extensions', 'withdrawn_text');
+        }
+
+        if($form_data->ext_status_code == extensions_plugin::STATUS_REVOKED) {
+
+            // Remove any calendar events this user may have for this extension.
+
+            $email_subject = get_config('deadline_extensions', 'revoked_subject');
+            $email_content = get_config('deadline_extensions', 'revoked_text');
+        }
+
+        if($form_data->ext_status_code == extensions_plugin::STATUS_MOREINFO) {
+
+            // Remove any calendar events this user may have for this extension.
+
+            $email_subject = get_config('deadline_extensions', 'more_info_subject');
+            $email_content = get_config('deadline_extensions', 'more_info_text');
+        }
+
+        // Add a link to the extension page at the bottom of the email
+        $params = array('eid' => $form_data->eid);
+        $link_url = new moodle_url('/deadline/extensions/', $params);
+        $link_text = get_string('ext_email_link', extensions_plugin::EXTENSIONS_LANG);
+
+        $email_content .= html_writer::empty_tag('br');
+        $email_content .= html_writer::empty_tag('br');
+        $email_content .= html_writer::link($link_url, $link_text);
+        $email_content .= html_writer::empty_tag('br');
+        $email_content .= html_writer::empty_tag('br');
+        $email_content .= get_string('ext_email_donot_reply', extensions_plugin::EXTENSIONS_LANG);
+
+        $message_data->subject           = $email_subject;
+        $message_data->fullmessage       = $email_content;
+        $message_data->fullmessageformat = FORMAT_HTML;
+        $message_data->smallmessage      = $email_subject;
+
+        return events_trigger('message_send', $message_data);
     }
 
 }

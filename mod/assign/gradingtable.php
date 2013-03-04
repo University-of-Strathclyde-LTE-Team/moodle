@@ -790,12 +790,30 @@ class assign_grading_table extends table_sql implements renderable {
             if (($this->assignment->get_instance()->duedate ||
                    $this->assignment->get_instance()->cutoffdate) &&
                    $this->hasgrantextension) {
-                $urlparams = array('id' => $this->assignment->get_course_module()->id,
-                                   'userid'=>$row->id,
-                                   'action'=>'grantextension',
-                                   'sesskey'=>sesskey(),
-                                   'page'=>$this->currpage);
-                $url = new moodle_url('/mod/assign/view.php', $urlparams);
+
+                // MDL-7315
+                if(get_config('deadline_extensions','enabled') == 1) {
+
+                    $urlparams = array(
+                            'cmid'       => $this->assignment->get_course_module()->id,
+                            'student_id' => $row->id,
+                            'page'       => 'request_create'
+                     );
+
+                    $url = new moodle_url('/deadline/extensions/', $urlparams);
+
+                } else {
+
+                    $urlparams = array('id' => $this->assignment->get_course_module()->id,
+                                       'userid'=>$row->id,
+                                       'action'=>'grantextension',
+                                       'sesskey'=>sesskey(),
+                                       'page'=>$this->currpage);
+                    $url = new moodle_url('/mod/assign/view.php', $urlparams);
+
+                }
+                // MDL-7315
+
                 $description = get_string('grantextension', 'assign');
                 $actions[$url->out(false)] = $description;
             }

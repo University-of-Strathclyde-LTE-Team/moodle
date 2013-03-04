@@ -508,6 +508,7 @@ require_once($CFG->libdir .'/sessionlib.php');      // All session and cookie re
 require_once($CFG->libdir .'/editorlib.php');       // All text editor related functions and classes
 require_once($CFG->libdir .'/messagelib.php');      // Messagelib functions
 require_once($CFG->libdir .'/modinfolib.php');      // Cached information on course-module instances
+require_once($CFG->libdir .'/deadlinelib.php');     // MDL-7315 Deadlines related functions.
 require_once($CFG->dirroot.'/cache/lib.php');       // Cache API
 
 // make sure PHP is not severly misconfigured

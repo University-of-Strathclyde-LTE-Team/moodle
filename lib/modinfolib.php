@@ -728,6 +728,13 @@ class cm_info extends stdClass {
      */
     private $afterediticons;
 
+    // MDL-7315
+    /**
+     * @var string
+     */
+    private $deadline;
+    // MDL-7315
+
     /**
      * Magic method getter
      *
@@ -1092,7 +1099,7 @@ class cm_info extends stdClass {
         $this->customdata       = isset($mod->customdata) ? $mod->customdata : '';
         $this->context          = context_module::instance($mod->cm);
         $this->showdescription  = isset($mod->showdescription) ? $mod->showdescription : 0;
-        $this->state = self::STATE_BASIC;
+        $this->state            = self::STATE_BASIC;
 
         // This special case handles old label data. Labels used to use the 'name' field for
         // content
@@ -1138,6 +1145,27 @@ class cm_info extends stdClass {
         $this->url = $modviews[$this->modname]
                 ? new moodle_url('/mod/' . $this->modname . '/view.php', array('id'=>$this->id))
                 : null;
+
+        // MDL-7315
+        if(plugin_supports('mod', $this->modname, FEATURE_DEADLINE)) {
+            include_once($CFG->dirroot . '/deadline/deadlines/lib.php');
+
+            $deadlines = new stdClass;
+
+            $deadline = new deadlines_plugin();
+
+            $deadlines->deadlines = $deadline->get_deadlines_for_cmid($this->id);
+
+            if($deadline->extensions_installed()) {
+                $extensions = new extensions_plugin();
+
+                $deadlines->extensions_enabled = $extensions->extensions_enabled_cmid($this->id);
+            }
+
+            $this->deadline = $deadlines;
+        }
+        // MDL-7315
+
     }
 
     /**

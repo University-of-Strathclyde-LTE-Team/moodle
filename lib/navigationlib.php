@@ -3501,6 +3501,11 @@ class settings_navigation extends navigation_node {
             $coursenode->add(get_string('outcomes', 'grades'), $url, self::TYPE_SETTING, null, 'outcomes', new pix_icon('i/outcomes', ''));
         }
 
+        // MDL-7315
+        // Extensions
+        deadline_add_course_navigation($coursenode, $course);
+        // MDL-7315
+
         // Backup this course
         if (has_capability('moodle/backup:backupcourse', $coursecontext)) {
             $url = new moodle_url('/backup/backup.php', array('id'=>$course->id));

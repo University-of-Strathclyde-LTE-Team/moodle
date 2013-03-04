@@ -1,5 +1,30 @@
 <?php
 
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * This file is a custom table for showing a listing of requests which are assigned
+ * to a course or user.
+ *
+ * @package   deadline_extensions
+ * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
+ * @author    James McLean <james.mclean@unisa.edu.au>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
@@ -60,22 +85,21 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
 
         foreach($this->table_data as $key => $data) {
             if($key == 'data') {
-                foreach($data as $key => $row) {
-                    // var_dump($key, $row);
 
-                    // So, this is a little hack. Just a little 'un.
-                    if(strcmp($row->cells['10']->text, '{element}') == '0') {
+                foreach($data as $key => $row) {
+
+                    if(isset($row->cells['10']->text) && strcmp($row->cells['10']->text, '{element}') == '0') {
                         // match found. Replace the string with the element.
                         $this->_elements[$key] = new HTML_QuickForm_checkbox($key, null, null);
 
                         // Any items that are already approved cannot be selected in this view.
-                        if($DB->get_field('extensions', 'status', array('id' => $key)) == Extensions::STATUS_APPROVED) {
+                        if($DB->get_field('deadline_extensions', 'status', array('id' => $key)) == extensions_plugin::STATUS_APPROVED) {
                             $this->_elements[$key]->removeAttribute('checked');
                             $this->_elements[$key]->updateAttributes(array('disabled'=>'disabled'));
                         }
                     }
-
                 }
+
             }
         }
 
@@ -98,7 +122,7 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
         }
 
         if(is_null($this->table_data)) {
-            return get_string("ext_none_exist", Extensions::LANG_EXTENSIONS);
+            return get_string("ext_none_exist", extensions_plugin::EXTENSIONS_LANG);
         } else {
             return html_writer::table($this->table_data, TRUE);
             //return print_table($this->table_data, TRUE);

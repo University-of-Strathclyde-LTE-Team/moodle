@@ -947,13 +947,31 @@ class assign {
      * @return stdClass The settings
      */
     public function get_instance() {
-        global $DB;
+        global $DB, $CFG, $USER;
         if ($this->instance) {
             return $this->instance;
         }
         if ($this->get_course_module()) {
-            $params = array('id' => $this->get_course_module()->instance);
-            $this->instance = $DB->get_record('assign', $params, '*', MUST_EXIST);
+
+            // MDL-7315
+            $cm_id       = $this->get_course_module()->id;
+            $instance_id = $this->get_course_module()->instance;
+
+            $params = array('id' => $instance_id);
+            $assign_data = $DB->get_record('assign', $params, '*', MUST_EXIST);
+            $assign_data->cm_id = $cm_id;
+
+            // check to see if deadlines/extensions is enabled.
+            if(get_config('deadline_deadlines', 'enabled') == 1) {
+
+                require_once($CFG->dirroot . '/deadline/deadlines/lib.php');
+                $deadlines = new deadlines_plugin();
+                $assign_data = $deadlines->get_deadline_dates($assign_data, 'assign', $USER->id);
+
+            }
+
+            $this->instance = $assign_data;
+            // MDL-7315
         }
         if (!$this->instance) {
             throw new coding_exception('Improper use of the assignment class. ' .

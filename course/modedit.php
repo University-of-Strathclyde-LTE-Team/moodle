@@ -164,6 +164,14 @@ if (!empty($add)) {
         $data->showavailability   = $cm->showavailability;
     }
 
+    // MDL-7315
+    if (plugin_supports('mod', $data->modulename, FEATURE_DEADLINE, true)) {
+        require_once($CFG->dirroot . '/deadline/deadlines/lib.php');
+        $deadlines = new deadlines_plugin();
+        $data = $deadlines->get_deadline_dates($data, $data->modulename);
+    }
+    // MDL-7315
+
     if (plugin_supports('mod', $data->modulename, FEATURE_MOD_INTRO, true)) {
         $draftid_editor = file_get_submitted_draft_itemid('introeditor');
         $currentintro = file_prepare_draft_area($draftid_editor, $context->id, 'mod_'.$data->modulename, 'intro', 0, array('subdirs'=>true), $data->intro);
@@ -359,6 +367,21 @@ if ($mform->is_cancelled()) {
 
         $modcontext = context_module::instance($fromform->coursemodule);
 
+        // MDL-7315
+        if (plugin_supports('mod', $fromform->modulename, FEATURE_DEADLINE, true)) {
+            require_once($CFG->dirroot . '/deadline/deadlines/lib.php');
+            $deadlines = new deadlines_plugin();
+            $deadlines->create_deadline_record($fromform->coursemodule);
+            $deadlines->save_deadlines($fromform, $fromform->modulename);
+
+            if(!$deadlines->save_plugin_fields($fromform)) {
+                // handle the failure here?
+            }
+
+
+        }
+        // MDL-7315
+
         // update embedded links and save files
         if (plugin_supports('mod', $fromform->modulename, FEATURE_MOD_INTRO, true)) {
             $fromform->intro = file_save_draft_area_files($fromform->introeditor['itemid'], $modcontext->id,
@@ -437,6 +460,20 @@ if ($mform->is_cancelled()) {
         if (!$fromform->coursemodule = add_course_module($newcm)) {
             print_error('cannotaddcoursemodule');
         }
+
+        // MDL-7315
+        if (plugin_supports('mod', $fromform->modulename, FEATURE_DEADLINE, true)) {
+            require_once($CFG->dirroot . '/deadline/deadlines/lib.php');
+            $deadlines = new deadlines_plugin();
+            $deadlines->create_deadline_record($fromform->coursemodule);
+            $deadlines->save_deadlines($fromform, $fromform->modulename);
+
+            if(!$deadlines->save_plugin_fields($fromform)) {
+                // handle the failure here?
+            }
+
+        }
+        // MDL-7315
 
         if (plugin_supports('mod', $fromform->modulename, FEATURE_MOD_INTRO, true)) {
             $introeditor = $fromform->introeditor;

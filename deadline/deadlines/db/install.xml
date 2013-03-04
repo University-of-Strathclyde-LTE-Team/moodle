@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<XMLDB PATH="" VERSION="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd" COMMENT="Table for tracking Deadlines for Course Modules">
+<XMLDB PATH="deadline/deadlines/db" VERSION="2013022602" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd" COMMENT="Table for tracking Deadlines for Course Modules">
     <TABLES>
-        <TABLE NAME="deadlines" COMMENT="Stores Deadlines that have been added to the system.">
+        <TABLE NAME="deadline_deadlines" COMMENT="Stores Deadlines that have been added to the system.">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="TRUE" COMMENT="ID field for deadline tracking" NEXT="cm_id"  />    
                 <FIELD NAME="cm_id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="Field for tracking the Course Module ID this deadline applies to" PREVIOUS="ID" NEXT="date_open"/>

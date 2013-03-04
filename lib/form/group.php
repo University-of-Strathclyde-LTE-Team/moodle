@@ -97,4 +97,30 @@ class MoodleQuickForm_group extends HTML_QuickForm_group{
             }
         }
     }
+
+    // MDL-7315
+    /**
+     * Allows selection of an element inside a group, from outside the group.
+     *
+     * @param string $index
+     * @return boolean|multitype:
+     */
+    public function getElement($index = null) {
+
+        if(is_null($index)) {
+            return false;
+        }
+
+        foreach (array_keys($this->_elements) as $key) {
+            $elementName = $this->_elements[$key]->getName();
+            if ($index == $elementName) {
+                return $this->_elements[$key];
+                break;
+            }
+        }
+
+        return false;
+    }
+    // MDL-7315
+
 }
