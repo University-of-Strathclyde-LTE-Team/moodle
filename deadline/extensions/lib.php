@@ -743,6 +743,18 @@ class extensions_plugin extends deadline_plugin {
         return $DB->get_record('course_modules', $params, 'course');
     }
 
+    public static function get_groupingid_for_cmid($cm_id = null) {
+        global $DB;
+
+        if(is_null($cm_id)) {
+            return false;
+        }
+
+        $params = array('id' => $cm_id);
+
+        return $DB->get_record('course_modules', $params, 'groupingid');
+    }
+
     /**
      * Get the course with extensions for the supplied User.
      *
@@ -924,22 +936,25 @@ class extensions_plugin extends deadline_plugin {
         // field teamsubmission == 1
         // field teamsubmissiongroupingid == grouping id that the groups come from (ID is valid grouping, 0 is all?)
 
+        $grouping_id = null;
+
         $mod = $this->get_activity_detail_by_cmid($cmid);
+
+        $params = array(
+                'id' => $mod->instance
+        );
 
         switch ($mod->modname) {
             case 'assign':
-                $params = array(
-                    'id' => $mod->instance
-                );
                 $detail = $DB->get_record('assign', $params, 'id, teamsubmission, teamsubmissiongroupingid', MUST_EXIST);
+                if($detail->teamsubmission != '0') {
+                    // This is a team submission.
+                    $grouping_id = $detail->teamsubmissiongroupingid;
+                }
                 break;
         }
 
-        if($detail->teamsubmission == 0) {
-            return false;
-        } else {
-            return $detail;
-        }
+        return $grouping_id;
     }
 
     /**
@@ -1519,6 +1534,106 @@ class extensions_plugin extends deadline_plugin {
         }
     }
 
+    public function get_group_approved_extensions($cm_id = null, $user_id = null) {
+
+        global $DB;
+
+        if(is_null($cm_id)) {
+            return 0;
+        }
+
+        if(is_null($user_id)) {
+            return 0;
+        }
+
+        // Ok, the extension request should have a group assigned to it, found in the deadline_extensions_appto table.
+        // FIX THIS!
+
+        // get the course ID for this cm_id
+        $course = extensions_plugin::get_courseid_for_cmid($cm_id);
+
+        // Does this activity allow groupings?
+        $grouping = extensions_plugin::get_groupingid_for_cmid($cm_id);
+
+        // Is this activity an assignment with group submissions?
+        $grouping_id = $this->get_group_submission_for_cmid($cm_id);
+
+        if($grouping_id == null) {
+            // Activity isn't group submission based
+            return false;
+        }
+
+        // Based on the grouping assigned to a user and this users ID, we can
+        // determine the group they are in, in this activity.
+        $groups = groups_get_all_groups($course->course, $user_id, $grouping->groupingid, 'g.id, g.name');
+
+        $act_groups = array();
+        foreach($groups as $group) {
+            $act_groups[] = $group->id;
+        }
+
+        // We have a list of the groups this user is in, based on the grouping
+        // assigned to the activity itself.
+
+        // Build SQL to see if there's any extensions approved for this group.
+
+        $params = array();
+        list($groups_in_sql, $params) = $DB->get_in_or_equal($act_groups, SQL_PARAMS_NAMED);
+
+        $params['cm_id']    = $cm_id;
+        $params['status']   = extensions_plugin::STATUS_APPROVED;
+        $params['ext_type'] = extensions_plugin::EXT_GROUP;
+
+        $sql = "SELECT de.* " .
+                "FROM {deadline_extensions} de, {deadline_extensions_appto} dea " .
+                "WHERE dea.ext_id = de.id " .
+                "AND de.cm_id    = :cm_id " .
+                "AND de.status   = :status " .
+                "AND de.ext_type = :ext_type " .
+                "AND dea.group_id " . $groups_in_sql;
+
+        if($exts = $DB->get_records_sql($sql, $params)) {
+            $exts = $this->date_sort($exts, 'date');
+            return $exts['0']->date;
+        }
+
+        return 0;
+
+        /*
+        $users = array();
+        // TODO: MAJOR ISSUE HERE. What happens when the user viewing is part of
+        // MULTIPLE groups in this activity?
+        foreach($groups as $group) {
+            // get users in the group; to be used in the SQL to determine if there is
+            // an extension for any of the users.
+            $group_users = groups_get_members($group->id, 'u.id');
+            foreach($group_users as $user) {
+                $users[] = $user->id;
+            }
+        }
+
+        // Using named parameters get a list of the extensions which are valid.
+        list($insql, $params) = $DB->get_in_or_equal($users, SQL_PARAMS_NAMED);
+
+        $params['cm_id']    = $cm_id;
+        $params['status']   = extensions_plugin::STATUS_APPROVED;
+        $params['ext_type'] = extensions_plugin::EXT_GROUP;
+
+        $sql = "SELECT de.* " .
+               "FROM {deadline_extensions} de " .
+               "WHERE de.cm_id = :cm_id " .
+               "AND de.status = :status " .
+               "AND de.ext_type = :ext_type " .
+               "AND de.student_id " . $insql;
+
+        if($exts = $DB->get_records_sql($sql, $params)) {
+            $exts = $this->date_sort($exts, 'date');
+            return $exts['0']->date;
+        }
+        */
+
+    }
+
     public function get_my_open_date($cm_id, $user_id = null) {
 
         // For now Extensions isn't modifying any open dates for specific users.
@@ -1556,6 +1671,7 @@ class extensions_plugin extends deadline_plugin {
         // 1) Individual Extension
         $dates['indiv'] = $this->get_individual_approved_extensions($cm_id, $user_id);
         // 2) Global Extension
+        $dates['group'] = $this->get_group_approved_extensions($cm_id, $user_id);
         // 3) Group extension (for a group submission in mod_assign)
         // 4) Quiz. Time limit extensions?
         // 5) Quiz. Submission extension?

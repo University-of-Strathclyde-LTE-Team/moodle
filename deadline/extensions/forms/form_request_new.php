@@ -61,8 +61,9 @@ class form_request_new extends form_base {
 
         $mform->addElement('static','assignment_name', get_string('extselectassignment', extensions_plugin::EXTENSIONS_LANG));
 
-        $mform->addElement('static','group_detail', get_string('group_submission', extensions_plugin::EXTENSIONS_LANG), '');
-        $mform->addElement('hidden','group_submission', '0');
+        $mform->addElement('static', 'group_detail', get_string('group_submission', extensions_plugin::EXTENSIONS_LANG), '');
+        $mform->addElement('hidden', 'group_list', '0');
+        $mform->addElement('hidden', 'group_submission', '0');
 
         $reason = $mform->addElement('htmleditor', 'reason', get_string('extreason', extensions_plugin::EXTENSIONS_LANG), array('cols' => 60, 'rows' => 6));
         $mform->addRule('reason', get_string('required'), 'required', null, 'client');
@@ -226,14 +227,16 @@ class form_request_new extends form_base {
         $mform->setDefault('assignment_name', $activity_name);
 
         // group_detail
-        if($group_details = $extensions->get_group_submission_for_cmid($this->get_cmid())) {
+        if($grouping_id = $extensions->get_group_submission_for_cmid($this->get_cmid())) {
 
             // List the users groups.
-            $groups = groups_get_all_groups($this->get_course()->id, $USER->id, $group_details->teamsubmissiongroupingid, 'g.id, name');
+            $groups = groups_get_all_groups($this->get_course()->id, $USER->id, $grouping_id, 'g.id, name');
 
             $group_list = '';
+            $group_ids  = '';
 
             foreach($groups as $group) {
+                $group_ids   = $group_ids . $group->id . ',';
                 $group_list .= $group->name . ' ';
             }
 
@@ -242,11 +245,20 @@ class form_request_new extends form_base {
             $group_text .= html_writer::tag('i', get_string('group_submission_text', extensions_plugin::EXTENSIONS_LANG));
 
             $mform->setDefault('group_detail', $group_text);
-            $mform->setDefault('hidden','group_detail', '1');
+            $mform->setDefault('group_list', $group_ids);
+//             $mform->setDefault('hidden','group_detail', '1');
+
+            if($mform->elementExists('group_submission')) {
+                $mform->setDefault('group_submission', '1');
+            }
 
         } else {
             if($mform->elementExists('group_detail')) {
                 $mform->removeElement('group_detail');
+            }
+
+            if($mform->elementExists('group_submission')) {
+                $mform->setDefault('group_submission', '0');
             }
         }
 
@@ -374,6 +386,7 @@ class form_request_new extends form_base {
         // Let's just make sure this is clean... Students are submitting this data..
         $form_data->group_submission   = clean_param($form_data->group_submission,   PARAM_INT);
         $form_data->ext_staffmember_id = clean_param($form_data->ext_staffmember_id, PARAM_INT);
+        $form_data->group_list         = clean_param($form_data->group_list,         PARAM_TEXT);
 
         $form_data->reason  = clean_param($form_data->reason, PARAM_TEXT);
         $form_data->page    = clean_param($form_data->page,   PARAM_TEXT);
@@ -402,7 +415,29 @@ class form_request_new extends form_base {
         $data->status        = extensions_plugin::STATUS_PENDING;
         $data->created       = date('U');
 
-        if($DB->insert_record('deadline_extensions', $data)) {
+        if($ext_id = $DB->insert_record('deadline_extensions', $data, true)) {
+
+            // If this is a group submission we need to add records to the appto
+            // table for this.
+            if($form_data->group_submission == 1) {
+                // Split the group_list field
+                $groups = explode(',', $form_data->group_list);
+
+                foreach($groups as $group) {
+
+                    if($group == '') {
+                        continue;
+                    }
+
+                    $data = new stdClass;
+                    $data->ext_id = $ext_id;
+                    $data->group_id = $group;
+
+                    $DB->insert_record('deadline_extensions_appto', $data);
+                }
+
+            }
+
             // Handle the documents here
 
             // Notify staff

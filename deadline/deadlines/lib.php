@@ -269,6 +269,7 @@ class deadlines_plugin extends deadline_plugin {
     }
 
     public function get_my_open_date($cm_id, $user_id = null) {
+        global $DB;
 
         // As this is the 'deadlines' plugin, the deadlines here should be
         // considered to be 'global' hence the $user_id being ignored here.
