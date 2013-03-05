@@ -1534,14 +1534,7 @@ class extensions_plugin extends deadline_plugin {
         }
     }
 
-    public function get_global_approved_extensions($cm_id = null, $user_id = null) {
-        global $DB;
-
-
-        return 0;
-    }
-
-    public function get_group_approved_extensions($cm_id = null, $user_id = null) {
+    public function get_group_approved_extensions($cm_id = null, $user_id = null, $global = false) {
 
         global $DB;
 
@@ -1554,7 +1547,6 @@ class extensions_plugin extends deadline_plugin {
         }
 
         // Ok, the extension request should have a group assigned to it, found in the deadline_extensions_appto table.
-        // FIX THIS!
 
         // get the course ID for this cm_id
         $course = extensions_plugin::get_courseid_for_cmid($cm_id);
@@ -1562,17 +1554,21 @@ class extensions_plugin extends deadline_plugin {
         // Does this activity allow groupings?
         $grouping = extensions_plugin::get_groupingid_for_cmid($cm_id);
 
-        // Is this activity an assignment with group submissions?
-        $grouping_id = $this->get_group_submission_for_cmid($cm_id);
+//         // Is this activity an assignment with group submissions?
+//         $grouping_id = $this->get_group_submission_for_cmid($cm_id);
 
-        if($grouping_id == null) {
-            // Activity isn't group submission based
-            return false;
-        }
+//         if($grouping_id == null && $global == false) {
+//             // Activity isn't group submission based
+//             return false;
+//         }
 
         // Based on the grouping assigned to a user and this users ID, we can
         // determine the group they are in, in this activity.
-        $groups = groups_get_all_groups($course->course, $user_id, $grouping->groupingid, 'g.id, g.name');
+        if(!$groups = groups_get_all_groups($course->course, $user_id, $grouping->groupingid, 'g.id, g.name')) {
+            // Activity has no grouping assigned, or user is not in any of the
+            // groups assigned.
+            return 0;
+        }
 
         $act_groups = array();
         foreach($groups as $group) {
@@ -1583,13 +1579,18 @@ class extensions_plugin extends deadline_plugin {
         // assigned to the activity itself.
 
         // Build SQL to see if there's any extensions approved for this group.
-
         $params = array();
         list($groups_in_sql, $params) = $DB->get_in_or_equal($act_groups, SQL_PARAMS_NAMED);
 
         $params['cm_id']    = $cm_id;
         $params['status']   = extensions_plugin::STATUS_APPROVED;
-        $params['ext_type'] = extensions_plugin::EXT_GROUP;
+
+        // If this is a global extension then the type of extension will be different.
+        if($global) {
+            $params['ext_type'] = extensions_plugin::EXT_GLOBAL;
+        } else {
+            $params['ext_type'] = extensions_plugin::EXT_GROUP;
+        }
 
         $sql = "SELECT de.* " .
                 "FROM {deadline_extensions} de, {deadline_extensions_appto} dea " .
@@ -1608,7 +1609,6 @@ class extensions_plugin extends deadline_plugin {
     }
 
     public function get_my_open_date($cm_id, $user_id = null) {
-
         // For now Extensions isn't modifying any open dates for specific users.
         // This will simply return 0 when called; and deadline will essentially
         // ignore this, as the open date from the Deadlines plugin will always
@@ -1646,7 +1646,7 @@ class extensions_plugin extends deadline_plugin {
         // 2) Group extension (for a group submission in mod_assign)
         $dates['group'] = $this->get_group_approved_extensions($cm_id, $user_id);
         // 3) Global Extension
-        $dates['global'] = $this->get_global_approved_extensions($cm_id, $user_id);
+        $dates['global'] = $this->get_group_approved_extensions($cm_id, $user_id, true);
         // 4) Quiz. Time limit extensions?
         // 5) Quiz. Submission extension?
 
@@ -1654,7 +1654,6 @@ class extensions_plugin extends deadline_plugin {
     }
 
     public function get_my_time_limit($cm_id, $user_id = null) {
-
         // Insert code here for returning a specific time limit for activities
         // that allow a specific time limit (ie Quiz).
 
