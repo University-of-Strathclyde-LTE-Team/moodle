@@ -10,10 +10,10 @@
                 <FIELD NAME="student_id" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" DEFAULT="0" COMMENT="Student MoodleID, creator for indiv &amp; group, null for global" PREVIOUS="deadline_id" NEXT="staff_id" />
                 <FIELD NAME="staff_id" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" DEFAULT="0" COMMENT="Staff MoodleID, creator for global - person sent to for indiv" PREVIOUS="student_id" NEXT="request_text" />
                 <FIELD NAME="request_text" TYPE="text" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Text provided in the request, or why the global was created." PREVIOUS="staff_id" NEXT="response_text" />
-                <FIELD NAME="response_text" TYPE="text" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Text provided by a staff member" PREVIOUS="request_text" NEXT="extratime" />
+                <FIELD NAME="response_text" TYPE="text" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Text provided by a staff member" PREVIOUS="request_text" NEXT="date" />
                 <FIELD NAME="date" TYPE="int" LENGTH="14" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Date requested for the extension. 0 if Time extension for Quiz" PREVIOUS="response_text" NEXT="extratime" />
                 <FIELD NAME="extratime" TYPE="int" LENGTH="14" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Time length extensions, specific to Quiz module. 0 if Date extension" PREVIOUS="date" NEXT="status" />
-                <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Status of the request." PREVIOUS="date" NEXT="created" />
+                <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Status of the request." PREVIOUS="extratime" NEXT="created" />
                 <FIELD NAME="created" TYPE="int" LENGTH="14" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="Date the extension was created." PREVIOUS="status" />
             </FIELDS>
             <KEYS>
@@ -66,11 +66,11 @@
                 <KEY NAME="staff_id_fk2" TYPE="foreign" FIELDS="staff_id" REFTABLE="users" REFFIELDS="id" COMMENT="Staff Member who allowed extensions to be requested" PREVIOUS="cm_id_fk1" />
             </KEYS>
             <INDEXES>
-                <INDEX UNIQUE="true" NAME="extensions_enabled_idx1" UNIQUE="false" FIELDS="id" NEXT="extensions_enabled_idx2" />
-                <INDEX UNIQUE="true" NAME="extensions_enabled_idx2" UNIQUE="false" FIELDS="cm_id" PREVIOUS="extensions_enabled_idx1" />
+                <INDEX NAME="extensions_enabled_idx1" UNIQUE="false" FIELDS="id" NEXT="extensions_enabled_idx2" />
+                <INDEX NAME="extensions_enabled_idx2" UNIQUE="false" FIELDS="cm_id" PREVIOUS="extensions_enabled_idx1" />
             </INDEXES>
         </TABLE>
-        <TABLE NAME="deadline_extensions_appto" COMMENT="Table storing specific Groups which an extension is applied to in Global Extension mode." PREVIOUS="deadline_extensions_enabled">
+        <TABLE NAME="deadline_extensions_appto" COMMENT="Table storing specific Groups which an extension is applied to in Global Extension mode." PREVIOUS="deadline_extensions_enabled" NEXT="deadline_extensions_appv">
             <FIELDS> 
                 <FIELD SEQUENCE="TRUE" TYPE="INT" LENGTH="10" NOTNULL="TRUE" NAME="id" COMMENT="ID Field for this record" NEXT="ext_id"/>
                 <FIELD SEQUENCE="FALSE" TYPE="INT" LENGTH="10" NOTNULL="TRUE" NAME="ext_id" COMMENT="Extension ID from deadlines_extensions table this refers to" PREVIOUS="id" NEXT="group_id" />
@@ -82,12 +82,12 @@
                 <KEY NAME="group_id_fk2" TYPE="foreign" FIELDS="group_id" REFTABLE="groups" REFFIELDS="id" PREVIOUS="ext_id_fk1"/>
             </KEYS>
             <INDEXES>
-                <INDEX UNIQUE="true" NAME="extensions_appto_idx1" UNIQUE="false" FIELDS="id" NEXT="extensions_appto_idx2" />
-                <INDEX UNIQUE="true" NAME="extensions_appto_idx2" UNIQUE="false" FIELDS="group_id" PREVIOUS="extensions_appto_idx1" />
+                <INDEX NAME="extensions_appto_idx1" UNIQUE="false" FIELDS="id" NEXT="extensions_appto_idx2" />
+                <INDEX NAME="extensions_appto_idx2" UNIQUE="false" FIELDS="group_id" PREVIOUS="extensions_appto_idx1" />
             </INDEXES>
         </TABLE>
         <!-- TABLE OF USERS WHO CAN APPROVE EXTENSIONS FOR AN ACTIVITY -->
-        <TABLE NAME="deadline_extensions_appv" COMMENT="Table storing users who are approvers for a specific activity.">
+        <TABLE NAME="deadline_extensions_appv" COMMENT="Table storing users who are approvers for a specific activity." PREVIOUS="deadline_extensions_appto">
             <FIELDS>
                 <FIELD SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" NAME="id" COMMENT="ID Field for this approver" NEXT="ext_en_id" />
                 <FIELD SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true" NAME="ext_en_id" COMMENT="Parent extensions enable field this relates to" PREVIOUS="id" NEXT="user_id" />
@@ -99,7 +99,7 @@
                 <KEY NAME="user_id_fk2" TYPE="foreign" FIELDS="user_id" REFTABLE="users" REFFIELDS="id" PREVIOUS="ext_en_id_fk1"/>
             </KEYS>
             <INDEXES>
-                <INDEX UNIQUE="true" NAME="ext_appr_idx1" UNIQUE="false" FIELDS="id" />
+                <INDEX NAME="ext_appr_idx1" UNIQUE="false" FIELDS="id" />
             </INDEXES>
         </TABLE>
         <!-- DOCUMENTS FOR A INDIVIDUAL REQUEST. -->
