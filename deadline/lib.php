@@ -202,6 +202,8 @@ abstract class deadline_plugin {
      * @param int $user_id User ID to check for.
      */
     public function get_open_date($cm_id, $user_id) {
+        global $DB, $CFG;
+
         $plugins = $this->get_installed_plugins();
 
         if(!$plugins = $this->get_installed_plugins()) {
@@ -237,7 +239,7 @@ abstract class deadline_plugin {
         // - individual
         // - global
         // - group
-        return $this->get_longest_date($dates);
+        return $this->get_longest_date($dates, 'date_open');
     }
 
     /**
@@ -273,7 +275,7 @@ abstract class deadline_plugin {
      * @param int $user_id User ID to check for.
      */
     public function get_due_date($cm_id, $user_id) {
-        global $CFG;
+        global $DB, $CFG;
 
         if(!$plugins = $this->get_installed_plugins()) {
             return 0;
@@ -308,7 +310,7 @@ abstract class deadline_plugin {
         // - individual
         // - global
         // - group
-        return $this->get_longest_date($dates);
+        return $this->get_longest_date($dates, 'date_deadline');
     }
 
     /**
