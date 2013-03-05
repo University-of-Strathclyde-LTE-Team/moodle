@@ -440,7 +440,15 @@ class form_request_new extends form_base {
 
             // Handle the documents here
 
-            // Notify staff
+            $form_data->eid             = $ext_id;
+            $form_data->ext_status_code = extensions_plugin::STATUS_PENDING;
+            $form_data->response_text   = get_string('ext_act_add_reason', extensions_plugin::EXTENSIONS_LANG);
+
+            // Add to the extensions history table.
+            extensions_plugin::add_history($form_data);
+
+            // Send a message to the user to notify of the update.
+//             extensions_plugin::notify_user($form_data);
 
             return true;
         } else {

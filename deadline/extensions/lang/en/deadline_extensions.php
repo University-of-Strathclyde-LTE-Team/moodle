@@ -57,6 +57,7 @@ $string['no_grouping_assigned']       = 'No Grouping assigned to activity. Selec
 $string['only_grouping_groups']       = 'Only Groups assigned to this Grouping are available for selection.';
 
 $string['configuration']     = 'Configuration';
+$string['group_extension']   = 'Group(s)';
 
 $string['force_extension_enabled'] = "Extensions always enabled";
 $string['force_extension_enabled_long'] = "Force extensions to always be enabled for all activities";

@@ -253,7 +253,7 @@ class form_staff_requests extends form_base {
             $ext->status        = extensions_plugin::STATUS_APPROVED;
             $ext->created       = date("U");
 
-            if($ext_id = $DB->insert_record('deadline_extensions', $ext)) {
+            if($ext_id = $DB->insert_record('deadline_extensions', $ext, true)) {
 
                 $form_data->eid             = $ext_id;
                 $form_data->ext_status_code = extensions_plugin::STATUS_APPROVED;
