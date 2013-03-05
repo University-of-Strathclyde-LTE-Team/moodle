@@ -1532,6 +1532,7 @@ class extensions_plugin extends deadline_plugin {
             $exts = $this->date_sort($exts, 'date');
             return $exts['0']->date;
         }
+
     }
 
     public function get_group_approved_extensions($cm_id = null, $user_id = null, $global = false) {
@@ -1641,14 +1642,15 @@ class extensions_plugin extends deadline_plugin {
 
         // We need to find any/all extensions on this activity that exist
         // for this user. They could be:
+
         // 1) Individual Extension
-        $dates['indiv'] = $this->get_individual_approved_extensions($cm_id, $user_id);
+        $dates['indiv']  = $this->get_individual_approved_extensions($cm_id, $user_id);
+
         // 2) Group extension (for a group submission in mod_assign)
-        $dates['group'] = $this->get_group_approved_extensions($cm_id, $user_id);
+        $dates['group']  = $this->get_group_approved_extensions($cm_id, $user_id);
+
         // 3) Global Extension
         $dates['global'] = $this->get_group_approved_extensions($cm_id, $user_id, true);
-        // 4) Quiz. Time limit extensions?
-        // 5) Quiz. Submission extension?
 
         return max($dates);
     }
@@ -1656,11 +1658,20 @@ class extensions_plugin extends deadline_plugin {
     public function get_my_time_limit($cm_id, $user_id = null) {
         // Insert code here for returning a specific time limit for activities
         // that allow a specific time limit (ie Quiz).
+        if(is_null($user_id)) {
+            return 0;
+        }
 
         return 0;
     }
 
     public function get_my_cutoff_date($cm_id, $user_id = null) {
+        if(is_null($user_id)) {
+            return 0;
+        }
+
+        // This isn't implemented as yet. Feel free to do it!
+
         return 0;
     }
 
