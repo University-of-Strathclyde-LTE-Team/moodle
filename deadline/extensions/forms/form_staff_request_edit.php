@@ -54,8 +54,8 @@ class form_staff_request_edit extends form_base {
 
         $mform->addElement('static', 'assignment_name',    get_string("extselectassignment", extensions_plugin::EXTENSIONS_LANG));
         $mform->addElement('static', 'ext_student_static', get_string('ext_student_name',  extensions_plugin::EXTENSIONS_LANG));
-
-        $mform->addElement('static', 'ext_reason_static', get_string('extreasonfor',  extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('static', 'group_static',       get_string('group_extension', extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('static', 'ext_reason_static',  get_string('extreasonfor',  extensions_plugin::EXTENSIONS_LANG));
 
         $mform->addElement('static', 'supdoc1', get_string('extsupporting', extensions_plugin::EXTENSIONS_LANG), NULL);
         $mform->addElement('static', 'supdoc2', NULL, NULL);
@@ -167,6 +167,43 @@ class form_staff_request_edit extends form_base {
         $user_url  = new moodle_url('/user/view.php');
         $user_link = html_writer::link($user_url, "{$user->firstname} {$user->lastname} - {$user->idnumber}");
         $mform->setDefault('ext_student_static', $user_link);
+
+        // Group extension?
+        // group_static
+        if($extension->ext_type == extensions_plugin::EXT_GROUP) {
+            if($mform->elementExists('group_static')) {
+
+                $params = array(
+                        'ext_id' => $extension->id
+                );
+
+                $groupNames = '';
+
+                // get the groups for this extension request.
+                if($groups = $DB->get_records('deadline_extensions_appto', $params)) {
+
+                    foreach($groups as $group) {
+                        $params = array(
+                                'id' => $this->get_course()->id,
+                                'grouping' => '0',
+                                'group'    => $group->group_id
+                        );
+
+                        $group_url = new moodle_url('/group/overview.php', $params);
+                        $group_name = groups_get_group_name($group->group_id);
+                        $group_link = html_writer::link($group_url, $group_name, array('target' => 'blank'));
+
+                        $groupNames = $groupNames . $group_link;
+                    }
+                }
+
+                $mform->setDefault('group_static', $groupNames);
+            }
+        } else {
+            if($mform->elementExists('group_static')) {
+                $mform->removeElement('group_static');
+            }
+        }
 
         $due_date = extensions_plugin::get_activity_due_date($extension->cm_id);
 

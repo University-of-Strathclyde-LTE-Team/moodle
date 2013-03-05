@@ -1534,6 +1534,13 @@ class extensions_plugin extends deadline_plugin {
         }
     }
 
+    public function get_global_approved_extensions($cm_id = null, $user_id = null) {
+        global $DB;
+
+
+        return 0;
+    }
+
     public function get_group_approved_extensions($cm_id = null, $user_id = null) {
 
         global $DB;
@@ -1598,40 +1605,6 @@ class extensions_plugin extends deadline_plugin {
         }
 
         return 0;
-
-        /*
-        $users = array();
-        // TODO: MAJOR ISSUE HERE. What happens when the user viewing is part of
-        // MULTIPLE groups in this activity?
-        foreach($groups as $group) {
-            // get users in the group; to be used in the SQL to determine if there is
-            // an extension for any of the users.
-            $group_users = groups_get_members($group->id, 'u.id');
-            foreach($group_users as $user) {
-                $users[] = $user->id;
-            }
-        }
-
-        // Using named parameters get a list of the extensions which are valid.
-        list($insql, $params) = $DB->get_in_or_equal($users, SQL_PARAMS_NAMED);
-
-        $params['cm_id']    = $cm_id;
-        $params['status']   = extensions_plugin::STATUS_APPROVED;
-        $params['ext_type'] = extensions_plugin::EXT_GROUP;
-
-        $sql = "SELECT de.* " .
-               "FROM {deadline_extensions} de " .
-               "WHERE de.cm_id = :cm_id " .
-               "AND de.status = :status " .
-               "AND de.ext_type = :ext_type " .
-               "AND de.student_id " . $insql;
-
-        if($exts = $DB->get_records_sql($sql, $params)) {
-            $exts = $this->date_sort($exts, 'date');
-            return $exts['0']->date;
-        }
-        */
-
     }
 
     public function get_my_open_date($cm_id, $user_id = null) {
@@ -1670,13 +1643,14 @@ class extensions_plugin extends deadline_plugin {
         // for this user. They could be:
         // 1) Individual Extension
         $dates['indiv'] = $this->get_individual_approved_extensions($cm_id, $user_id);
-        // 2) Global Extension
+        // 2) Group extension (for a group submission in mod_assign)
         $dates['group'] = $this->get_group_approved_extensions($cm_id, $user_id);
-        // 3) Group extension (for a group submission in mod_assign)
+        // 3) Global Extension
+        $dates['global'] = $this->get_global_approved_extensions($cm_id, $user_id);
         // 4) Quiz. Time limit extensions?
         // 5) Quiz. Submission extension?
 
-        return $dates['indiv'];
+        return max($dates);
     }
 
     public function get_my_time_limit($cm_id, $user_id = null) {
