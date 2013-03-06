@@ -98,7 +98,12 @@ class form_configure_activity extends form_base {
         }
 
         $enabled = $mform->getElement('extensions_enabled');
-        $enabled->setSelected(extensions_plugin::get_extension_status_by_cmid($this->get_cmid()));
+        if(get_config('deadline_extensions','force_extension_enabled') == '1') {
+            $enabled->setSelected(extensions_plugin::EXT_ENABLED);
+            $enabled->freeze();
+        } else {
+            $enabled->setSelected(extensions_plugin::get_extension_status_by_cmid($this->get_cmid()));
+        }
 
         if($mform->elementExists('extensions_cutoff')) {
             $cutoff = $mform->getElement('extensions_cutoff');
