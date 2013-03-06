@@ -32,8 +32,10 @@ class form_global extends form_base {
 
         //---------------
 
+        $ext = new extensions_plugin();
+
         $mform->addElement('header','general', $this->page_name);
-        $mform->addElement('extension_global', 'global_extensions', 'Global', extensions_plugin::build_global_extensions_table());
+        $mform->addElement('extension_global', 'global_extensions', 'Global', $ext->build_global_extensions_table($this->get_course()));
 
     }
 

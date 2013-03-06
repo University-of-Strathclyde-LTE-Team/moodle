@@ -1362,7 +1362,7 @@ class extensions_plugin extends deadline_plugin {
 
 
 
-    public function build_global_extensions_table($course_id = null) {
+    public function build_global_extensions_table($course = null) {
 
         global $DB, $OUTPUT, $USER, $COURSE;
 
@@ -1384,7 +1384,7 @@ class extensions_plugin extends deadline_plugin {
 
         $ext = new extensions_plugin;
 
-        $activities = $ext->get_activity_names($this->get_course($course_id));
+        $activities = $ext->get_activity_names($course);
 
         $deadlines = new deadlines_plugin();
         foreach($activities as $activity) {
