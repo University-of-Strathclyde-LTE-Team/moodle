@@ -4,7 +4,7 @@
         <TABLE NAME="deadline_deadlines" COMMENT="Stores Deadlines that have been added to the system.">
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="TRUE" COMMENT="ID field for deadline tracking" NEXT="cm_id"  />    
-                <FIELD NAME="cm_id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="Field for tracking the Course Module ID this deadline applies to" PREVIOUS="ID" NEXT="date_open"/>
+                <FIELD NAME="cm_id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="Field for tracking the Course Module ID this deadline applies to" PREVIOUS="id" NEXT="date_open"/>
                 <FIELD NAME="date_open" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the opening date for a course module" PREVIOUS="cm_id" NEXT="date_deadline" />
                 <FIELD NAME="date_deadline" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the actual deadline for a course module" PREVIOUS="date_open" NEXT="date_cutoff" />
                 <FIELD NAME="date_cutoff" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the cutoff for submissions." PREVIOUS="date_deadline" />
