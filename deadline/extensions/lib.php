@@ -1416,7 +1416,11 @@ class extensions_plugin extends deadline_plugin {
             }
 
             // Open Date
-            $activityStartDate->text = userdate($deadlines->get_date_open($activity->id));
+            if($open_date = $deadlines->get_date_open($activity->id)) {
+                $activityStartDate->text = userdate($open_date);
+            } else {
+                $activityStartDate->text = html_writer::tag('i', 'No central deadline found.');
+            }
 
             // Due Date
             if($deadline = $deadlines->get_date_deadline($activity->id)) {

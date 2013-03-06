@@ -89,30 +89,30 @@ class MoodleQuickForm_select_picker extends MoodleQuickForm_group {
         $rows = 15;
 
         // Left select area.
-        $this->_elements[] =& MoodleQuickForm::createElement('static', 'static', null, '<td>');
+        $this->_elements[] = @MoodleQuickForm::createElement('static', 'static', null, '<td>');
         $attr = 'size="' . $rows . '" style="width: 250px;" onDblClick="M.deadline_extensions.opt.transferRight()"';
-        $leftList = MoodleQuickForm::createElement('select', 'left_list', null, null, $attr);
-        $this->_elements[] =& $leftList;
-        $this->_elements[] =& MoodleQuickForm::createElement('static', 'static', null, '</td><td>');
+//         $leftList = @MoodleQuickForm::createElement('select', 'left_list', null, null, $attr);
+        $this->_elements[] = @MoodleQuickForm::createElement('select', 'left_list', null, null, $attr);
+        $this->_elements[] = @MoodleQuickForm::createElement('static', 'static', null, '</td><td>');
 
         // Buttons to move items left/right
         $attr = 'onClick="M.deadline_extensions.opt.transferLeft()" name="left"';
-        $this->_elements[] =& MoodleQuickForm::createElement('button','right', "<-", $attr, null);
-        $this->_elements[] =& MoodleQuickForm::createElement('static', 'static', null, '<br /><br /><br /><br /><br /><br />');
+        $this->_elements[] = @MoodleQuickForm::createElement('button','right', "<-", $attr, null);
+        $this->_elements[] = @MoodleQuickForm::createElement('static', 'static', null, '<br /><br /><br /><br /><br /><br />');
 
         $attr = 'onClick="M.deadline_extensions.opt.transferRight()" name="right"';
-        $this->_elements[] =& MoodleQuickForm::createElement('button','left', "->", $attr, null);
-        $this->_elements[] =& MoodleQuickForm::createElement('static', 'static', null, '</td><td>');
+        $this->_elements[] = @MoodleQuickForm::createElement('button','left', "->", $attr, null);
+        $this->_elements[] = @MoodleQuickForm::createElement('static', 'static', null, '</td><td>');
 
         // Right select area.
         $attr = 'size="' . $rows . '" style="width: 250px;" onDblClick="M.deadline_extensions.opt.transferLeft()"';
-        $rightList = MoodleQuickForm::createElement('select','right_list', null, null, $attr);
-        $this->_elements[] =& $rightList;
-        $this->_elements[] =& MoodleQuickForm::createElement('static', 'static', null, '</td>');
+//         $rightList = @MoodleQuickForm::createElement('select','right_list', null, null, $attr);
+        $this->_elements[] = @MoodleQuickForm::createElement('select','right_list', null, null, $attr);
+        $this->_elements[] = @MoodleQuickForm::createElement('static', 'static', null, '</td>');
 
         // Hidden fields to store the content of the left/right areas in the form for submission
-        $this->_elements[] =& MoodleQuickForm::createElement('hidden','leftContents', null, 'id="id_' . $this->_name . '_leftContents"', null);
-        $this->_elements[] =& MoodleQuickForm::createElement('hidden','rightContents', null, 'id="id_' . $this->_name . '_rightContents"', null);
+        $this->_elements[] = @MoodleQuickForm::createElement('hidden','leftContents', null, 'id="id_' . $this->_name . '_leftContents"', null);
+        $this->_elements[] = @MoodleQuickForm::createElement('hidden','rightContents', null, 'id="id_' . $this->_name . '_rightContents"', null);
 
         // Strip the labels.
         foreach ($this->_elements as $element){
@@ -160,7 +160,7 @@ class MoodleQuickForm_select_picker extends MoodleQuickForm_group {
         $PAGE->requires->js_init_call('M.deadline_extensions.init_select_picker', $options, true);
 
         include_once('HTML/QuickForm/Renderer/Default.php');
-        $renderer =& new HTML_QuickForm_Renderer_Default();
+        $renderer = new HTML_QuickForm_Renderer_Default();
         $renderer->setElementTemplate('{element}');
         parent::accept($renderer);
 
