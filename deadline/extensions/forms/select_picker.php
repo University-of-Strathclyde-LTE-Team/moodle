@@ -156,7 +156,6 @@ class MoodleQuickForm_select_picker extends MoodleQuickForm_group {
         );
 
         $PAGE->requires->js(extensions_plugin::EXTENSIONS_URL_PATH . '/assets/js/select_picker.js');
-        $PAGE->requires->js(extensions_plugin::EXTENSIONS_URL_PATH . '/extensions.js');
         $PAGE->requires->js_init_call('M.deadline_extensions.init_select_picker', $options, true);
 
         include_once('HTML/QuickForm/Renderer/Default.php');
