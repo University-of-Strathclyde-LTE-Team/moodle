@@ -138,35 +138,46 @@ class form_configure_activity extends form_base {
                 'cm_id' => $form_data->cmid
         );
 
-        if($DB->record_exists('deadline_extensions_enabled', $params)) {
+        $data = new stdClass;
 
+        $data->cm_id  = $form_data->cmid;
+        $data->status = $form_data->extensions_enabled;
+        $data->request_cutoff = $form_data->extensions_cutoff;
+
+        // check to see if this record exists.
+        if(!$DB->record_exists('deadline_extensions_enabled', $params)) {
+
+            // Doesn't exist. Create a new one.
+            $id = $DB->insert_record('deadline_extensions_enabled', $data);
+
+            $data->id = $id;
+
+        } else {
             // get the specific extensions enabled record ID
             $id = $DB->get_field('deadline_extensions_enabled', 'id', $params);
 
             // save the extension approval details
-            $data = new stdClass;
-            $data->id     = $id;
-            $data->cm_id  = $form_data->cmid;
-            $data->status = $form_data->extensions_enabled;
-            $data->request_cutoff = $form_data->extensions_cutoff;
+            $data->id = $id;
 
             $DB->update_record('deadline_extensions_enabled', $data);
 
-            // save the staff members as approvers for this activity.
-            $staff_ids = explode(',', $form_data->staff_approvers['leftContents']);
-
-            foreach($staff_ids as $staff_id) {
-
-                $staff = new stdClass;
-                $staff->ext_en_id = $id;
-                $staff->user_id   = $staff_id;
-
-                $DB->insert_record('deadline_extensions_appv', $staff);
-
-            }
-
-            return true;
         }
+
+        // save the staff members as approvers for this activity.
+        $staff_ids = explode(',', $form_data->staff_approvers['leftContents']);
+
+        foreach($staff_ids as $staff_id) {
+
+            $staff = new stdClass;
+            $staff->ext_en_id = $id;
+            $staff->user_id   = $staff_id;
+
+            $DB->insert_record('deadline_extensions_appv', $staff);
+
+        }
+
+        return true;
+
     }
 
 }
