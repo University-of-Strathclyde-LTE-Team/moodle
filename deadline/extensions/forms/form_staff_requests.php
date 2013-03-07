@@ -42,7 +42,7 @@ class form_staff_requests extends form_base {
     public function definition() {
         parent::definition();
 
-        global $CFG, $USER, $SESSION;
+        global $CFG, $USER, $SESSION, $PAGE;
         $mform =& $this->_form;
 
         $filters = null;
@@ -92,8 +92,10 @@ class form_staff_requests extends form_base {
             // Add the approval buttons
             $submit_arr = array();
 
+//             $PAGE->requires->js_init_call('M.deadline_extensions.check_uncheck_all');
+
             $selectAllAttribs   = array('onClick' => 'checkUncheckAll(this);');
-            $quickApproveArribs = array('onClick' => 'return popup();');
+            $quickApproveArribs = array('onClick' => 'return popup(\'Are you sure you would like to approve these extensions?\');');
 
             $submit_arr[] = $mform->createElement('button', 'select_all', get_string('ext_select_all', extensions_plugin::EXTENSIONS_LANG), $selectAllAttribs);
             $submit_arr[] = $mform->createElement('submit', 'approve_selected', get_string('ext_appr_selected', extensions_plugin::EXTENSIONS_LANG), $quickApproveArribs);
