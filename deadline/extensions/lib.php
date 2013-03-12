@@ -1159,6 +1159,166 @@ class extensions_plugin extends deadline_plugin {
         return $table;
     }
 
+    public static function build_student_extensions_table($student_id = null, $course = null) {
+
+        global $CFG, $USER;
+
+        $table = new html_table();
+        $table->width = "100%";
+
+        $timenow = time();
+        $table->head  = array (
+                get_string("extassessmentname", extensions_plugin::EXTENSIONS_LANG),
+                get_string("startdate",         extensions_plugin::EXTENSIONS_LANG),
+                get_string("duedate",           extensions_plugin::EXTENSIONS_LANG),
+                get_string("extensiondate",     extensions_plugin::EXTENSIONS_LANG),
+                get_string("extrequestdate",    extensions_plugin::EXTENSIONS_LANG),
+                get_string("extapprover",       extensions_plugin::EXTENSIONS_LANG),
+                get_string("extstatus",         extensions_plugin::EXTENSIONS_LANG)
+        );
+
+        $table->align = array ("left", "left", "left", "left", "center", "center");
+
+        $ext = new extensions_plugin;
+        $activities = $ext->get_activity_names($course);
+
+        $i = 0;
+
+        foreach ($activities as $activity) {
+
+            $activityNameCell = new html_table_cell();
+            $startDateCell    = new html_table_cell();
+            $dueDateCell      = new html_table_cell();
+            $extensionDate    = new html_table_cell();
+            $requestDate      = new html_table_cell();
+            $approver         = new html_table_cell();
+            $status           = new html_table_cell();
+
+            $params = array(
+                    'id' => $activity->id
+            );
+
+            // Dim the row under the following circumstances:
+            // Due Date passed
+            // Not yet open
+            // Extensions not allowed.
+
+            $attribs = array(
+
+            );
+
+            $activity_url  = new moodle_url('/mod/' . $activity->modname . '/view.php', $params);
+            $activity_link = html_writer::link($activity_url, $activity->name, $attribs);
+
+            $activityNameCell->text = $activity_link;
+            $startDateCell->text    = '';
+            $dueDateCell->text      = '';
+            $extensionDate->text    = '';
+            $requestDate->text      = '';
+            $approver->text         = '';
+            $status->text           = '';
+
+
+            $thisRow = new html_table_row();
+            $thisRow->cells = array(
+                    $activityNameCell,
+                    $startDateCell,
+                    $dueDateCell,
+                    $extensionDate,
+                    $requestDate,
+                    $approver,
+                    $status
+            );
+
+            $table->data[$i] = $thisRow;
+
+            $i++;
+
+            //-----
+
+            /*
+            $user = null;
+
+            $assignmentlink = "<a href=\"/mod/{$result->modname}/view.php?id={$result->id}\">" . format_string($result->name) . "</a>";
+
+            $due    = '';
+            $status = '';
+
+            $due = date($this->date_format, $result->timedue);
+
+            // If this asmnt doesn't allow extensions, hide it.
+            if($result->allow_asmnt_exts == 0) {
+                $status = $this->dimmed("Unavailable");
+            }
+
+            // If the duedate has passed, hide it.
+            if($result->timedue < time()) {
+                $due = $this->dimmed($due);
+                //                $class = 'class="dimmed"';
+                $assignmentlink = "<a href=\"/mod/{$result->type}/view.php?id={$result->mcm_id}\">" . $this->dimmed(format_string($result->name)) . "</a>";
+                $status = $this->dimmed("Due Date Passed");
+            }
+
+            // See if there is a staffmember set for any extension.
+            if(!is_null($result->ext_staffmember_id)) {
+                $user = get_record('user', 'id', $result->ext_staffmember_id);
+                $approver   = "<a href=\"/user/view.php?id={$user->id}&amp;course={$this->get_course()->id}\">" . $user->firstname . ' ' . $user->lastname . "</a>";
+            } else {
+                $approver = '';
+            }
+
+            // See if we have a status code set.
+            if(!is_null($result->ext_status_code)) {
+                if($result->ext_status_code == AG_EXT_APPROVED) {
+                    $requestedApprovedDate = date($this->date_format,  $result->ext_granted_date);
+                } else {
+                    $requestedApprovedDate = date($this->date_format,  $result->ext_requested_date);
+                }
+            } else {
+                $requestedApprovedDate = '';
+            }
+
+            $granteddate  = isset($result->ext_granted_date) ? date($this->date_format,  $result->ext_granted_date) : '';
+
+            if(!is_null($result->created_date)) {
+                $created_date = date($this->date_format, strtotime($result->created_date));
+            } else {
+                $created_date = '';
+            }
+
+            // Give rows that are pending a style so they are 'shaded'
+            if($result->ext_status_code == AG_EXT_PENDING) {
+                $table->rowclass[$i] = "extensionpending";
+            }
+
+            if($start = $this->get_activity_startdate($result->mcm_id)) {
+                $startdate = date($this->date_format, $start->timestart);
+
+                if($result->timedue < time()) {
+                    $startdate = $this->dimmed($startdate);
+                }
+
+            }
+
+            // See if there is a status code set on this extension
+            if(!is_null($result->ext_status_code)) {
+                $status = $this->get_status_by_code($result->ext_status_code);
+                $statuslink = "<a $class href=\"/u_custom/u_extension/?id={$this->get_course()->id}&amp;page=request_edit&amp;extid={$result->stu_extension_id}&amp;asmntid={$result->unisa_asmnt_id}\">".format_string($status)."</a>";
+            } else {
+                $statuslink = $status;
+            }
+
+
+            $table->data[$i] = array ($activity_link, $startdate, $due, $requestedApprovedDate, $created_date, $approver, $statuslink);
+
+            $i++;
+            */
+        }
+
+        return $table;
+
+    }
+
     /**
      * Build UI table to be displayed showing all extension requests for a specific course.
      *

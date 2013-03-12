@@ -52,17 +52,17 @@ class form_student_requests extends form_base {
         global $CFG, $COURSE, $USER;
         $mform =& $this->_form;
 
-        $mform->addElement('header','general', get_string('ext_new_request',extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('header','general', get_string('ext_new_request', extensions_plugin::EXTENSIONS_LANG));
 
-        $mform->addElement('select', 'cmid', get_string('extselectassignment',extensions_plugin::EXTENSIONS_LANG));
-        $mform->addElement('submit', 'request_button', get_string('ext_do_request',extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('select', 'cmid', get_string('extselectassignment', extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('submit', 'request_button', get_string('ext_do_request', extensions_plugin::EXTENSIONS_LANG));
         $mform->disabledIf('request_button', 'cmid', 'eq', '-1');
 
         //---------------
 
-        $mform->addElement('header','general', get_string('ext_current_requests',extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('header','general', get_string('ext_current_requests', extensions_plugin::EXTENSIONS_LANG));
         // Get the table and the data of the existing extension requests
-        //$mform->addElement('extension_requests','extension_requests', 'Requests', $this->get_student_assignments());
+        $mform->addElement('extension_requests_student','extension_requests_student', '', extensions_plugin::build_student_extensions_table($USER->id));
 
     }
 
@@ -88,6 +88,11 @@ class form_student_requests extends form_base {
         if($mform->elementExists('cmid')) {
             $dd = $mform->getElement('cmid');
             $dd->load($options);
+        }
+
+        if($mform->elementExists('extension_requests_student')) {
+            $table = $mform->getElement('extension_requests_student');
+            $table->set_table_data(extensions_plugin::build_student_extensions_table($USER->id, $this->get_course()));
         }
 
     }

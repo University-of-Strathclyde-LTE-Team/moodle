@@ -59,6 +59,8 @@ $string['only_grouping_groups']       = 'Only Groups assigned to this Grouping a
 $string['configuration']     = 'Configuration';
 $string['group_extension']   = 'Group(s)';
 
+$string['invalid_activity'] = 'Invalid Activity';
+
 $string['force_extension_enabled'] = "Extensions always enabled";
 $string['force_extension_enabled_long'] = "Force extensions to always be enabled for all activities";
 
