@@ -35,12 +35,12 @@ require_once($CFG->libdir . "/form/group.php");
 require_once($CFG->libdir . "/formslib.php");
 require_once('HTML/QuickForm/checkbox.php');
 
-class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
+class MoodleQuickForm_extension_requests_student extends MoodleQuickForm_group {
 
     private $table_data = null;
     private $renderer   = null;
 
-    public function MoodleQuickForm_extension_requests($elementName=null, $elementLabel=null, $table_data=null, $attributes=null, $showchoose=false) {
+    public function MoodleQuickForm_extension_requests_student($elementName=null, $elementLabel=null, $table_data=null, $attributes=null, $showchoose=false) {
 
         // This is essentially just to pass in the seperator argument, this works
         // ok without it, but puts a big ugly space before the group itself.
@@ -49,7 +49,7 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
         $this->HTML_QuickForm_element($elementName, $elementLabel, $attributes);
         $this->_persistantFreeze = true;
         $this->_appendName = true;
-        $this->_type = 'extension_requests';
+        $this->_type = 'extension_requests_student';
 
         if($table_data !== FALSE) {
             $this->set_table_data($table_data);
@@ -72,54 +72,12 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
     }
 
     public function _createElements() {
-
-        global $USER, $DB;
-
-        if(is_null($this->table_data)) {
-            return false;
-        }
-
-        if(!is_object($this->table_data)) {
-            return false;
-        }
-
-        foreach($this->table_data as $key => $data) {
-            if($key == 'data') {
-
-                foreach($data as $key => $row) {
-
-                    if(isset($row->cells['10']->text) && strcmp($row->cells['10']->text, '{element}') == '0') {
-                        // match found. Replace the string with the element.
-                        $this->_elements[$key] = new HTML_QuickForm_checkbox($key, null, null);
-
-                        // Any items that are already approved cannot be selected in this view.
-                        if($DB->get_field('deadline_extensions', 'status', array('id' => $key)) == extensions_plugin::STATUS_APPROVED) {
-                            $this->_elements[$key]->removeAttribute('checked');
-                            $this->_elements[$key]->updateAttributes(array('disabled'=>'disabled'));
-                        }
-                    }
-                }
-
-            }
-        }
-
         return true;
     }
 
     public function toHtml() {
 
         parent::accept($this->renderer);
-
-        foreach($this->_elements as $key => $data) {
-
-            // Set the name of the group on the item
-            $name = $this->getName();
-            $elementName = $this->_elements[$key]->getName();
-            $this->_elements[$key]->setName($name . '['. (strlen($elementName)? $elementName: $key) .']');
-
-            // Generate the HTML element as added previously, and replace the text with the item.
-            $this->table_data->data[$key]->cells['10']->text = $this->_elements[$key]->toHtml();
-        }
 
         if(is_null($this->table_data)) {
             return get_string("ext_none_exist", extensions_plugin::EXTENSIONS_LANG);

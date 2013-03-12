@@ -29,10 +29,11 @@ require_once ($CFG->libdir  . '/form/group.php');
 require_once ($CFG->dirroot . '/user/lib.php');
 require_once ($CFG->dirroot . '/deadline/deadlines/lib.php');
 
-MoodleQuickForm::registerElementType('extension_requests',  "forms/extension_requests.php",  'MoodleQuickForm_extension_requests');
-MoodleQuickForm::registerElementType('extension_configure', "forms/extension_configure.php", 'MoodleQuickForm_extension_configure');
-MoodleQuickForm::registerElementType('extension_global',    "forms/extension_global.php",    'MoodleQuickForm_extension_global');
-MoodleQuickForm::registerElementType('select_picker',       "forms/select_picker.php",       'MoodleQuickForm_select_picker');
+MoodleQuickForm::registerElementType('extension_requests',         "forms/extension_requests.php",  'MoodleQuickForm_extension_requests');
+MoodleQuickForm::registerElementType('extension_requests_student', "forms/extension_requests_student.php",  'MoodleQuickForm_extension_requests_student');
+MoodleQuickForm::registerElementType('extension_configure',        "forms/extension_configure.php", 'MoodleQuickForm_extension_configure');
+MoodleQuickForm::registerElementType('extension_global',           "forms/extension_global.php",    'MoodleQuickForm_extension_global');
+MoodleQuickForm::registerElementType('select_picker',              "forms/select_picker.php",       'MoodleQuickForm_select_picker');
 
 class form_base extends moodleform {
 
@@ -266,6 +267,11 @@ class form_base extends moodleform {
         global $DB, $CFG, $USER;
 
         $errors = array();
+
+        if($this->get_cmid() == '-1') {
+            $errors['cmid'] = get_string('invalid_activity', extensions_plugin::EXTENSIONS_LANG);
+            return $errors;
+        }
 
         // See if this activity even allows extensions
         if(!extensions_plugin::extensions_enabled_cmid($this->get_cmid())) {
