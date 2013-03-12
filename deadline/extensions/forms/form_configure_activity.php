@@ -142,10 +142,15 @@ class form_configure_activity extends form_base {
 
         $data->cm_id  = $form_data->cmid;
         $data->status = $form_data->extensions_enabled;
-        $data->request_cutoff = $form_data->extensions_cutoff;
+
+        if(isset($form_data->extensions_cutoff)) {
+            $data->request_cutoff = $form_data->extensions_cutoff;
+        }
 
         // check to see if this record exists.
         if(!$DB->record_exists('deadline_extensions_enabled', $params)) {
+
+            $data->date_enabled = date('U');
 
             // Doesn't exist. Create a new one.
             $id = $DB->insert_record('deadline_extensions_enabled', $data);

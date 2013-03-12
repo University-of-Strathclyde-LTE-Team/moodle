@@ -57,6 +57,15 @@ class extensions_plugin extends deadline_plugin {
 
     const DATE_FORMAT      = 'l, j F Y, H:i A';
 
+    /**
+     * Hook for this module to provide specific form fields for interaction in
+     * an activity edit page.
+     *
+     * @see deadline_plugin::get_form_elements()
+     * @param object $mform MoodleForm instance to modify
+     * @param object $context Context for this form
+     * @param string $modulename Module Name that is calling this form fragment
+     */
     public function get_form_elements($mform, $context, $modulename = "") {
 
         // If deadline_extensions isn't explicitly enabled site-wide, don't

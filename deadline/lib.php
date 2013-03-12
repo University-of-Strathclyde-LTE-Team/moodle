@@ -175,8 +175,8 @@ abstract class deadline_plugin {
 
     /**
      * Get the
-     * @param unknown_type $cm_id
-     * @return Ambigous <stdClass, boolean, mixed>
+     * @param int $cm_id Course Module ID.
+     * @return stdClass
      */
     public function activity_detail($cm_id = null) {
 
