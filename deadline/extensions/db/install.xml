@@ -12,8 +12,8 @@
                 <FIELD NAME="request_text" TYPE="text" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Text provided in the request, or why the global was created." PREVIOUS="staff_id" NEXT="response_text" />
                 <FIELD NAME="response_text" TYPE="text" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Text provided by a staff member" PREVIOUS="request_text" NEXT="date" />
                 <FIELD NAME="date" TYPE="int" LENGTH="14" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Date requested for the extension. 0 if Time extension for Quiz" PREVIOUS="response_text" NEXT="extratime" />
-                <FIELD NAME="extratime" TYPE="int" LENGTH="14" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Time length extensions, specific to Quiz module. 0 if Date extension" PREVIOUS="date" NEXT="status" />
-                <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Status of the request." PREVIOUS="extratime" NEXT="created" />
+                <FIELD NAME="timelimit" TYPE="int" LENGTH="14" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Time length extensions, specific to Quiz module. 0 if Date extension" PREVIOUS="date" NEXT="status" />
+                <FIELD NAME="status" TYPE="int" LENGTH="2" NOTNULL="TRUE" DEFAULT="0" SEQUENCE="FALSE" COMMENT="Status of the request." PREVIOUS="timelimit" NEXT="created" />
                 <FIELD NAME="created" TYPE="int" LENGTH="14" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="Date the extension was created." PREVIOUS="status" />
             </FIELDS>
             <KEYS>

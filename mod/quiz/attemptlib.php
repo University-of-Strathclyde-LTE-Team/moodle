@@ -112,6 +112,9 @@ class quiz {
         $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
 
         // Update quiz with override information.
+        // MDL-7315
+        $quiz->cm_id = $cm->id;
+        // MDL-7315
         $quiz = quiz_update_effective_access($quiz, $userid);
 
         return new quiz($quiz, $cm, $course);
@@ -493,6 +496,9 @@ class quiz_attempt {
         $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id, false, MUST_EXIST);
 
         // Update quiz with override information.
+        // MDL-7315
+        $quiz->cm_id = $cm->id;
+        // MDL-7315
         $quiz = quiz_update_effective_access($quiz, $attempt->userid);
 
         return new quiz_attempt($attempt, $quiz, $cm, $course);
