@@ -68,6 +68,12 @@ function deadline_add_course_navigation(navigation_node $coursenode, $course) {
 
     $coursecontext = context_course::instance($course->id);
 
+    // Determine access this user has:
+    $access  = has_capability('deadline/extensions:accessextension', $coursecontext);
+    $approve = has_capability('deadline/extensions:approveextension', $coursecontext);
+
+    $request = has_capability('deadline/extensions:requestextension', $coursecontext); // Students are the only ones with this.
+
     $extnode = $coursenode->add(get_string('pluginname', extensions_plugin::EXTENSIONS_LANG), null, navigation_node::TYPE_CONTAINER, null, 'extensions');
 
     $params = array(
@@ -75,7 +81,7 @@ function deadline_add_course_navigation(navigation_node $coursenode, $course) {
     );
 
     // Add Group & Individual Extensions
-    if(has_capability('deadline/extensions:accessextension', $coursecontext)) {
+    if($access && $approve) {
         $url = new moodle_url('/deadline/extensions/', $params);
         $extnode->add(get_string('ext_indiv_exts', extensions_plugin::EXTENSIONS_LANG), $url, null, navigation_node::TYPE_SETTING, null, null);
     }
@@ -83,7 +89,7 @@ function deadline_add_course_navigation(navigation_node $coursenode, $course) {
     $params['page'] = 'global';
 
     // Add Global Extensions
-    if(has_capability('deadline/extensions:accessextension', $coursecontext)) {
+    if($access && $approve) {
         $url = new moodle_url('/deadline/extensions/', $params);
         $extnode->add(get_string('ext_global_ext', extensions_plugin::EXTENSIONS_LANG), $url, null, navigation_node::TYPE_SETTING, null, null);
     }
@@ -92,10 +98,15 @@ function deadline_add_course_navigation(navigation_node $coursenode, $course) {
     $params['page'] = 'configure_activities';
 
     // Add Global Extensions
-    if(has_capability('deadline/extensions:accessextension', $coursecontext)) {
+    if($access && $approve) {
         $url = new moodle_url('/deadline/extensions/', $params);
         $extnode->add(get_string('ext_configure_activities', extensions_plugin::EXTENSIONS_LANG), $url, null, navigation_node::TYPE_SETTING, null, null);
     }
 
+    $params['page'] = 'requests';
+    if($request && !$approve) {
+        $url = new moodle_url('/deadline/extensions/', $params);
+        $extnode->add(get_string('extsubmitreq', extensions_plugin::EXTENSIONS_LANG), $url, null, navigation_node::TYPE_SETTING, null, null);
+    }
 
 }

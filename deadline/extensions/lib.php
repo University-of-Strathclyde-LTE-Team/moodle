@@ -329,10 +329,10 @@ class extensions_plugin extends deadline_plugin {
     /**
      * Extensions enabled for specific course module: DUPLICATE FUNCTIONALITY OF ABOVE!
      *
-     * @param unknown_type $cm_id
+     * @param int $cm_id
      * @return boolean
      */
-    public function extensions_enabled_cmid($cm_id) {
+    public function extensions_enabled_cmid($cm_id = null) {
         global $DB;
 
         $conditions = array(

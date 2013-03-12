@@ -278,43 +278,31 @@ class form_base extends moodleform {
             if(get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_duplicate_warn') == 1) {
                 if(extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id, null, extensions_plugin::STATUS_PENDING)) {
                     $errors['assignment_name'] = get_string('ext_already_pending', extensions_plugin::EXTENSIONS_LANG);
-                    return $errors;
+//                     return $errors;
                 }
-            }
-
-            if($DB->count_records('unisa_asmnt_ext_stu', 'user_id', $USER->id, 'ext_status_code', AG_EXT_PENDING, 'unisa_asmnt_id', $data['asmntid']) != '0') {
-
             }
         }
 
         // See if this item is OPEN for submissions
-//         $start = $this->get_activity_startdate($this->get_asmnt_id());
         $deadlines = new deadlines_plugin();
         $deadline = $deadlines->get_deadlines_for_cmid($this->get_cmid());
 
         if($deadline->date_open > date('U')) {
             $errors['date'] = get_string('extnotopenyet', extensions_plugin::EXTENSIONS_LANG);
-            return $errors;
+//             return $errors;
         }
 
         // See if the due date has passed
         if($deadline->date_deadline < date('U')) {
             $errors['date'] = get_string('extduedatepassed', extensions_plugin::EXTENSIONS_LANG);
-            return $errors;
+//             return $errors;
         }
-
-        // See if this asmnt is due in less than 24hrs. If it is, no extension requests can
-        // be made.
-//        if(($due->timedue - 86400) < date('U')) {
-//            $errors['asmntid'] = get_string('extnomorereq', extensions_plugin::EXTENSIONS_LANG);
-//            return $errors;
-//        }
 
         // If this is a new request or an edit, check the requested date against the due date
         if(isset($data['page']) && ($data['page'] == 'request_new' || $data['page'] == 'request_edit')) {
             if(isset($data['date']) && $data['date'] < $deadline->date_deadline) {
                 $errors['date'] = get_string('extbeforedue', extensions_plugin::EXTENSIONS_LANG);
-                return $errors;
+//                 return $errors;
             }
         }
 

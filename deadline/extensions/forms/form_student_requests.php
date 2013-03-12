@@ -31,8 +31,7 @@ if (!defined('MOODLE_INTERNAL')) {
 
 require_once ($CFG->libdir . '/formslib.php');
 require_once ($CFG->libdir . '/form/submit.php');
-require_once ('form_request_common.php');
-require_once ('u_moodleform_extension.php');
+require_once ('form_base.php');
 
 class form_student_requests extends form_base {
 
@@ -44,7 +43,7 @@ class form_student_requests extends form_base {
     public function __construct() {
         parent::__construct();
 
-        $this->page_name = get_string('ext_student_requests','u_extension_lang');
+        $this->page_name = get_string('ext_student_requests',extensions_plugin::EXTENSIONS_LANG);
     }
 
     public function definition() {
@@ -52,6 +51,18 @@ class form_student_requests extends form_base {
 
         global $CFG, $COURSE, $USER;
         $mform =& $this->_form;
+
+        $mform->addElement('header','general', get_string('ext_new_request',extensions_plugin::EXTENSIONS_LANG));
+
+        $mform->addElement('select', 'cmid', get_string('extselectassignment',extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('submit', 'request_button', get_string('ext_do_request',extensions_plugin::EXTENSIONS_LANG));
+        $mform->disabledIf('request_button', 'cmid', 'eq', '-1');
+
+        //---------------
+
+        $mform->addElement('header','general', get_string('ext_current_requests',extensions_plugin::EXTENSIONS_LANG));
+        // Get the table and the data of the existing extension requests
+        //$mform->addElement('extension_requests','extension_requests', 'Requests', $this->get_student_assignments());
 
     }
 
@@ -61,36 +72,28 @@ class form_student_requests extends form_base {
         global $CFG, $COURSE, $USER;
         $mform =& $this->_form;
 
-        require_login($this->course->id);
-        $context = get_context_instance(CONTEXT_COURSE, $this->course->id);
-
         //---------------
-
-        $mform->addElement('header','general', get_string('ext_new_request','u_extension_lang'));
 
         $options = array();
         $options['-1'] = '&nbsp;';
 
-        if($activities = $this->get_assignment_names()) {
+        $ext = new extensions_plugin;
+        $activities = $ext->get_activity_names($this->get_course());
 
-            foreach($activities as $activity) {
-                //$options[$activity->id] = $activity->name;
-                $options[$activity->id] = $this->get_activity_name_by_module($activity->name, $extension->instance);
-            }
-
-            $mform->addElement('select', 'asmntid', get_string('extselectassignment','u_extension_lang'), $options);
-            $mform->addElement('submit', 'request_button', get_string('ext_do_request','u_extension_lang'));
-            $mform->disabledIf('request_button', 'asmntid', 'eq', '-1');
-        } else {
-            $mform->addElement('static', 'asmntid', '', get_string('ext_no_summ', 'u_extension_lang'));
+        foreach($activities as $activity) {
+            $options[$activity->id] = $activity->name;
         }
 
-        //---------------
+        // Set options on the activities dropdown
+        if($mform->elementExists('cmid')) {
+            $dd = $mform->getElement('cmid');
+            $dd->load($options);
+        }
 
-        $mform->addElement('header','general', get_string('ext_current_requests','u_extension_lang'));
-        // Get the table and the data of the existing extension requests
-        $mform->addElement('extension_requests','extension_requests', 'Requests', $this->get_student_assignments());
+    }
 
+    public function get_save_destination() {
+        return 'request_new';
     }
 
     public function validation($data, $files) {
@@ -98,11 +101,6 @@ class form_student_requests extends form_base {
     }
 
     public function save_hook($form_data) {
-
-        global $SESSION;
-
-        // Insert Code Here.
-
         return true;
     }
 
