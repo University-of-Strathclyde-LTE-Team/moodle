@@ -1530,7 +1530,7 @@ class extensions_plugin extends deadline_plugin {
         return true;
     }
 
-    public function get_individual_approved_extensions($cm_id, $user_id) {
+    public function get_individual_approved_extensions($cm_id, $user_id, $field = 'date') {
 
         global $DB;
 
@@ -1542,13 +1542,13 @@ class extensions_plugin extends deadline_plugin {
         );
 
         if($exts = $DB->get_records('deadline_extensions', $params)) {
-            $exts = $this->date_sort($exts, 'date');
-            return $exts['0']->date;
+            $exts = $this->date_sort($exts, $field);
+            return $exts['0']->{$field};
         }
 
     }
 
-    public function get_group_approved_extensions($cm_id = null, $user_id = null, $global = false) {
+    public function get_group_approved_extensions($cm_id = null, $user_id = null, $global = false, $field = 'date') {
 
         global $DB;
 
@@ -1567,14 +1567,6 @@ class extensions_plugin extends deadline_plugin {
 
         // Does this activity allow groupings?
         $grouping = extensions_plugin::get_groupingid_for_cmid($cm_id);
-
-//         // Is this activity an assignment with group submissions?
-//         $grouping_id = $this->get_group_submission_for_cmid($cm_id);
-
-//         if($grouping_id == null && $global == false) {
-//             // Activity isn't group submission based
-//             return false;
-//         }
 
         // Based on the grouping assigned to a user and this users ID, we can
         // determine the group they are in, in this activity.
@@ -1615,8 +1607,8 @@ class extensions_plugin extends deadline_plugin {
                 "AND dea.group_id " . $groups_in_sql;
 
         if($exts = $DB->get_records_sql($sql, $params)) {
-            $exts = $this->date_sort($exts, 'date');
-            return $exts['0']->date;
+            $exts = $this->date_sort($exts, $field);
+            return $exts['0']->{$field};
         }
 
         return 0;
@@ -1657,25 +1649,47 @@ class extensions_plugin extends deadline_plugin {
         // for this user. They could be:
 
         // 1) Individual Extension
-        $dates['indiv']  = $this->get_individual_approved_extensions($cm_id, $user_id);
+        $dates['indiv']  = $this->get_individual_approved_extensions($cm_id, $user_id, 'date');
 
         // 2) Group extension (for a group submission in mod_assign)
-        $dates['group']  = $this->get_group_approved_extensions($cm_id, $user_id);
+        $dates['group']  = $this->get_group_approved_extensions($cm_id, $user_id, false, 'date');
 
         // 3) Global Extension
-        $dates['global'] = $this->get_group_approved_extensions($cm_id, $user_id, true);
+        $dates['global'] = $this->get_group_approved_extensions($cm_id, $user_id, true, 'date');
 
-        return max($dates);
+        return $this->get_configured_date($dates);
     }
 
-    public function get_my_time_limit($cm_id, $user_id = null) {
+    public function get_my_timelimit($cm_id, $user_id = null) {
         // Insert code here for returning a specific time limit for activities
         // that allow a specific time limit (ie Quiz).
         if(is_null($user_id)) {
             return 0;
         }
 
-        return 0;
+        // Individual timelimit extension
+        $timelimit['indiv'] = $this->get_individual_approved_extensions($cm_id, $user_id, 'timelimit');
+
+        // Group timelimit extension.
+        $timelimit['group']  = $this->get_group_approved_extensions($cm_id, $user_id, false, 'timelimit');
+
+        // Global timelimit extension.
+        $timelimit['global'] = $this->get_group_approved_extensions($cm_id, $user_id, true, 'timelimit');
+
+        return $this->get_configured_date($timelimit);
+    }
+
+    public function get_configured_date($dates) {
+        // This can be modified at a later date such that the exact date that
+        // is returned and used could be manipulated, according to configuration, examples:
+        // Group extensions take priority over Individual
+        // Globals take priority over Group
+        // Individuals take priority over Global.
+        // There could be many combinations or preferences for different organisations.
+
+        // For now my short-sighted view is that it should (probably) always simply
+        // return the 'longest' extension date as the date used.
+        return max($dates);
     }
 
     public function get_my_cutoff_date($cm_id, $user_id = null) {

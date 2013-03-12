@@ -82,7 +82,7 @@ abstract class deadline_plugin {
      * @param int $cm_id Course Module ID to be checked.
      * @param int $user_id User ID to be checked.
      */
-    abstract public function get_my_time_limit($cm_id, $user_id);
+    abstract public function get_my_timelimit($cm_id, $user_id);
 
     /**
      * Abstract function to check if a deadline plugin has items to delete when
@@ -392,6 +392,47 @@ abstract class deadline_plugin {
         }
 
     }
+
+    //--------------------------------------------------------
+
+    public function get_timelimit($cm_id, $user_id) {
+        global $CFG;
+
+        $plugins = $this->get_installed_plugins();
+
+        $dates = array();
+
+        // check the installed plugins for due dates.
+        foreach($plugins as $plugin => $path) {
+
+            $plugin_code = $CFG->dirroot . '/deadline/' . $plugin . '/lib.php';
+
+            if(file_exists($plugin_code)) {
+                require_once($plugin_code);
+            } else {
+                // Skip this plugin. It's either some kind of ghost, or it's
+                // totally broken!
+                continue;
+            }
+
+            $plugin_class = $plugin . '_plugin';
+            $this_plugin = new $plugin_class;
+
+            // Call the function from the plugin which will find the dates
+            // that apply to this student.
+            $dates[$plugin] = new stdClass;
+            $dates[$plugin]->extratime = (int)$this_plugin->get_my_timelimit($cm_id, $user_id);
+
+        }
+
+        // find the longest date they have, as they may have multiple extensions
+        // - individual
+        // - global
+        // - group
+        return $this->get_longest_date($dates, 'extratime');
+    }
+
+    //--------------------------------------------------------
 
     /**
      * Method for ordering all plugins, higher weighted plugins have their

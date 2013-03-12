@@ -432,10 +432,10 @@ define('FEATURE_BACKUP_MOODLE2', 'backup_moodle2');
 define('FEATURE_SHOW_DESCRIPTION', 'showdescription');
 
 
-// 3580
+// MDL-7315
 /** True if the module supports deadlines stored in core */
 define('FEATURE_DEADLINE', 'deadline');
-// 3580
+// MDL-7315
 
 
 /** Unspecified module archetype */

@@ -198,9 +198,17 @@ class deadlines_plugin extends deadline_plugin {
 
         if($field_name = $this->get_module_fields($modulename)) {
 
-            $this->set_open_date($data->coursemodule, $data->{$field_name->date_open});
-            $this->set_due_date($data->coursemodule, $data->{$field_name->date_deadline});
-            $this->set_cut_off_date($data->coursemodule, $data->{$field_name->date_cutoff});
+            if(isset($data->{$field_name->date_open})) {
+                $this->set_open_date($data->coursemodule, $data->{$field_name->date_open});
+            }
+
+            if(isset($data->{$field_name->date_deadline})) {
+                $this->set_due_date($data->coursemodule, $data->{$field_name->date_deadline});
+            }
+
+            if(isset($data->{$field_name->date_cutoff})) {
+                $this->set_cut_off_date($data->coursemodule, $data->{$field_name->date_cutoff});
+            }
 
         } else {
             print_error('fieldsnotfound', '', course_get_url($data->course, $data->section), $data->modulename);
@@ -239,7 +247,19 @@ class deadlines_plugin extends deadline_plugin {
                 $data->deadlines                = true;
 
                 break;
+            case 'quiz':
+                $data->timeopen                 = $this->get_open_date($data->cm_id, $user_id);
+                $data->timeclose                = $this->get_due_date($data->cm_id, $user_id);
+                if($timelimit = $this->get_timelimit($data->cm_id, $user_id)) {
+                    $data->timelimit            = $timelimit;
+                }
+                // To be implemented later.
+                //$data->attempts
+                //$data->password
+                //$data->extrapasswords
 
+                $data->deadlines                = true;
+                break;
         }
 
         return $data;
@@ -321,7 +341,7 @@ class deadlines_plugin extends deadline_plugin {
         return $DB->get_field('deadline_deadlines', 'id', $params, MUST_EXIST);
     }
 
-    public function get_my_time_limit($cm_id, $user_id = null) {
+    public function get_my_timelimit($cm_id, $user_id = null) {
         return 0;
     }
 

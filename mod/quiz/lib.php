@@ -240,6 +240,14 @@ function quiz_delete_all_overrides($quiz) {
 function quiz_update_effective_access($quiz, $userid) {
     global $DB;
 
+    // MDL-7315
+    if(get_config('deadline_deadlines', 'enabled') == 1 &&
+       get_config('deadline_extensions', 'enabled') == 1) {
+        $deadlines = new deadlines_plugin();
+        return $deadlines->get_deadline_dates($quiz, 'quiz', $userid);
+    }
+    // MDL-7315
+
     // Check for user override.
     $override = $DB->get_record('quiz_overrides', array('quiz' => $quiz->id, 'userid' => $userid));
 
@@ -1537,6 +1545,10 @@ function quiz_supports($feature) {
         case FEATURE_BACKUP_MOODLE2:            return true;
         case FEATURE_SHOW_DESCRIPTION:          return true;
         case FEATURE_CONTROLS_GRADE_VISIBILITY: return true;
+
+        // MDL-7315
+        case FEATURE_DEADLINE:                  return true;
+        // MDL-7315
 
         default: return null;
     }
