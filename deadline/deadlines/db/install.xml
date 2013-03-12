@@ -7,7 +7,9 @@
                 <FIELD NAME="cm_id" TYPE="int" LENGTH="10" NOTNULL="TRUE" SEQUENCE="FALSE" COMMENT="Field for tracking the Course Module ID this deadline applies to" PREVIOUS="id" NEXT="date_open"/>
                 <FIELD NAME="date_open" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the opening date for a course module" PREVIOUS="cm_id" NEXT="date_deadline" />
                 <FIELD NAME="date_deadline" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the actual deadline for a course module" PREVIOUS="date_open" NEXT="date_cutoff" />
-                <FIELD NAME="date_cutoff" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the cutoff for submissions." PREVIOUS="date_deadline" />
+                <FIELD NAME="date_cutoff" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the cutoff for submissions." PREVIOUS="date_deadline" NEXT="timelimit" />
+                <FIELD NAME="timelimit" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the timelimit, specific to Quiz" PREVIOUS="date_cutoff" NEXT="attempts" />
+                <FIELD NAME="attempts" TYPE="int" LENGTH="10" NOTNULL="FALSE" SEQUENCE="FALSE" COMMENT="Field to store the attempts, specific to Quiz" PREVIOUS="timelimit" />
             </FIELDS>
             <KEYS>
                 <KEY NAME="deadline_id_pk" TYPE="primary" COMMENT="Deadline primary key" FIELDS="id" />

@@ -1734,8 +1734,7 @@ class extensions_plugin extends deadline_plugin {
         $staff_detail   = $DB->get_record('user', array('id' => $data->staff_id));
         $student_detail = $DB->get_record('user', array('id' => $data->student_id));
 
-        // Message generated below is very generic. Simply directs the user
-        // back to Extensions to view the updated information.
+        // Generate a message to the user. In our case it's very generic.
         $message_data            = new stdClass;
         $message_data->component = extensions_plugin::EXTENSIONS_MOD_NAME;
         $message_data->name      = 'posts';

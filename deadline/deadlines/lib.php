@@ -234,6 +234,7 @@ class deadlines_plugin extends deadline_plugin {
     public function get_deadline_dates($data, $modulename, $user_id = null) {
 
         // On edit the first call of this does not have a cm_id set.
+        // Just do nothing, as there will be nothing to return anyway.
         if(!isset($data->cm_id)) {
             return $data;
         }
@@ -250,9 +251,7 @@ class deadlines_plugin extends deadline_plugin {
             case 'quiz':
                 $data->timeopen                 = $this->get_open_date($data->cm_id, $user_id);
                 $data->timeclose                = $this->get_due_date($data->cm_id, $user_id);
-                if($timelimit = $this->get_timelimit($data->cm_id, $user_id)) {
-                    $data->timelimit            = $timelimit;
-                }
+                $data->timelimit                = $this->get_timelimit($data->cm_id, $user_id);
                 // To be implemented later.
                 //$data->attempts
                 //$data->password
@@ -342,7 +341,22 @@ class deadlines_plugin extends deadline_plugin {
     }
 
     public function get_my_timelimit($cm_id, $user_id = null) {
-        return 0;
+            global $DB;
+
+        // As this is the 'deadlines' plugin, the deadlines here should be
+        // considered to be 'global' hence the $user_id being ignored here.
+
+        $params = array(
+                'cm_id' => $cm_id
+        );
+
+        if($DB->record_exists('deadline_deadlines', $params)) {
+            $record = $DB->get_record('deadline_deadlines', $params, '*', MUST_EXIST);
+
+            return $record->timelimit;
+        } else {
+            return false;
+        }
     }
 
 }
