@@ -154,6 +154,44 @@ class extensions_plugin extends deadline_plugin {
 
     // ------
 
+    public static function activity_has_submission($cm_id = null, $user_id = null) {
+        global $DB;
+
+        $activity = extensions_plugin::get_activity_detail_by_cmid($cm_id);
+
+        switch($activity->modname) {
+            case 'assign':
+
+                $params = array(
+                    'assignment' => $activity->instance,
+                    'userid'     => $user_id,
+                    'status'     => 'submitted'
+                );
+
+                if($DB->record_exists('assign_submission', $params)) {
+                    return true;
+                }
+
+                break;
+            case 'quiz':
+
+                $params = array(
+                    'quiz'   => $activity->instance,
+                    'userid' => $user_id,
+                );
+
+                if($DB->record_exists('quiz_attempts', $params)) {
+                    return true;
+                }
+
+                break;
+        }
+
+        return false;
+    }
+
+    // ------
+
     /**
      * Method for getting the string version of a status.
      *

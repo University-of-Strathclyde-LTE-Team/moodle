@@ -56,6 +56,9 @@ $string['no_grouping_assigned_short'] = 'No grouping assigned.';
 $string['no_grouping_assigned']       = 'No Grouping assigned to activity. Selection of any group in this course is possible.';
 $string['only_grouping_groups']       = 'Only Groups assigned to this Grouping are available for selection.';
 
+$string['prevent_req_after_subm'] = 'Prevent After Submission.';
+$string['prevent_req_after_subm_long'] = 'Prevent extension requests after activity submission has been made.';
+
 $string['configuration']     = 'Configuration';
 $string['group_extension']   = 'Group(s)';
 

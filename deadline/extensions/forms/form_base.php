@@ -211,15 +211,7 @@ class form_base extends moodleform {
     }
 
     public function get_extension_approvers($cm_id = null) {
-        global $DB;
-
-        // get the course for the cm_id
-
-        // get the course staff
-
-        // check the list of roles permitted at the global level
-
-        // check any configuration done at the course level (none possible atm)
+        global $DB, $COURSE;
 
         $params = array(
                 'ext_en_id' => extensions_plugin::get_extension_enable_id_by_cmid($cm_id)
@@ -232,6 +224,9 @@ class form_base extends moodleform {
             // No approvers listed for this activity. Use all staff roles
             // that have the correct capability: 'deadline/extensions:approveextension'
 
+            $context = context_course::instance($COURSE->id);
+            $users = get_users_by_capability($context, 'deadline/extensions:approveextension');
+
         }
 
         if(isset($users)) {
@@ -239,8 +234,12 @@ class form_base extends moodleform {
             $user_list[-1] = "&nbsp;";
 
             foreach($users as $user) {
-                $detail = $DB->get_record('user', array('id' => $user->user_id));
-                $user_list[$user->user_id] = $detail->firstname . ' ' . $detail->lastname;
+                if(isset($user->user_id)) {
+                    $detail = $DB->get_record('user', array('id' => $user->user_id));
+                    $user_list[$user->user_id] = $detail->firstname . ' ' . $detail->lastname;
+                } else {
+                    $user_list[$user->id] = $user->firstname . ' ' . $user->lastname;
+                }
             }
 
             return $user_list;
@@ -275,7 +274,7 @@ class form_base extends moodleform {
 
         // See if this activity even allows extensions
         if(!extensions_plugin::extensions_enabled_cmid($this->get_cmid())) {
-            $errors['assignment_name'] = get_string('extmessnotpermitted', extensions_plugin::EXTENSIONS_LANG);
+            $errors['cmid'] = get_string('extmessnotpermitted', extensions_plugin::EXTENSIONS_LANG);
             return $errors;
         }
 
@@ -283,9 +282,17 @@ class form_base extends moodleform {
         if(!isset($data['page'])) {
             if(get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_duplicate_warn') == 1) {
                 if(extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id, null, extensions_plugin::STATUS_PENDING)) {
-                    $errors['assignment_name'] = get_string('ext_already_pending', extensions_plugin::EXTENSIONS_LANG);
-//                     return $errors;
+                    $errors['cmid'] = get_string('ext_already_pending', extensions_plugin::EXTENSIONS_LANG);
                 }
+            }
+        }
+
+        // Check to see if there is already an existing submission for this activity for
+        // this user.
+        if(get_config('deadline_extensions', 'prevent_req_after_sub') == '1') {
+            if(extensions_plugin::activity_has_submission($this->get_cmid(), $USER->id)) {
+                $errors['cmid'] = get_string('extalreadysubmitted', 'u_extension_lang');
+                return $errors;
             }
         }
 
@@ -295,20 +302,17 @@ class form_base extends moodleform {
 
         if($deadline->date_open > date('U')) {
             $errors['date'] = get_string('extnotopenyet', extensions_plugin::EXTENSIONS_LANG);
-//             return $errors;
         }
 
         // See if the due date has passed
         if($deadline->date_deadline < date('U')) {
             $errors['date'] = get_string('extduedatepassed', extensions_plugin::EXTENSIONS_LANG);
-//             return $errors;
         }
 
         // If this is a new request or an edit, check the requested date against the due date
         if(isset($data['page']) && ($data['page'] == 'request_new' || $data['page'] == 'request_edit')) {
             if(isset($data['date']) && $data['date'] < $deadline->date_deadline) {
                 $errors['date'] = get_string('extbeforedue', extensions_plugin::EXTENSIONS_LANG);
-//                 return $errors;
             }
         }
 

@@ -44,24 +44,29 @@ $url_params['page']   = $page;
 $url_params['id']     = $id;
 $url_params['eid']    = $eid;
 $url_params['action'] = $action;
-$url_params['cm_id']  = $cm_id;
+$url_params['cmid']   = $cm_id;
 
-if($id == 0) {
-    // Module context.
-
-    if($cm_id == 0) {
-        // Get the $cm_id based on the extension ID.
-        $cm_id = extensions_plugin::get_activity_id_by_extid($eid);
-    }
+// If we have a CM_ID then we should be in module context
+if(isset($cm_id) && $cm_id > 0) {
 
     $cm = get_coursemodule_from_id(0, $cm_id, 0, false, MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     require_login($course, true, $cm);
-
     $context = context_module::instance($cm->id);
 
-} else {
+} else if(isset($eid) && $eid > 0) {
+
+    // Get the $cm_id based on the extension ID.
+    $cm_id = extensions_plugin::get_activity_id_by_extid($eid);
+
+    $cm = get_coursemodule_from_id(0, $cm_id, 0, false, MUST_EXIST);
+    $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+
+    require_login($course, true, $cm);
+    $context = context_module::instance($cm->id);
+
+} else if(isset($id) && $id > SITEID) {
 
     $params = array('id' => $id);
     $course = $DB->get_record('course', $params, '*', MUST_EXIST);
@@ -69,7 +74,6 @@ if($id == 0) {
     require_login($course);
 
     $context = context_course::instance($course->id);
-
 }
 
 $extension = new extension_base();
