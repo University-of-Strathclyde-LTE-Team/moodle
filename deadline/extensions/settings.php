@@ -57,6 +57,9 @@ defined('EXTENSIONS_MULT_GLO_ENA') or define('EXTENSIONS_MULT_GLO_ENA', 1);
 defined('EXTENSIONS_DUPLICATE_WARNING_DIS') or define('EXTENSIONS_DUPLICATE_WARNING_DIS', 0);
 defined('EXTENSIONS_DUPLICATE_WARNING_ENA') or define('EXTENSIONS_DUPLICATE_WARNING_ENA', 1);
 
+defined('EXTENSIONS_RESTRICT_AFTER_SUB_DIS') or define('EXTENSIONS_RESTRICT_AFTER_SUB_DIS', 0);
+defined('EXTENSIONS_RESTRICT_AFTER_SUB_ENA') or define('EXTENSIONS_RESTRICT_AFTER_SUB_ENA', 1);
+
 global $USER, $COURSE;
 
 // Admin config setting items here.
@@ -265,7 +268,7 @@ if ($hassiteconfig) { // needs this condition or there is error on login page
         // ------------------------------------------------------------
         // Settings Menu Item
         // ------------------------------------------------------------
-        // Show the pending count?
+        // Allow multiple global
         $allowMultipleGlobalOptions = array(
                 EXTENSIONS_MULT_GLO_DIS => get_string('no'),
                 EXTENSIONS_MULT_GLO_ENA => get_string('yes')
@@ -280,7 +283,25 @@ if ($hassiteconfig) { // needs this condition or there is error on login page
         // Add the show/hide indiv/global menu item
         $settings->add($multGlobalMenu);
 
-//         $area = new admin_setting_
+        // ------------------------------------------------------------
+        // Prevent requests after submission
+        // ------------------------------------------------------------
+        defined('EXTENSIONS_RESTRICT_AFTER_SUB_DIS') or define('EXTENSIONS_RESTRICT_AFTER_SUB_DIS', 0);
+        defined('EXTENSIONS_RESTRICT_AFTER_SUB_ENA') or define('EXTENSIONS_RESTRICT_AFTER_SUB_ENA', 1);
+        $preventReqAfterSubmission = array(
+                EXTENSIONS_RESTRICT_AFTER_SUB_DIS => get_string('no'),
+                EXTENSIONS_RESTRICT_AFTER_SUB_ENA => get_string('yes')
+        );
+
+        $preventReqAfterSubmissionMenu = new admin_setting_configselect(extensions_plugin::EXTENSIONS_MOD_NAME . '/prevent_req_after_sub',
+                get_string('prevent_req_after_subm', extensions_plugin::EXTENSIONS_LANG),
+                get_string('prevent_req_after_subm_long', extensions_plugin::EXTENSIONS_LANG),
+                EXTENSIONS_RESTRICT_AFTER_SUB_ENA,
+                $preventReqAfterSubmission);
+
+        // Add the show/hide indiv/global menu item
+        $settings->add($preventReqAfterSubmissionMenu);
+
 
         // ------------------------------------------------------------
         // Approved

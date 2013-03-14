@@ -70,33 +70,11 @@ class form_request_new extends form_base {
         $mform->addRule('reason', get_string('max_length_error', extensions_plugin::EXTENSIONS_LANG), 'maxlength', 4000, 'client');
         $mform->setType('reason', PARAM_TEXT);
 
-        // handle file upload here.
-        if(isset($files[0])) {
-            $mform->addElement('static','', get_string('extsupdoc',extensions_plugin::EXTENSIONS_LANG), $files[0]);
-        } else if($this->get_readonly()) {
-            $mform->addElement('static','',  get_string('extsupdoc',extensions_plugin::EXTENSIONS_LANG), 'No File Uploaded');
-        } else {
-            $support_doc1 = $mform->addElement('file', 'supportdoc1', get_string('extsupdoc',extensions_plugin::EXTENSIONS_LANG), 'size=40');
-            $mform->setType('supportdoc1', PARAM_CLEANFILE);
-        }
+//         $file_params = array('maxbytes' => $maxbytes, 'accepted_types' => '*');
 
-        if(isset($files[1])) {
-            $mform->addElement('static', '', '', $files[1]);
-        } else if($this->get_readonly()) {
-            $mform->addElement('static','', '', 'No File Uploaded');
-        } else {
-            $support_doc2 = $mform->addElement('file', 'supportdoc2', '', 'size=40');
-            $mform->setType('supportdoc2', PARAM_CLEANFILE);
-        }
-
-        if(isset($files[2])) {
-            $mform->addElement('static','', '', $files[2]);
-        } else if($this->get_readonly()) {
-            $mform->addElement('static','', '', 'No File Uploaded');
-        } else {
-            $support_doc3 = $mform->addElement('file', 'supportdoc3', '', 'size=40');
-            $mform->setType('supportdoc3', PARAM_CLEANFILE);
-        }
+//         $mform->addElement('filepicker', 'userfile', get_string('file'), null, $file_params);
+        $file_params =  array('subdirs' => 0, 'maxfiles' => 4, 'accepted_types' => array('document') ); // make this dynamic.
+        $mform->addElement('filemanager', 'attachments', get_string('extsupdoc',extensions_plugin::EXTENSIONS_LANG), null, $file_params);
 
 
         $currdue = $mform->addElement('date_time_selector', 'currdue', get_string('extcurrduedate', extensions_plugin::EXTENSIONS_LANG), $this->date_options);
@@ -355,17 +333,17 @@ class form_request_new extends form_base {
                 $mform->freeze('ext_staffmember_id');
             }
 
-            if($mform->elementExists('supportdoc1')) {
-                $mform->freeze('supportdoc1');
-            }
+//             if($mform->elementExists('supportdoc1')) {
+//                 $mform->freeze('supportdoc1');
+//             }
 
-            if($mform->elementExists('supportdoc2')) {
-                $mform->freeze('supportdoc2');
-            }
+//             if($mform->elementExists('supportdoc2')) {
+//                 $mform->freeze('supportdoc2');
+//             }
 
-            if($mform->elementExists('supportdoc3')) {
-                $mform->freeze('supportdoc3');
-            }
+//             if($mform->elementExists('supportdoc3')) {
+//                 $mform->freeze('supportdoc3');
+//             }
 
             // Remove save/withdraw buttons
             $mform->removeElement('buttona');
@@ -439,6 +417,7 @@ class form_request_new extends form_base {
             }
 
             // Handle the documents here
+            $this->handle_documents($form_data);
 
             $form_data->eid             = $ext_id;
             $form_data->ext_status_code = extensions_plugin::STATUS_PENDING;
@@ -457,9 +436,30 @@ class form_request_new extends form_base {
 
     }
 
-    public function handle_documents($data, $ext_id) {
+    public function handle_documents($data, $ext_id = null) {
 
         global $USER, $CFG;
+
+        $context = context_user::instance($USER->id);
+
+        $component = 'deadline_extensions';
+        $file_area = 'attachment';
+
+        $draftitemid = file_get_submitted_draft_itemid('attachments');
+
+        $file_params = array('subdirs' => 0, 'maxbytes' => $maxbytes, 'maxfiles' => 50);
+
+        $entry     = new stdClass();
+        $entry->id = null;
+        $entry->attachments = $draftitemid;
+
+        file_prepare_draft_area($draftitemid, $context->id, $component, $file_area, $entry->id, $file_params);
+        file_save_draft_area_files($data->attachments, $context->id, $component, $file_area, $entry->id, $file_params);
+
+
+
+        // Old code:
+        /*
 
         // Handle documents uploaded here, now that the record has been
         // inserted successfully.
@@ -509,6 +509,7 @@ class form_request_new extends form_base {
 
             insert_record('unisa_asmnt_ext_doc', $doc);
         }
+        */
 
     }
 
