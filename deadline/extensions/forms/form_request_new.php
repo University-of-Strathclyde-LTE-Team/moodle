@@ -333,18 +333,6 @@ class form_request_new extends form_base {
                 $mform->freeze('ext_staffmember_id');
             }
 
-//             if($mform->elementExists('supportdoc1')) {
-//                 $mform->freeze('supportdoc1');
-//             }
-
-//             if($mform->elementExists('supportdoc2')) {
-//                 $mform->freeze('supportdoc2');
-//             }
-
-//             if($mform->elementExists('supportdoc3')) {
-//                 $mform->freeze('supportdoc3');
-//             }
-
             // Remove save/withdraw buttons
             $mform->removeElement('buttona');
         }
@@ -395,6 +383,9 @@ class form_request_new extends form_base {
 
         if($ext_id = $DB->insert_record('deadline_extensions', $data, true)) {
 
+            $extension = $data;
+            $data->id = $ext_id;
+
             // If this is a group submission we need to add records to the appto
             // table for this.
             if($form_data->group_submission == 1) {
@@ -411,13 +402,13 @@ class form_request_new extends form_base {
                     $data->ext_id = $ext_id;
                     $data->group_id = $group;
 
-                    $DB->insert_record('deadline_extensions_appto', $data);
+                    $DB->insert_record('deadline_extensions_appto', $extension);
                 }
 
             }
 
             // Handle the documents here
-            $this->handle_documents($form_data);
+            $this->handle_documents($form_data, $data);
 
             $form_data->eid             = $ext_id;
             $form_data->ext_status_code = extensions_plugin::STATUS_PENDING;
@@ -436,80 +427,26 @@ class form_request_new extends form_base {
 
     }
 
-    public function handle_documents($data, $ext_id = null) {
+    public function handle_documents($data, $ext = null) {
 
         global $USER, $CFG;
 
-        $context = context_user::instance($USER->id);
+//         $context = context_user::instance($USER->id);
+//         $component   = 'deadline_extensions';
+//         $file_area   = 'attachment';
 
-        $component = 'deadline_extensions';
-        $file_area = 'attachment';
+        $context = context_user::instance($ext->staff_id);
+        $component = 'user';
+        $file_area = 'private';
+
+        $file_params = array('subdirs' => 0, 'maxbytes' => 102400000, 'maxfiles' => 5);
 
         $draftitemid = file_get_submitted_draft_itemid('attachments');
 
-        $file_params = array('subdirs' => 0, 'maxbytes' => $maxbytes, 'maxfiles' => 50);
+        $data->attachments = $draftitemid;
 
-        $entry     = new stdClass();
-        $entry->id = null;
-        $entry->attachments = $draftitemid;
-
-        file_prepare_draft_area($draftitemid, $context->id, $component, $file_area, $entry->id, $file_params);
-        file_save_draft_area_files($data->attachments, $context->id, $component, $file_area, $entry->id, $file_params);
-
-
-
-        // Old code:
-        /*
-
-        // Handle documents uploaded here, now that the record has been
-        // inserted successfully.
-
-        // make sure the user has a directory created:
-        $save_path = make_user_directory($USER->id, true);
-
-        $path = '/user/u_file.php/' . $USER->id;
-        //        $path = '/file.php/user/' . $USER->id;
-
-        if(!@$this->_upload_manager->save_files($save_path)) {
-            error('Problem with uploading supporting documentation');
-        }
-
-        // supportdoc1
-        if(isset($this->_upload_manager->files['supportdoc1']['name']) &&
-                $this->_upload_manager->files['supportdoc1']['name'] != '') {
-            $supportdoc1_filename = $this->_upload_manager->files['supportdoc1']['name'];
-
-            $doc = new stdClass;
-            $doc->ext_id  = $ext_id;
-            $doc->doc_url = $supportdoc1_filename;
-
-            insert_record('unisa_asmnt_ext_doc', $doc);
-        }
-
-        // supportdoc2
-        if(isset($this->_upload_manager->files['supportdoc2']['name']) &&
-                $this->_upload_manager->files['supportdoc2']['name'] != '') {
-            $supportdoc2_filename = $this->_upload_manager->files['supportdoc2']['name'];
-
-            $doc = new stdClass;
-            $doc->ext_id  = $ext_id;
-            $doc->doc_url = $supportdoc2_filename;
-
-            insert_record('unisa_asmnt_ext_doc', $doc);
-        }
-
-        // supportdoc3
-        if(isset($this->_upload_manager->files['supportdoc3']['name']) &&
-                $this->_upload_manager->files['supportdoc3']['name'] != '') {
-            $supportdoc3_filename = $this->_upload_manager->files['supportdoc3']['name'];
-
-            $doc = new stdClass;
-            $doc->ext_id  = $ext_id;
-            $doc->doc_url = $supportdoc3_filename;
-
-            insert_record('unisa_asmnt_ext_doc', $doc);
-        }
-        */
+        file_prepare_draft_area($draftitemid, $context->id, $component, $file_area, $ext->id, $file_params);
+        file_save_draft_area_files($data->attachments, $context->id, $component, $file_area, $ext->id, $file_params);
 
     }
 
@@ -517,6 +454,8 @@ class form_request_new extends form_base {
         return parent::validation($data, $files);
     }
 
-    // PORT THIS CODE END.
+     public function get_save_destination() {
+         return 'requests';
+     }
 
 }
