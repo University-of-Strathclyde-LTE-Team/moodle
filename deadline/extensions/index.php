@@ -74,6 +74,8 @@ if(isset($cm_id) && $cm_id > 0) {
     require_login($course);
 
     $context = context_course::instance($course->id);
+} else {
+    require_login(null, false);
 }
 
 $extension = new extension_base();

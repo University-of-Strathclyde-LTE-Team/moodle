@@ -58,8 +58,8 @@ class form_staff_request_edit extends form_base {
         $mform->addElement('static', 'ext_reason_static',  get_string('extreasonfor',  extensions_plugin::EXTENSIONS_LANG));
 
         $mform->addElement('static', 'supdoc1', get_string('extsupporting', extensions_plugin::EXTENSIONS_LANG), NULL);
-        $mform->addElement('static', 'supdoc2', NULL, NULL);
-        $mform->addElement('static', 'supdoc3', NULL, NULL);
+//         $mform->addElement('static', 'supdoc2', NULL, NULL);
+//         $mform->addElement('static', 'supdoc3', NULL, NULL);
 
         $mform->addElement('static', 'asmt_due_static',    get_string('extasmntdue',    extensions_plugin::EXTENSIONS_LANG), null);
         $mform->addElement('static', 'ext_due_static',     get_string('extsubmission',  extensions_plugin::EXTENSIONS_LANG), null);
@@ -164,7 +164,7 @@ class form_staff_request_edit extends form_base {
         $user = $DB->get_record('user', array('id' => $extension->student_id));
         $params = array('id' => $user->id);
 
-        $user_url  = new moodle_url('/user/view.php');
+        $user_url  = new moodle_url('/user/view.php', $params);
         $user_link = html_writer::link($user_url, "{$user->firstname} {$user->lastname} - {$user->idnumber}");
         $mform->setDefault('ext_student_static', $user_link);
 
@@ -207,26 +207,51 @@ class form_staff_request_edit extends form_base {
 
         $due_date = extensions_plugin::get_activity_due_date($extension->cm_id);
 
+        $fs = get_file_storage();
+        $user_context = context_user::instance($extension->staff_id);
+        $component   = 'user';
+        $file_area   = 'private';
 
-        // TODO: IMPLEMENT THIS!
-        $docs = extensions_plugin::get_extension_documents();
+        $files = $fs->get_area_files($user_context->id, $component, $file_area, $extension->id);
 
-        if(isset($docs) && $docs != FALSE) {
-            $i = 1;
-            foreach($docs as $doc) {
+        if($files){
+            $file_names = null;
+            foreach ($files as $file) {
 
-                $field = 'supdoc' . $i;
-                $path = "/user/u_file.php?id={$ext->user_id}&amp;file={$doc->doc_url}";
+                if($file->get_filename() == '.') {
+                    continue;
+                }
 
-                $mform->setDefault($field, "<a href=\"$path\">" . basename($doc->doc_url) . "</a>");
-                $i++;
+                $url      = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/{$component}/{$file_area}";
+                $filename = $file->get_filename();
+                $fileurl  = $url.$file->get_filepath().$file->get_itemid().'/'.$filename;
+                $out[]    = html_writer::link($fileurl, $filename);
+
             }
 
-        } else {
-            $mform->setDefault('supdoc1', get_string('ext_no_docs', extensions_plugin::EXTENSIONS_LANG));
-            $mform->removeElement('supdoc2');
-            $mform->removeElement('supdoc3');
+            $br = html_writer::empty_tag('br');
+
+            $mform->setDefault('supdoc1', implode($br, $out));
         }
+
+//         $docs = extensions_plugin::get_extension_documents();
+
+//         if(isset($docs) && $docs != FALSE) {
+//             $i = 1;
+//             foreach($docs as $doc) {
+
+//                 $field = 'supdoc' . $i;
+//                 $path = "/user/u_file.php?id={$ext->user_id}&amp;file={$doc->doc_url}";
+
+//                 $mform->setDefault($field, "<a href=\"$path\">" . basename($doc->doc_url) . "</a>");
+//                 $i++;
+//             }
+
+//         } else {
+//             $mform->setDefault('supdoc1', get_string('ext_no_docs', extensions_plugin::EXTENSIONS_LANG));
+//             $mform->removeElement('supdoc2');
+//             $mform->removeElement('supdoc3');
+//         }
 
         $mform->addElement('hidden', 'eid', $extension->id);
         $mform->setType('extid', PARAM_INT);
