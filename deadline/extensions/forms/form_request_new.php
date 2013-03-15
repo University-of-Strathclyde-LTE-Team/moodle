@@ -435,10 +435,9 @@ class form_request_new extends form_base {
 //         $component   = 'deadline_extensions';
 //         $file_area   = 'attachment';
 
-        $context = context_user::instance($ext->staff_id);
-        $component = 'user';
-        $file_area = 'private';
-
+        $context     = context_user::instance($ext->student_id);
+        $component   = 'deadline';
+        $file_area   = 'extensions';
         $file_params = array('subdirs' => 0, 'maxbytes' => 102400000, 'maxfiles' => 5);
 
         $draftitemid = file_get_submitted_draft_itemid('attachments');

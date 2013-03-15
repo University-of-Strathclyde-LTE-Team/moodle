@@ -4229,6 +4229,75 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null) {
         }
 
         // ========================================================================================================================
+    } else if ($component == 'deadline') {
+        if ($filearea == 'extensions') {
+
+            require_login();
+
+            $access_granted = false;
+            require_once($CFG->dirroot . '/deadline/extensions/lib.php');
+
+            if(!$extension = extensions_plugin::get_extension_by_id($args['0'])) {
+                send_file_not_found();
+            }
+
+            // Only the following people can read this file:
+            // 1) Student Uploader
+            if(!$access_granted) {
+                if($extension->student_id == $USER->id) {
+                    $access_granted = true;
+                }
+            }
+
+            // 2) Staff Members from the course it was sent to.
+            if(!$access_granted) {
+
+                // If this is the exact user the request was sent to, grant access.
+                if($extension->staff_id == $USER->id) {
+                    $access_granted = true;
+                }
+
+                // If this user is in the list of approvers for this activity
+                // let them in
+                $sql    = "SELECT ee.id " .
+                          "FROM {deadline_extensions_enabled} ee, {deadline_extensions_appv} ea " .
+                          "WHERE ea.ext_en_id = ee.id " .
+                          "AND ee.id = :cmid AND ea.user_id = :staffid";
+
+                $params = array(
+                        'cmid'    => $extension->cm_id,
+                        'staffid' => $extension->staff_id
+                );
+
+                if($DB->record_exists_sql($sql, $params)) {
+                    $access_granted = true;
+                }
+
+            }
+
+            // 3) Admins
+            if(!$access_granted) {
+
+                if(is_siteadmin($USER->id)) {
+                    $access_granted = true;
+                }
+            }
+
+            $fullpath = "/$context->id/$component/$filearea/".implode('/', $args);
+
+            if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+                send_file_not_found();
+            }
+
+            if($access_granted) {
+                session_get_instance()->write_close(); // unlock session during fileserving
+                send_stored_file($file, 0, 0, true, array('preview' => $preview)); // must force download - security!
+            } else {
+                send_file_not_found();
+            }
+
+        }
+        // ========================================================================================================================
     } else if (strpos($component, 'mod_') === 0) {
         $modname = substr($component, 4);
         if (!file_exists("$CFG->dirroot/mod/$modname/lib.php")) {
