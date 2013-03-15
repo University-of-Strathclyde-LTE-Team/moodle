@@ -208,9 +208,9 @@ class form_staff_request_edit extends form_base {
         $due_date = extensions_plugin::get_activity_due_date($extension->cm_id);
 
         $fs = get_file_storage();
-        $user_context = context_user::instance($extension->staff_id);
-        $component   = 'user';
-        $file_area   = 'private';
+        $user_context = context_user::instance($extension->student_id);
+        $component   = 'deadline';
+        $file_area   = 'extensions';
 
         $files = $fs->get_area_files($user_context->id, $component, $file_area, $extension->id);
 
