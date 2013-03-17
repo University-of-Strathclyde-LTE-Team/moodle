@@ -4291,7 +4291,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null) {
         }
 
         // ========================================================================================================================
-    } else if ($component == 'deadline') {
+    } else if ($component == 'deadline') { // MDL-7315
         if ($filearea == 'extensions') {
 
             require_login();
@@ -4339,7 +4339,6 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null) {
 
             // 3) Admins
             if(!$access_granted) {
-
                 if(is_siteadmin($USER->id)) {
                     $access_granted = true;
                 }
@@ -4358,7 +4357,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null) {
                 send_file_not_found();
             }
 
-        }
+        } // MDL-7315
         // ========================================================================================================================
     } else if (strpos($component, 'mod_') === 0) {
         $modname = substr($component, 4);
