@@ -3501,7 +3501,7 @@ class plugininfo_deadline extends plugininfo_base {
     }
 
     public function get_uninstall_url() {
-        return new moodle_url("/deadline/{$this->name}/uninstall.php", array('sesskey' => sesskey(), 'action' => 'uninstall'));
+        return new moodle_url("/deadline/{$this->name}/db/uninstall.php", array('sesskey' => sesskey(), 'action' => 'uninstall'));
     }
 
     public function load_settings(part_of_admin_tree $adminroot, $parentnodename, $hassiteconfig) {
