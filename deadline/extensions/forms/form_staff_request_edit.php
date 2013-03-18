@@ -88,14 +88,14 @@ class form_staff_request_edit extends form_base {
         // load a copy of the instanciated form object from this object.
         $mform =& $this->_form;
 
+        $deadline   = new deadlines_plugin();
+        $current_deadline = $deadline->get_date_deadline($this->get_cmid());
+
         if($this->get_extension_id()) {
             $extension = extensions_plugin::get_extension_by_id($this->get_extension_id());
         } else {
+
             // Staff adding on a student behalf.
-            $deadline   = new deadlines_plugin();
-
-            $current_deadline = $deadline->get_date_deadline($this->get_cmid());
-
             if($extension_default = get_config('deadline_extensions','default_ext_length')) {
                 $extension_deadline = $current_deadline + ($extension_default * 3600);
             } else {
@@ -295,12 +295,12 @@ class form_staff_request_edit extends form_base {
         $mform->setDefault('ext_status_code',    $extension->status);
         $mform->setDefault('ext_granted_date',   $extension->date);
 
-        $mform->setDefault('asmt_due_static',    date(extensions_plugin::get_date_format(), $due_date));
+        $mform->setDefault('asmt_due_static',    date(extensions_plugin::get_date_format(), $current_deadline));
 
-        $ext_diff = html_writer::tag('i', extensions_plugin::date_difference($due_date, $extension->date) . ' days', array('class' => 'days_extension'));
+        $ext_diff = html_writer::tag('i', extensions_plugin::date_difference($current_deadline, $extension->date) . ' days', array('class' => 'days_extension'));
         $mform->setDefault('ext_due_static',     date(extensions_plugin::get_date_format(), $extension->date) . ' ' . $ext_diff);
 
-        $req_diff_days = extensions_plugin::date_difference($due_date, $extension->created);
+        $req_diff_days = extensions_plugin::date_difference($current_deadline, $extension->created);
 
         if($req_diff_days > 0) {
             // Request made AFTER due date.

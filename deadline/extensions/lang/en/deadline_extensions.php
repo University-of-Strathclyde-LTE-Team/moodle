@@ -139,7 +139,7 @@ $string['extrequestdate']           = 'Date of Request';
 $string['extapprover']              = 'Request Sent To';
 $string['extstatus']                = 'Status';
 $string['extextension']             = 'Extension';
-$string['extselectassignment']      = 'Assignment Name';
+$string['extselectassignment']      = 'Activity Name';
 $string['extglobalextsettings']     = 'Group Extension Settings';
 $string['extglobalextdate']         = 'Group Extension Date';
 $string['extglobalextopen']         = 'Group Extension Open';
@@ -205,7 +205,7 @@ $string['ext_delete_docs']      = 'Delete documents when extension decision proc
 
 $string['extreasonfor']         = 'Reason for Extension';
 $string['extsupporting']        = 'Supporting Documentation';
-$string['extasmntdue']          = 'Assignment Due Date';
+$string['extasmntdue']          = 'Activity Due Date';
 $string['extsubmission']        = 'Submission Date Requested';
 
 $string['ext_staff_feedback']   = 'Staff Feedback';
