@@ -24,6 +24,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function xmldb_deadline_extensions_uninstall() {
-    return true;
-}
+require_once('config.php');
+require_once($CFG->dirroot . '/lib/adminlib.php');
+
+uninstall_plugin('deadline', 'extensions');
