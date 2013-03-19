@@ -36,9 +36,7 @@ require_once ('form_base.php');
 class form_student_requests extends form_base {
 
     protected $page_name = null;
-    protected $save_destination = 'request_new';
-
-    private $filters = null;
+    private   $filters   = null;
 
     public function __construct() {
         parent::__construct();

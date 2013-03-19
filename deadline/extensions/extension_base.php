@@ -71,8 +71,8 @@ class extension_base {
                     $pageObj->class = 'form_student_requests';
                 break;
                 case 'request_edit':
-                    $pageObj->file  = 'forms/form_edit_request.php';
-                    $pageObj->class = 'form_edit_request';
+                    $pageObj->file  = 'forms/form_request_edit.php';
+                    $pageObj->class = 'form_request_edit';
                 break;
                 case 'request_new':
                     $pageObj->file  = 'forms/form_request_new.php';
@@ -254,13 +254,12 @@ class extension_base {
         $page = $this->get_page();
 
         $navlinks = array();
-        $navlinks[] = array('name' => get_string("ext_module", extensions_plugin::EXTENSIONS_LANG), 'link' => '/local/extension/?id=' . $this->get_course()->id, 'type' => 'activity');
+        $navlinks[] = array('name' => get_string("ext_module", extensions_plugin::EXTENSIONS_LANG), 'link' => '/deadline/extension/?id=' . $this->get_course()->id, 'type' => 'activity');
         $navlinks[] = array('name' => $this->get_form($page)->get_page_name(), 'link' => '', 'type' => 'activity');
         return build_navigation($navlinks);
     }
 
     public function load_form($page = null) {
-
 
         $mform = $this->get_form($page);
 

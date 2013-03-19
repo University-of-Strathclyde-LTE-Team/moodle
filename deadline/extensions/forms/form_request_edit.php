@@ -25,6 +25,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once('form_base.php');
+require_once('form_request_new.php');
+
 class form_request_edit extends form_request_new {
 
     protected $page_name = null;
@@ -33,11 +36,9 @@ class form_request_edit extends form_request_new {
         parent::__construct();
 
         $this->page_name = "Edit Extension Request";
-
     }
 
     public function definition_after_data() {
-
         parent::definition_after_data();
 
         global $CFG, $COURSE, $USER, $course;
@@ -45,17 +46,43 @@ class form_request_edit extends form_request_new {
         // load a copy of the instanciated form object from this object.
         $mform =& $this->_form;
 
+        $ext = extensions_plugin::get_extension_by_id($this->get_extension_id());
 
-        // todo: this all needs to be refactored.
+        $mform->setDefault('reason', $ext->request_text);
+//         $mform->setDefault('attachments', ''); // how?
+        $mform->setDefault('date', $ext->date);
+        $mform->setDefault('time_ext', $ext->timelimit);
+        $mform->setDefault('ext_staffmember_id', $ext->staff_id);
+        $mform->setDefault('response_message', $ext->response_text);
 
-        $ext = $this->get_extension_details();
+        if($ext->date == 0) {
+
+            if($mform->elementExists('type')) {
+                $mform->setDefault('type', extensions_plugin::EXTENSION_TYPE_TIME);
+            }
+
+            if($mform->elementExists('time_ext')) {
+
+                $deadline = new deadlines_plugin();
+                $timelimit = $deadline->get_timelimit($ext->cm_id);
+
+                $extension = $ext->timelimit - $timelimit;
+
+                $mform->setDefault('time_ext', $extension);
+            }
+
+        } else {
+            if($mform->elementExists('type')) {
+                $mform->setDefault('type', extensions_plugin::EXTENSION_TYPE_DATE);
+            }
+        }
 
         // For some status' we need to lock the form down. Others it needs
         // to stay open so it can be modified.
-        if($ext->ext_status_code == extensions_plugin::STATUS_APPROVED  ||
-                $ext->ext_status_code == extensions_plugin::STATUS_DENIED    ||
-                $ext->ext_status_code == extensions_plugin::STATUS_WITHDRAWN ||
-                $ext->ext_status_code == extensions_plugin::STATUS_REVOKED) {
+        if($ext->status == extensions_plugin::STATUS_APPROVED  ||
+                $ext->status == extensions_plugin::STATUS_DENIED    ||
+                $ext->status == extensions_plugin::STATUS_WITHDRAWN ||
+                $ext->status == extensions_plugin::STATUS_REVOKED) {
             $this->set_readonly(true);
         } else {
             // Remove the field showing what is in 'approved date' if this
@@ -66,23 +93,37 @@ class form_request_edit extends form_request_new {
 
         }
 
-        $fileIcon = null;
+        if($this->get_readonly()) {
 
-        $extDocs = $this->get_extension_docs();
+            if($mform->elementExists('reason')) {
+                $mform->freeze('reason');
+            }
 
-        if(is_array($extDocs)){
-            $files = array();
-            foreach($extDocs as $extDoc) {
+            if($mform->elementExists('date')) {
+                $mform->freeze('date');
+            }
 
-                $icon = mimeinfo('icon',$extDoc->doc_url);
-                $fileLink = "<a href='{$CFG->wwwroot}/user/u_file.php?id={$ext->user_id}&amp;file={$extDoc->doc_url}' ><img class='icon' src='$CFG->pixpath/f/$icon' alt='$icon'/>".basename($extDoc->doc_url)."</a>&nbsp;";
-                //$fileIcon = "<a href='delete.php?cid={$course->id}&id={$extDoc->id}'>&nbsp;<img title='' src='{$CFG->pixpath}/t/delete.gif' class='iconsmall' alt='' /></a>";
-                $files[] = $fileLink . $fileIcon;
+            if($mform->elementExists('attachments')) {
+                $mform->freeze('attachments');
+            }
 
+            if($mform->elementExists('type')) {
+                $mform->freeze('type');
+            }
+
+            if($mform->elementExists('time_ext')) {
+                $mform->freeze('time_ext');
+            }
+
+            if($mform->elementExists('ext_staffmember_id')) {
+                $mform->freeze('ext_staffmember_id');
+            }
+
+            // Remove save/withdraw buttons
+            if($mform->elementExists('buttona')) {
+                $mform->removeElement('buttona');
             }
         }
-
-
 
     }
 

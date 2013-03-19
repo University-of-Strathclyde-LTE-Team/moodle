@@ -59,7 +59,7 @@ class form_request_new extends form_base {
 
         $mform->addElement('static','ext_error');
 
-        $mform->addElement('static','assignment_name', get_string('extselectassignment', extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('static', 'assignment_name', get_string('extselectassignment', extensions_plugin::EXTENSIONS_LANG));
 
         $mform->addElement('static', 'group_detail', get_string('group_submission', extensions_plugin::EXTENSIONS_LANG), '');
         $mform->addElement('hidden', 'group_list', '0');
@@ -82,7 +82,7 @@ class form_request_new extends form_base {
                 extensions_plugin::EXTENSION_TYPE_TIME => get_string('time_extension', extensions_plugin::EXTENSIONS_LANG)
         );
 
-        $length = $mform->addElement('select', 'type', get_string('date_or_time', extensions_plugin::EXTENSIONS_LANG), $options);
+        $mform->addElement('select', 'type', get_string('date_or_time', extensions_plugin::EXTENSIONS_LANG), $options);
         $mform->addRule('type', get_string('required'), 'required', null, 'client');
 
         $currdue = $mform->addElement('date_time_selector', 'currdue', get_string('extcurrduedate', extensions_plugin::EXTENSIONS_LANG), $this->date_options);
@@ -91,7 +91,7 @@ class form_request_new extends form_base {
 
         $mform->addElement('static', 'static_time_limit', 'Current time limit');
 
-        $length = $mform->addElement('select', 'time_ext', 'Time extension', $options);
+        $mform->addElement('select', 'time_ext', 'Time extension', extensions_plugin::get_timelimit_options());
 
         // -------------------------
 
@@ -105,7 +105,7 @@ class form_request_new extends form_base {
         $mform->addElement('date_time_selector', 'granted_ext_date', get_string('extapproveddate', extensions_plugin::EXTENSIONS_LANG), $this->date_options);
         $mform->freeze('granted_ext_date');
 
-        $mform->addElement('static','response_message', get_string('ext_response_mesg', extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('static', 'response_message', get_string('ext_response_mesg', extensions_plugin::EXTENSIONS_LANG));
 
 
         $mform->addElement('hidden', 'cmid');
@@ -314,7 +314,7 @@ class form_request_new extends form_base {
         }
 
         // check for duplicates.
-        if($dups = extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id)) {
+        if($dups = extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id, $this->get_extension_id())) {
             foreach($dups as $dup) {
                 if($mform->elementExists('duplicate_message')) {
 
