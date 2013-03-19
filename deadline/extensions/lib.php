@@ -2016,6 +2016,12 @@ class extensions_plugin extends deadline_plugin {
 
             $email_subject = get_config('deadline_extensions', 'more_info_subject');
             $email_content = get_config('deadline_extensions', 'more_info_text');
+
+        } else {
+
+            $email_subject = get_config('deadline_extensions', 'more_info_subject');
+            $email_content = get_config('deadline_extensions', 'more_info_text');
+
         }
 
         // Add a link to the extension page at the bottom of the email
