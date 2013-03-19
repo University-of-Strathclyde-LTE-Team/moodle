@@ -254,6 +254,17 @@ class extensions_plugin extends deadline_plugin {
         }
     }
 
+    public static function get_timelimit_options() {
+
+        $options = array(
+                '-1'  => '&nbsp;',
+                '60'  => 'One minute',
+                '120' => 'Two minutes'
+        );
+
+        return $options;
+    }
+
     /**
      * Function to retrieve all available status as an array of strings.
      *
@@ -904,7 +915,7 @@ class extensions_plugin extends deadline_plugin {
         // We sometimes want to see if there's duplicates that are not this ID
         if(!is_null($existing_id)) {
 
-            $sql = "SELECT id, cm_id, staff_id, status, date " .
+            $sql = "SELECT id, cm_id, staff_id, status, date, timelimit " .
                     "FROM {deadline_extensions} " .
                     "WHERE cm_id = ? AND student_id = ? AND id != ?";
 
@@ -914,7 +925,7 @@ class extensions_plugin extends deadline_plugin {
             // Other times we want to see if there is already a request, such as
             // as when requesting a new extension, and duplicates are dis-allowed.
 
-            $sql = "SELECT id, cm_id, staff_id, status, date " .
+            $sql = "SELECT id, cm_id, staff_id, status, date, timelimit " .
                     "FROM {deadline_extensions} " .
                     "WHERE cm_id = ? AND student_id = ?";
 

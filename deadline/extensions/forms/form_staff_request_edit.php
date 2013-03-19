@@ -58,8 +58,6 @@ class form_staff_request_edit extends form_base {
         $mform->addElement('static', 'ext_reason_static',  get_string('extreasonfor',  extensions_plugin::EXTENSIONS_LANG));
 
         $mform->addElement('static', 'supdoc1', get_string('extsupporting', extensions_plugin::EXTENSIONS_LANG), NULL);
-//         $mform->addElement('static', 'supdoc2', NULL, NULL);
-//         $mform->addElement('static', 'supdoc3', NULL, NULL);
 
         $mform->addElement('static', 'asmt_due_static',    get_string('extasmntdue',    extensions_plugin::EXTENSIONS_LANG), null);
         $mform->addElement('static', 'ext_due_static',     get_string('extsubmission',  extensions_plugin::EXTENSIONS_LANG), null);
@@ -70,9 +68,11 @@ class form_staff_request_edit extends form_base {
         $mform->addElement('header','general', get_string('extapproval', extensions_plugin::EXTENSIONS_LANG));
 
         $ext_status_code = $mform->addElement('select', 'ext_status_code', get_string('extstatus', extensions_plugin::EXTENSIONS_LANG), extensions_plugin::get_all_extension_status());
-        $mform->addRule('ext_status_code', 'Please Select', 'required', null, 'client'); // TODO: Put this string in the LANG file.
+        $mform->addRule('ext_status_code', get_string('please_select', extensions_plugin::EXTENSIONS_LANG), 'required', null, 'client');
 
-        $ext_granted_date = $mform->addElement('date_time_selector', 'ext_granted_date', get_string('extapproveddate',extensions_plugin::EXTENSIONS_LANG), extensions_plugin::get_date_options());
+        $ext_granted_date = $mform->addElement('date_time_selector', 'ext_granted_date', get_string('extapproveddate', extensions_plugin::EXTENSIONS_LANG), extensions_plugin::get_date_options());
+
+        $ext_timelimit = $mform->addElement('select', 'ext_timelimit', get_string('approved_timelimit', extensions_plugin::EXTENSIONS_LANG), extensions_plugin::get_timelimit_options());
 
         $response_text = $mform->addElement('htmleditor', 'response_text', get_string('extresponse',extensions_plugin::EXTENSIONS_LANG), array('cols' => 60, 'rows' => 6));
         $mform->setType('response_text', PARAM_RAW); // to be cleaned before display
@@ -89,7 +89,8 @@ class form_staff_request_edit extends form_base {
         $mform =& $this->_form;
 
         $deadline   = new deadlines_plugin();
-        $current_deadline = $deadline->get_date_deadline($this->get_cmid());
+        $current_deadline  = $deadline->get_date_deadline($this->get_cmid());
+        $current_timelimit = $deadline->get_timelimit($this->get_cmid());
 
         if($this->get_extension_id()) {
             $extension = extensions_plugin::get_extension_by_id($this->get_extension_id());
@@ -121,7 +122,7 @@ class form_staff_request_edit extends form_base {
 
                 $links = null;
 
-                $mform->setDefault('other_req', get_string('ext_other_req_exists',  extensions_plugin::EXTENSIONS_LANG));
+                $mform->setDefault('other_req', get_string('ext_other_req_exists', extensions_plugin::EXTENSIONS_LANG));
 
                 foreach($dups as $dup) {
 
@@ -129,8 +130,14 @@ class form_staff_request_edit extends form_base {
                     $params = array('page' => 'request_edit', 'eid' => $dup->id);
                     $url = new moodle_url(extensions_plugin::EXTENSIONS_URL_PATH . '/', $params);
 
+                    if($dup->date != 0) {
+                        $dt = date(extensions_plugin::get_date_format(), $dup->date);
+                    } else if($dup->date == 0 && $dup->timelimit != 0){
+                        $dt = $dup->timelimit / 60 . ' ' . get_string('minutes', extensions_plugin::EXTENSIONS_LANG);
+                    }
+
                     $links .= html_writer::link($url, $string) . ' ' .
-                              date(extensions_plugin::get_date_format(), $dup->date) . ' ' .
+                              $dt . ' ' .
                               html_writer::tag('i', extensions_plugin::get_status_string($dup->status)) . ' ' .
                               html_writer::empty_tag('br');
 
@@ -205,10 +212,7 @@ class form_staff_request_edit extends form_base {
             }
         }
 
-//         $due_date = extensions_plugin::get_activity_due_date($extension->cm_id);
-        $deadline   = new deadlines_plugin();
-        $due_date = $deadline->get_date_deadline($extension->cm_id);
-
+        // Get the file(s) stored for this request.
         $fs = get_file_storage();
         $user_context = context_user::instance($extension->student_id);
         $component   = 'deadline';
@@ -236,25 +240,6 @@ class form_staff_request_edit extends form_base {
             $mform->setDefault('supdoc1', implode($br, $out));
         }
 
-//         $docs = extensions_plugin::get_extension_documents();
-
-//         if(isset($docs) && $docs != FALSE) {
-//             $i = 1;
-//             foreach($docs as $doc) {
-
-//                 $field = 'supdoc' . $i;
-//                 $path = "/user/u_file.php?id={$ext->user_id}&amp;file={$doc->doc_url}";
-
-//                 $mform->setDefault($field, "<a href=\"$path\">" . basename($doc->doc_url) . "</a>");
-//                 $i++;
-//             }
-
-//         } else {
-//             $mform->setDefault('supdoc1', get_string('ext_no_docs', extensions_plugin::EXTENSIONS_LANG));
-//             $mform->removeElement('supdoc2');
-//             $mform->removeElement('supdoc3');
-//         }
-
         $mform->addElement('hidden', 'eid', $extension->id);
         $mform->setType('extid', PARAM_INT);
 
@@ -280,7 +265,6 @@ class form_staff_request_edit extends form_base {
             $this->set_readonly(true);
         }
 
-
         // Admins can always modify.
         if(is_siteadmin($USER->id)) {
             $this->set_readonly(false);
@@ -293,14 +277,42 @@ class form_staff_request_edit extends form_base {
         }
 
         $mform->setDefault('ext_reason_static', $extension->request_text);
-
         $mform->setDefault('ext_status_code',    $extension->status);
-        $mform->setDefault('ext_granted_date',   $extension->date);
 
-        $mform->setDefault('asmt_due_static',    date(extensions_plugin::get_date_format(), $current_deadline));
+        if($extension->date == 0) {
 
-        $ext_diff = html_writer::tag('i', extensions_plugin::date_difference($current_deadline, $extension->date) . ' days', array('class' => 'days_extension'));
-        $mform->setDefault('ext_due_static',     date(extensions_plugin::get_date_format(), $extension->date) . ' ' . $ext_diff);
+            // Ext granted date is not required in Timelimit extension mode
+            // Remove it.
+            if($mform->elementExists('ext_granted_date')) {
+                $mform->removeElement('ext_granted_date');
+            }
+
+            // Set the current request in the dropdown.
+            if($mform->elementExists('ext_timelimit')) {
+                $element = $mform->getElement('ext_timelimit');
+                $selected_item =  $extension->timelimit - $current_timelimit;
+
+                $element->setSelected($selected_item);
+            }
+
+            $detail = $mform->getElement('asmt_due_static');
+            $detail->setLabel(get_string('current_timelimit', extensions_plugin::EXTENSIONS_LANG));
+            $mform->setDefault('asmt_due_static', $current_timelimit / 60 . ' ' . get_string('minutes', extensions_plugin::EXTENSIONS_LANG));
+
+            $detail = $mform->getElement('ext_due_static');
+            $detail->setLabel(get_string('requested_timelimit', extensions_plugin::EXTENSIONS_LANG));
+            $mform->setDefault('ext_due_static', $extension->timelimit / 60 . ' ' . get_string('minutes', extensions_plugin::EXTENSIONS_LANG));
+
+        } else {
+
+            $mform->setDefault('ext_granted_date',   $extension->date);
+
+            $mform->setDefault('asmt_due_static', date(extensions_plugin::get_date_format(), $current_deadline));
+
+            $ext_diff = html_writer::tag('i', extensions_plugin::date_difference($current_deadline, $extension->date) . ' days', array('class' => 'days_extension'));
+            $mform->setDefault('ext_due_static',     date(extensions_plugin::get_date_format(), $extension->date) . ' ' . $ext_diff);
+
+        }
 
         $req_diff_days = extensions_plugin::date_difference($current_deadline, $extension->created);
 
@@ -332,14 +344,6 @@ class form_staff_request_edit extends form_base {
             if($mform->elementExists('buttonar')) {
                 $buttonGroup = $mform->removeElement('buttonar');
             }
-
-
-        } else {
-
-            //if($this->get_saved()) {
-                $mform->addElement('static', 'static', null, get_string('ext_saved', extensions_plugin::EXTENSIONS_LANG));
-            //}
-
         }
 
         // insert the history here.
@@ -386,7 +390,7 @@ class form_staff_request_edit extends form_base {
 
                 if(!extensions_plugin::is_extension_approver($this->get_extension_id())) {
                     error(get_string('ext_not_approver', extensions_plugin::EXTENSIONS_LANG));
-                    exit;
+                    return false;
                 }
 
                 $ext_data                = new stdClass;

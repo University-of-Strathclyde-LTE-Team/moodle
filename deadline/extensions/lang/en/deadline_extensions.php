@@ -68,6 +68,7 @@ $string['date_extension'] = 'Date extension';
 $string['time_extension'] = 'Time extension';
 
 $string['minutes'] = 'Minutes';
+$string['date_or_time'] = 'Date or Time extension';
 
 $string['force_extension_enabled'] = "Extensions always enabled";
 $string['force_extension_enabled_long'] = "Force extensions to always be enabled for all activities";
@@ -266,6 +267,11 @@ $string['ext_email_link']             = 'Please select this link to view the req
 
 $string['ext_indiv_req'] = 'Individual &amp; Group';
 $string['ext_glob_req']  = 'Global';
+
+$string['please_select']       = 'Please select';
+$string['current_timelimit']   = 'Current timelimit';
+$string['requested_timelimit'] = 'Requested timelimit';
+$string['approved_timelimit']  = 'Approved timelimit';
 
 $string['exttype']  = 'Type';
 $string['ext_individual'] = 'Individual';

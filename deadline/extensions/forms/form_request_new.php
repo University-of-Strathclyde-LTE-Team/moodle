@@ -82,7 +82,7 @@ class form_request_new extends form_base {
                 extensions_plugin::EXTENSION_TYPE_TIME => get_string('time_extension', extensions_plugin::EXTENSIONS_LANG)
         );
 
-        $length = $mform->addElement('select', 'type', 'Date or Time Extension', $options);
+        $length = $mform->addElement('select', 'type', get_string('date_or_time', extensions_plugin::EXTENSIONS_LANG), $options);
         $mform->addRule('type', get_string('required'), 'required', null, 'client');
 
         $currdue = $mform->addElement('date_time_selector', 'currdue', get_string('extcurrduedate', extensions_plugin::EXTENSIONS_LANG), $this->date_options);
@@ -90,12 +90,6 @@ class form_request_new extends form_base {
         $date = $mform->addElement('date_time_selector', 'date', get_string('extrequestdateacst', extensions_plugin::EXTENSIONS_LANG), $this->date_options);
 
         $mform->addElement('static', 'static_time_limit', 'Current time limit');
-
-        $options = array(
-                '-1'  => '&nbsp;',
-                '60'  => 'One minute',
-                '120' => 'Two minutes'
-        );
 
         $length = $mform->addElement('select', 'time_ext', 'Time extension', $options);
 
