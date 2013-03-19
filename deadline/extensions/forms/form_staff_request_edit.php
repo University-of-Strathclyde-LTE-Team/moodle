@@ -205,7 +205,9 @@ class form_staff_request_edit extends form_base {
             }
         }
 
-        $due_date = extensions_plugin::get_activity_due_date($extension->cm_id);
+//         $due_date = extensions_plugin::get_activity_due_date($extension->cm_id);
+        $deadline   = new deadlines_plugin();
+        $due_date = $deadline->get_date_deadline($extension->cm_id);
 
         $fs = get_file_storage();
         $user_context = context_user::instance($extension->student_id);
@@ -354,7 +356,8 @@ class form_staff_request_edit extends form_base {
         $errors = array();
 
         $extension = extensions_plugin::get_extension_by_id($this->get_extension_id());
-        $due_date  = extensions_plugin::get_activity_due_date($extension->cm_id);
+        $deadline   = new deadlines_plugin();
+        $due_date = $deadline->get_date_deadline($extension->cm_id);
 
         // if the request is DENIED then the message is compulsory
         if($data['ext_status_code'] == extensions_plugin::STATUS_DENIED && strlen($data['response_text']) == '0' ) {
