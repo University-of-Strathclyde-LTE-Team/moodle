@@ -76,14 +76,10 @@ class form_request_new extends form_base {
         $file_params =  array('subdirs' => 0, 'maxfiles' => 4, 'accepted_types' => array('document') ); // make this dynamic.
         $mform->addElement('filemanager', 'attachments', get_string('extsupdoc',extensions_plugin::EXTENSIONS_LANG), null, $file_params);
 
-        defined('NO_EXTENSION')   or define('NO_EXTENSION',  -1);
-        defined('DATE_EXTENSION') or define('DATE_EXTENSION', 1);
-        defined('TIME_EXTENSION') or define('TIME_EXTENSION', 2);
-
         $options = array(
-                NO_EXTENSION   => '&nbsp;',
-                DATE_EXTENSION => get_string('date_extension', extensions_plugin::EXTENSIONS_LANG),
-                TIME_EXTENSION => get_string('time_extension', extensions_plugin::EXTENSIONS_LANG)
+                extensions_plugin::EXTENSION_TYPE_NONE   => '&nbsp;',
+                extensions_plugin::EXTENSION_TYPE_DATE => get_string('date_extension', extensions_plugin::EXTENSIONS_LANG),
+                extensions_plugin::EXTENSION_TYPE_TIME => get_string('time_extension', extensions_plugin::EXTENSIONS_LANG)
         );
 
         $length = $mform->addElement('select', 'type', 'Date or Time Extension', $options);
@@ -267,15 +263,20 @@ class form_request_new extends form_base {
             }
         }
 
-
-        //        $mform->addElement('selectyesno', 'ext_doc_del', get_string('ext_delete_docs', extensions_plugin::EXTENSIONS_LANG));
-        //        if(isset($ext->ext_doc_del)) {
-        //            $mform->setDefault('ext_doc_del', $ext->ext_doc_del);
-        //        }
-
         if($mform->elementExists('currdue')) {
             $mform->setDefault('currdue', $deadline->date_deadline);
             $mform->freeze('currdue');
+        }
+
+        // Add the configured amount of time to the extension
+        if($extension_default = get_config('deadline_extensions','default_ext_length')) {
+            $extension_deadline = $deadline->date_deadline + ($extension_default * 3600);
+        } else {
+            $extension_deadline = $deadline->date_deadline + 3600;
+        }
+
+        if($mform->elementExists('date')) {
+            $mform->setDefault('date', $extension_deadline);
         }
 
         // If this is NOT a quiz, we need to hide some fields.
@@ -290,14 +291,14 @@ class form_request_new extends form_base {
             }
 
             // Disable date if no type selection made
-            $mform->disabledIf('date', 'type', 'eq', NO_EXTENSION);
+            $mform->disabledIf('date', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_NONE);
             // Disable date if selection matches Time Extension
-            $mform->disabledIf('date', 'type', 'eq', TIME_EXTENSION);
+            $mform->disabledIf('date', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_TIME);
 
             // Disable length if no type selection made
-            $mform->disabledIf('time_ext', 'type', 'eq', NO_EXTENSION);
+            $mform->disabledIf('time_ext', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_NONE);
             // Disable length if selection matches Date Extension
-            $mform->disabledIf('time_ext', 'type', 'eq', DATE_EXTENSION);
+            $mform->disabledIf('time_ext', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_DATE);
 
         } else {
 
@@ -317,15 +318,6 @@ class form_request_new extends form_base {
             }
 
         }
-
-        // Add the configured amount of time to the extension
-        if($extension_default = get_config('deadline_extensions','default_ext_length')) {
-            $extension_deadline = $deadline->date_deadline + ($extension_default * 3600);
-        } else {
-            $extension_deadline = $deadline->date_deadline + 3600;
-        }
-
-        $mform->setDefault('date', $extension_deadline);
 
         // check for duplicates.
         if($dups = extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id)) {
@@ -410,6 +402,11 @@ class form_request_new extends form_base {
     public function save_hook($form_data) {
         global $DB, $CFG, $COURSE, $USER;
 
+        $deadlines  = new deadlines_plugin();
+        $extensions = new extensions_plugin();
+
+        $deadline = $deadlines->get_deadlines_for_cmid($this->get_cmid());
+
         if(isset($form_data->withdrawbutton)) {
             $type = 'withdraw';
         } else if(isset($form_data->submitbutton)) {
@@ -423,19 +420,27 @@ class form_request_new extends form_base {
         $form_data->ext_staffmember_id = clean_param($form_data->ext_staffmember_id, PARAM_INT);
         $form_data->group_list         = clean_param($form_data->group_list,         PARAM_TEXT);
 
-        $form_data->reason  = clean_param($form_data->reason, PARAM_TEXT);
-        $form_data->page    = clean_param($form_data->page,   PARAM_TEXT);
-        $form_data->action  = clean_param($form_data->action, PARAM_TEXT);
-        $form_data->date    = clean_param($form_data->date,   PARAM_INT);
-        $form_data->id      = clean_param($form_data->id,     PARAM_INT);
-        $form_data->cmid    = clean_param($form_data->cmid,   PARAM_INT);
+        $form_data->reason   = clean_param($form_data->reason,   PARAM_TEXT);
+        $form_data->page     = clean_param($form_data->page,     PARAM_TEXT);
+        $form_data->action   = clean_param($form_data->action,   PARAM_TEXT);
+        $form_data->date     = clean_param($form_data->date,     PARAM_INT);
+        $form_data->id       = clean_param($form_data->id,       PARAM_INT);
+        $form_data->cmid     = clean_param($form_data->cmid,     PARAM_INT);
+
+        if(isset($form_data->type)) {
+            $form_data->type     = clean_param($form_data->type,     PARAM_INT);
+        }
+
+        if(isset($form_data->time_ext)) {
+            $form_data->time_ext = clean_param($form_data->time_ext, PARAM_INT);
+        }
 
         // Looks like the supplied data should all be OK. It's been checked by
         // the validate functions and we've done some of our own validation, too.
 
         $data                = new stdClass;
 
-        if($form_data->group_submission == 1) {
+        if(isset($form_data->group_submission) && $form_data->group_submission == 1) {
             $data->ext_type  = extensions_plugin::EXT_GROUP;
         } else {
             $data->ext_type  = extensions_plugin::EXT_INDIVIDUAL;
@@ -446,9 +451,21 @@ class form_request_new extends form_base {
         $data->student_id    = $USER->id;
         $data->staff_id      = $form_data->ext_staffmember_id;
         $data->request_text  = $form_data->reason;
-        $data->date          = $form_data->date;
         $data->status        = extensions_plugin::STATUS_PENDING;
         $data->created       = date('U');
+
+        // See if the user has selected a time based extension (quizzes).
+        if(isset($form_data->type) && $form_data->type == extensions_plugin::EXTENSION_TYPE_TIME) {
+            $existing_timelimit  = $deadline->timelimit;
+            $extension_timelimit = $form_data->time_ext;
+
+            $extended_timelimit = $existing_timelimit + $extension_timelimit;
+
+            $data->timelimit = $extended_timelimit;
+            $data->date      = 0;
+        } else {
+            $data->date          = $form_data->date;
+        }
 
         if($ext_id = $DB->insert_record('deadline_extensions', $data, true)) {
 
