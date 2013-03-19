@@ -277,7 +277,7 @@ class form_staff_request_edit extends form_base {
         }
 
         $mform->setDefault('ext_reason_static', $extension->request_text);
-        $mform->setDefault('ext_status_code',    $extension->status);
+        $mform->setDefault('ext_status_code',   $extension->status);
 
         if($extension->date == 0) {
 
@@ -368,8 +368,10 @@ class form_staff_request_edit extends form_base {
             $errors['response_text'] = get_string('ext_message_required', extensions_plugin::EXTENSIONS_LANG);
         }
 
-        if($data['ext_granted_date'] < $due_date) {
-            $errors['ext_granted_date'] = get_string('ext_granted_before_due', extensions_plugin::EXTENSIONS_LANG);
+        if(isset($data['ext_granted_date'])) {
+            if($data['ext_granted_date'] < $due_date) {
+                $errors['ext_granted_date'] = get_string('ext_granted_before_due', extensions_plugin::EXTENSIONS_LANG);
+            }
         }
 
         if(!extensions_plugin::is_extension_approver($this->get_extension_id())) {
@@ -397,7 +399,17 @@ class form_staff_request_edit extends form_base {
                 $ext_data->id            = $form_data->eid;
                 $ext_data->status        = $form_data->ext_status_code;
                 $ext_data->response_text = $form_data->response_text;
-                $ext_data->date          = $form_data->ext_granted_date;
+
+                if(isset($form_data->ext_granted_date)) {
+                    $ext_data->date      = $form_data->ext_granted_date;
+                }
+                if(isset($form_data->ext_timelimit)) {
+                    $deadline = new deadlines_plugin();
+                    $timelimit = $deadline->get_timelimit($this->get_cmid());
+
+                    $ext_data->timelimit = $timelimit + $form_data->ext_timelimit;
+                    $ext_data->date      = 0;
+                }
 
                 if($DB->update_record('deadline_extensions', $ext_data)) {
 
