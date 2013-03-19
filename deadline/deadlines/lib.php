@@ -91,6 +91,24 @@ class deadlines_plugin extends deadline_plugin {
         return $this->get_deadline_field($cm_id, 'date_cutoff');
     }
 
+    public function get_timelimit($cm_id) {
+
+        if(is_null($cm_id)) {
+            return 0;
+        }
+
+        return $this->get_deadline_field($cm_id, 'timelimit');
+    }
+
+    public function get_attempts($cm_id) {
+
+        if(is_null($cm_id)) {
+            return 0;
+        }
+
+        return $this->get_deadline_field($cm_id, 'attempts');
+    }
+
     public function get_deadline_field($cm_id, $field = 'date_deadline') {
         global $DB;
 
@@ -227,6 +245,7 @@ class deadlines_plugin extends deadline_plugin {
         $data->date_open     = $this->get_open_date($cm_id, $user_id);
         $data->date_deadline = $this->get_due_date($cm_id, $user_id);
         $data->date_cutoff   = $this->get_cut_off_date($cm_id, $user_id);
+        $data->timelimit     = $this->get_timelimit($cm_id, $user_id);
 
         return $data;
     }

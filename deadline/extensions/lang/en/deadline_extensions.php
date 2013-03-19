@@ -64,6 +64,11 @@ $string['group_extension']   = 'Group(s)';
 
 $string['invalid_activity'] = 'Invalid Activity';
 
+$string['date_extension'] = 'Date extension';
+$string['time_extension'] = 'Time extension';
+
+$string['minutes'] = 'Minutes';
+
 $string['force_extension_enabled'] = "Extensions always enabled";
 $string['force_extension_enabled_long'] = "Force extensions to always be enabled for all activities";
 

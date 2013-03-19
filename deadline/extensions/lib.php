@@ -480,6 +480,10 @@ class extensions_plugin extends deadline_plugin {
         return $modinfo->get_cm($cm_id);
     }
 
+    public static function get_activity_type_by_cmid($cm_id) {
+        return extensions_plugin::get_activity_detail_by_cmid($cm_id)->modname;
+    }
+
     public static function get_activity_id_by_extid($ext_id) {
         global $DB;
 
@@ -1022,6 +1026,10 @@ class extensions_plugin extends deadline_plugin {
 
             if($DB->update_record('deadline_extensions', $item)) {
 
+                $form_data->eid             = $item->id;
+                $form_data->ext_status_code = $item->status;
+                $form_data->response_text   = "";
+
                 // Add to the extensions history table.
                 extensions_plugin::add_history($form_data);
 
@@ -1417,7 +1425,8 @@ class extensions_plugin extends deadline_plugin {
                 $staffNameCell       = new html_table_cell();
                 $checkboxCell        = new html_table_cell();
 
-                $due_date = extensions_plugin::get_activity_due_date($activity->id);
+                $deadline   = new deadlines_plugin();
+                $due_date = $deadline->get_date_deadline($activity->id);
                 $date_diff = html_writer::tag('i', extensions_plugin::date_difference($due_date, $extension->date) . ' days', array('class' => 'days_extension'));
 
                 // Add the text to each cell in the table.

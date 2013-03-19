@@ -76,9 +76,34 @@ class form_request_new extends form_base {
         $file_params =  array('subdirs' => 0, 'maxfiles' => 4, 'accepted_types' => array('document') ); // make this dynamic.
         $mform->addElement('filemanager', 'attachments', get_string('extsupdoc',extensions_plugin::EXTENSIONS_LANG), null, $file_params);
 
+        defined('NO_EXTENSION')   or define('NO_EXTENSION',  -1);
+        defined('DATE_EXTENSION') or define('DATE_EXTENSION', 1);
+        defined('TIME_EXTENSION') or define('TIME_EXTENSION', 2);
+
+        $options = array(
+                NO_EXTENSION   => '&nbsp;',
+                DATE_EXTENSION => get_string('date_extension', extensions_plugin::EXTENSIONS_LANG),
+                TIME_EXTENSION => get_string('time_extension', extensions_plugin::EXTENSIONS_LANG)
+        );
+
+        $length = $mform->addElement('select', 'type', 'Date or Time Extension', $options);
+        $mform->addRule('type', get_string('required'), 'required', null, 'client');
 
         $currdue = $mform->addElement('date_time_selector', 'currdue', get_string('extcurrduedate', extensions_plugin::EXTENSIONS_LANG), $this->date_options);
+
         $date = $mform->addElement('date_time_selector', 'date', get_string('extrequestdateacst', extensions_plugin::EXTENSIONS_LANG), $this->date_options);
+
+        $mform->addElement('static', 'static_time_limit', 'Current time limit');
+
+        $options = array(
+                '-1'  => '&nbsp;',
+                '60'  => 'One minute',
+                '120' => 'Two minutes'
+        );
+
+        $length = $mform->addElement('select', 'time_ext', 'Time extension', $options);
+
+        // -------------------------
 
         $mform->addElement('select', 'ext_staffmember_id', get_string('extsendto',extensions_plugin::EXTENSIONS_LANG));
         $mform->addRule('ext_staffmember_id', get_string("please_select", extensions_plugin::EXTENSIONS_LANG), 'required', null, 'client');
@@ -129,7 +154,9 @@ class form_request_new extends form_base {
         }
 
         // withdrawbutton
-        $mform->disabledIf('withdrawbutton', 'reason', 'eq', '');
+        if($mform->elementExists('withdrawbutton')) {
+            $mform->disabledIf('withdrawbutton', 'reason', 'eq', '');
+        }
 
         // Only enable button if there is a reason present
         //$mform->disabledIf('submitbutton', 'reason', 'eq', '');
@@ -149,7 +176,7 @@ class form_request_new extends form_base {
         // load a copy of the instanciated form object from this object.
         $mform =& $this->_form;
 
-        $deadlines   = new deadlines_plugin();
+        $deadlines  = new deadlines_plugin();
         $extensions = new extensions_plugin();
 
         $deadline = $deadlines->get_deadlines_for_cmid($this->get_cmid());
@@ -246,8 +273,50 @@ class form_request_new extends form_base {
         //            $mform->setDefault('ext_doc_del', $ext->ext_doc_del);
         //        }
 
-        $mform->setDefault('currdue', $deadline->date_deadline);
-        $mform->freeze('currdue');
+        if($mform->elementExists('currdue')) {
+            $mform->setDefault('currdue', $deadline->date_deadline);
+            $mform->freeze('currdue');
+        }
+
+        // If this is NOT a quiz, we need to hide some fields.
+        if(extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) == 'quiz') {
+            if($mform->elementExists('static_time_limit')) {
+
+                $limit = $deadline->timelimit / 60;
+                $limit = $limit . ' ' . get_string('minutes', extensions_plugin::EXTENSIONS_LANG);
+
+                $mform->setDefault('static_time_limit', $limit);
+                $mform->freeze('static_time_limit');
+            }
+
+            // Disable date if no type selection made
+            $mform->disabledIf('date', 'type', 'eq', NO_EXTENSION);
+            // Disable date if selection matches Time Extension
+            $mform->disabledIf('date', 'type', 'eq', TIME_EXTENSION);
+
+            // Disable length if no type selection made
+            $mform->disabledIf('time_ext', 'type', 'eq', NO_EXTENSION);
+            // Disable length if selection matches Date Extension
+            $mform->disabledIf('time_ext', 'type', 'eq', DATE_EXTENSION);
+
+        } else {
+
+            // Remove the extension type option
+            if($mform->elementExists('type')) {
+                $mform->removeElement('type');
+            }
+
+            // Remove the static time limit option
+            if($mform->elementExists('static_time_limit')) {
+                $mform->removeElement('static_time_limit');
+            }
+
+            // Remove the time selection option
+            if($mform->elementExists('time_ext')) {
+                $mform->removeElement('time_ext');
+            }
+
+        }
 
         // Add the configured amount of time to the extension
         if($extension_default = get_config('deadline_extensions','default_ext_length')) {
