@@ -57,6 +57,10 @@ class extensions_plugin extends deadline_plugin {
 
     const DATE_FORMAT      = 'l, j F Y, H:i A';
 
+    const EXTENSION_TYPE_NONE  = -1;
+    const EXTENSION_TYPE_DATE  =  1;
+    const EXTENSION_TYPE_TIME  =  2;
+
     /**
      * Hook for this module to provide specific form fields for interaction in
      * an activity edit page.
@@ -1426,8 +1430,11 @@ class extensions_plugin extends deadline_plugin {
                 $checkboxCell        = new html_table_cell();
 
                 $deadline   = new deadlines_plugin();
-                $due_date = $deadline->get_date_deadline($activity->id);
-                $date_diff = html_writer::tag('i', extensions_plugin::date_difference($due_date, $extension->date) . ' days', array('class' => 'days_extension'));
+//                 $due_date = $deadline->get_date_deadline($activity->id);
+
+                $deadlines = $deadline->get_deadlines_for_cmid($activity->id);
+
+                $date_diff = html_writer::tag('i', extensions_plugin::date_difference($deadlines->date_deadline, $extension->date) . ' days', array('class' => 'days_extension'));
 
                 // Add the text to each cell in the table.
                 $pictureCell->text         = $OUTPUT->user_picture($studentDetail, array('size' => 50));
@@ -1435,8 +1442,18 @@ class extensions_plugin extends deadline_plugin {
                 $studentUserNameCell->text = html_writer::link($studentUserNameLink, $studentDetail->username);
                 $requestTypeCell->text     = extensions_plugin::get_type_string($extension->ext_type);
                 $activityLinkCell->text    = html_writer::link($activityLink, $activity->name);
-                $activityTimeDueCell->text = userdate($due_date);
-                $requestedDateCell->text   = userdate($extension->date) . ' ' . $date_diff;
+
+                // Determine if this is a timelimit extension or a date extension
+                if($extension->date == 0 && $extension->timelimit != 0) {
+                    // Timelimit extension
+                    $activityTimeDueCell->text = ($deadlines->timelimit / 60) . ' ' . get_string('minutes', self::EXTENSIONS_LANG);
+                    $requestedDateCell->text   = ($extension->timelimit / 60) . ' ' . get_string('minutes', self::EXTENSIONS_LANG);
+                } else {
+                    // Date extension
+                    $activityTimeDueCell->text = userdate($deadlines->date_deadline);
+                    $requestedDateCell->text   = userdate($extension->date) . ' ' . $date_diff;
+                }
+
                 $createdDateCell->text     = userdate($extension->created);
                 $statusCell->text          = html_writer::link($extensionEditUrl, extensions_plugin::get_status_string($extension->status));
 //                 $blankCell->text           = "&nbsp;";

@@ -309,6 +309,23 @@ class form_base extends moodleform {
             $errors['date'] = get_string('extduedatepassed', extensions_plugin::EXTENSIONS_LANG);
         }
 
+        if(extensions_plugin::get_activity_mod_by_cmid($this->get_cmid()) == 'quiz') {
+
+            if(isset($data['type']) && $data['type'] == extensions_plugin::EXTENSION_TYPE_DATE) {
+                $errors = $this->check_deadline($data, $errors, $deadline);
+            } else if (isset($data['type']) && $data['type'] == extensions_plugin::EXTENSION_TYPE_TIME) {
+                // Not sure what we can even check here.
+            }
+
+        } else {
+            $errors = $this->check_deadline($data, $errors, $deadline);
+        }
+
+        return $errors;
+    }
+
+    private function check_deadline($data, $errors, $deadline) {
+
         // If this is a new request or an edit, check the requested date against the due date
         if(isset($data['page']) && ($data['page'] == 'request_new' || $data['page'] == 'request_edit')) {
             if(isset($data['date']) && $data['date'] < $deadline->date_deadline) {
@@ -318,4 +335,5 @@ class form_base extends moodleform {
 
         return $errors;
     }
+
 }
