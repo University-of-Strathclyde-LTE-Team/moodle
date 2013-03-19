@@ -1429,12 +1429,8 @@ class extensions_plugin extends deadline_plugin {
                 $staffNameCell       = new html_table_cell();
                 $checkboxCell        = new html_table_cell();
 
-                $deadline   = new deadlines_plugin();
-//                 $due_date = $deadline->get_date_deadline($activity->id);
-
+                $deadline  = new deadlines_plugin();
                 $deadlines = $deadline->get_deadlines_for_cmid($activity->id);
-
-                $date_diff = html_writer::tag('i', extensions_plugin::date_difference($deadlines->date_deadline, $extension->date) . ' days', array('class' => 'days_extension'));
 
                 // Add the text to each cell in the table.
                 $pictureCell->text         = $OUTPUT->user_picture($studentDetail, array('size' => 50));
@@ -1450,6 +1446,8 @@ class extensions_plugin extends deadline_plugin {
                     $requestedDateCell->text   = ($extension->timelimit / 60) . ' ' . get_string('minutes', self::EXTENSIONS_LANG);
                 } else {
                     // Date extension
+                    $date_diff = html_writer::tag('i', extensions_plugin::date_difference($deadlines->date_deadline, $extension->date) . ' days', array('class' => 'days_extension'));
+
                     $activityTimeDueCell->text = userdate($deadlines->date_deadline);
                     $requestedDateCell->text   = userdate($extension->date) . ' ' . $date_diff;
                 }
