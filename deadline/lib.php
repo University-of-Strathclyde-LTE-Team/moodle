@@ -228,10 +228,12 @@ abstract class deadline_plugin {
             $plugin_class = $plugin . '_plugin';
             $this_plugin = new $plugin_class;
 
-            // Call the function from the plugin which will find the dates
-            // that apply to this student.
-            $dates[$plugin] = new stdClass;
-            $dates[$plugin]->date_open = (int)$this_plugin->get_my_open_date($cm_id, $user_id);
+            if(method_exists($this_plugin, 'get_my_open_date')) {
+                // Call the function from the plugin which will find the dates
+                // that apply to this student.
+                $dates[$plugin] = new stdClass;
+                $dates[$plugin]->date_open = (int)$this_plugin->get_my_open_date($cm_id, $user_id);
+            }
 
         }
 
@@ -299,10 +301,12 @@ abstract class deadline_plugin {
             $plugin_class = $plugin . '_plugin';
             $this_plugin = new $plugin_class;
 
-            // Call the function from the plugin which will find the dates
-            // that apply to this student.
-            $dates[$plugin] = new stdClass;
-            $dates[$plugin]->date_deadline = (int)$this_plugin->get_my_due_date($cm_id, $user_id);
+            if(method_exists($this_plugin, 'get_my_due_date')) {
+                // Call the function from the plugin which will find the dates
+                // that apply to this student.
+                $dates[$plugin] = new stdClass;
+                $dates[$plugin]->date_deadline = (int)$this_plugin->get_my_due_date($cm_id, $user_id);
+            }
 
         }
 
@@ -361,10 +365,12 @@ abstract class deadline_plugin {
             $plugin_class = $plugin . '_plugin';
             $this_plugin = new $plugin_class;
 
-            // Call the function from the plugin which will find the dates
-            // that apply to this student.
-            $dates[$plugin] = new stdClass;
-            $dates[$plugin]->date_cutoff = (int)$this_plugin->get_my_cutoff_date($cm_id, $user_id);
+            if(method_exists($this_plugin, 'get_my_cutoff_date')) {
+                // Call the function from the plugin which will find the dates
+                // that apply to this student.
+                $dates[$plugin] = new stdClass;
+                $dates[$plugin]->date_cutoff = (int)$this_plugin->get_my_cutoff_date($cm_id, $user_id);
+            }
 
         }
 
@@ -418,10 +424,12 @@ abstract class deadline_plugin {
             $plugin_class = $plugin . '_plugin';
             $this_plugin = new $plugin_class;
 
-            // Call the function from the plugin which will find the dates
-            // that apply to this student.
-            $dates[$plugin] = new stdClass;
-            $dates[$plugin]->timelimit = (int)$this_plugin->get_my_timelimit($cm_id, $user_id);
+            if(method_exists($this_plugin, 'get_my_timelimit')) {
+                // Call the function from the plugin which will find the dates
+                // that apply to this student.
+                $dates[$plugin] = new stdClass;
+                $dates[$plugin]->timelimit = (int)$this_plugin->get_my_timelimit($cm_id, $user_id);
+            }
 
         }
 
@@ -451,26 +459,6 @@ abstract class deadline_plugin {
     }
 
     //--------------------------------------------------------
-
-    /**
-     * Method for ordering all plugins, higher weighted plugins have their
-     * deadlines returned prior to lower weighted plugins
-     */
-    public final function order_plugins() {
-
-        // load a list of all the deadline plugins
-        $plugins[] = new stdClass();
-
-
-        // sort the deadline plugins based on their weights. Plugins
-        // with a higher weight will have their deadlines take precedence.
-        $weight = 'plugin_weight';
-        usort($plugins, function($a, $b) use ($weight) {
-            return $a->{$weight} > $b->{$weight} ? -1 : 1;
-        });
-
-        return $plugins;
-    }
 
     public final function get_longest_date($dates, $field = 'date_deadline') {
 
