@@ -64,7 +64,7 @@ class deadlines_plugin extends deadline_plugin {
      * @param int $cmid
      *
      */
-    public function get_date_deadline($cm_id) {
+    public function get_deadline_date_deadline($cm_id) {
 
         if(is_null($cm_id)) {
             return 0;
@@ -73,7 +73,7 @@ class deadlines_plugin extends deadline_plugin {
         return $this->get_deadline_field($cm_id, 'date_deadline');
     }
 
-    public function get_date_open($cm_id) {
+    public function get_deadline_date_open($cm_id) {
 
         if(is_null($cm_id)) {
             return 0;
@@ -82,7 +82,7 @@ class deadlines_plugin extends deadline_plugin {
         return $this->get_deadline_field($cm_id, 'date_open');
     }
 
-    public function get_date_cutoff($cm_id) {
+    public function get_deadline_date_cutoff($cm_id) {
 
         if(is_null($cm_id)) {
             return 0;
@@ -91,7 +91,7 @@ class deadlines_plugin extends deadline_plugin {
         return $this->get_deadline_field($cm_id, 'date_cutoff');
     }
 
-    public function get_timelimit($cm_id) {
+    public function get_deadline_timelimit($cm_id) {
 
         if(is_null($cm_id)) {
             return 0;
@@ -100,7 +100,7 @@ class deadlines_plugin extends deadline_plugin {
         return $this->get_deadline_field($cm_id, 'timelimit');
     }
 
-    public function get_attempts($cm_id) {
+    public function get_deadline_attempts($cm_id) {
 
         if(is_null($cm_id)) {
             return 0;
@@ -245,7 +245,8 @@ class deadlines_plugin extends deadline_plugin {
         $data->date_open     = $this->get_open_date($cm_id, $user_id);
         $data->date_deadline = $this->get_due_date($cm_id, $user_id);
         $data->date_cutoff   = $this->get_cut_off_date($cm_id, $user_id);
-        $data->timelimit     = $this->get_timelimit($cm_id, $user_id);
+        $data->timelimit     = $this->get_deadline_timelimit($cm_id, $user_id);
+        // insert attempts here when implemented.
 
         return $data;
     }
@@ -270,7 +271,7 @@ class deadlines_plugin extends deadline_plugin {
             case 'quiz':
                 $data->timeopen                 = $this->get_open_date($data->cm_id, $user_id);
                 $data->timeclose                = $this->get_due_date($data->cm_id, $user_id);
-                $data->timelimit                = $this->get_timelimit($data->cm_id, $user_id);
+                $data->timelimit                = $this->get_deadline_timelimit($data->cm_id, $user_id);
                 // To be implemented later.
                 //$data->attempts
                 //$data->password

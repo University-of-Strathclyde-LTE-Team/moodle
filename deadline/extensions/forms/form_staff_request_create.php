@@ -92,7 +92,7 @@ class form_staff_request_create extends form_staff_request_edit {
         $errors = array();
 
         $deadline   = new deadlines_plugin();
-        $due_date = $deadline->get_date_deadline($data['cmid']);
+        $due_date = $deadline->get_deadline_date_deadline($data['cmid']);
 
         if($data['ext_granted_date'] < $due_date) {
             $errors['ext_granted_date'] = get_string('ext_granted_before_due', extensions_plugin::EXTENSIONS_LANG);

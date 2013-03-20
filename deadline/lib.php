@@ -421,7 +421,7 @@ abstract class deadline_plugin {
             // Call the function from the plugin which will find the dates
             // that apply to this student.
             $dates[$plugin] = new stdClass;
-            $dates[$plugin]->extratime = (int)$this_plugin->get_my_timelimit($cm_id, $user_id);
+            $dates[$plugin]->timelimit = (int)$this_plugin->get_my_timelimit($cm_id, $user_id);
 
         }
 
@@ -429,7 +429,25 @@ abstract class deadline_plugin {
         // - individual
         // - global
         // - group
-        return $this->get_longest_date($dates, 'extratime');
+        return $this->get_longest_date($dates, 'timelimit');
+    }
+
+    public function set_timelimit($cm_id, $timelimit) {
+
+        global $DB;
+
+        if(!$deadline_id = $this->deadline_exists($cm_id)) {
+            print_error('cannotadddeadline', '', course_get_url($data->course, $data->section), $data->modulename);
+        }
+
+        $data              = new stdClass();
+        $data->id          = $deadline_id;
+        $data->timelimit   = $timelimit;
+
+        if(!$DB->update_record('deadline_deadlines', $data)) {
+            print_error('cannotupdatedeadline', '', course_get_url($data->course, $data->section), $data->modulename);
+        }
+
     }
 
     //--------------------------------------------------------
