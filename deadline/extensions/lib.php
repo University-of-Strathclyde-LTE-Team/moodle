@@ -1332,11 +1332,7 @@ class extensions_plugin extends deadline_plugin {
             // Add any extensions now.
             foreach($extensions as $extension) {
 
-                try {
-                    $staff = $DB->get_record('user', array('id' =>$extension->staff_id), '*', MUST_EXIST);
-                } catch(Exception $e) {
-                    var_dump($e);
-                }
+                $staff = $DB->get_record('user', array('id' => $extension->staff_id), '*', MUST_EXIST);
 
                 // Missing columns will be carried over from above.
                 $extensionDate    = new html_table_cell();
@@ -1361,7 +1357,12 @@ class extensions_plugin extends deadline_plugin {
                 $staff_link = html_writer::link($staff_url, $staff->firstname . ' ' . $staff->lastname);
 
                 $approver->text         = $staff_link;
-                $status->text           = extensions_plugin::get_status_string($extension->status); // ;
+
+                $params    = array('eid' => $extension->id, 'page' => 'request_edit');
+                $edit_url  = new moodle_url('/deadline/extensions/', $params);
+                $edit_link = html_writer::link($edit_url, extensions_plugin::get_status_string($extension->status));
+
+                $status->text           = $edit_link;
 
                 $thisRow = new html_table_row();
                 $thisRow->cells = array(
@@ -1463,7 +1464,7 @@ class extensions_plugin extends deadline_plugin {
                     $requestedDateCell->text   = ($extension->timelimit / 60) . ' ' . get_string('minutes', self::EXTENSIONS_LANG);
                 } else {
                     // Date extension
-                    $date_diff = html_writer::tag('i', extensions_plugin::date_difference($deadlines->date_deadline, $extension->date) . ' days', array('class' => 'days_extension'));
+                    $date_diff = html_writer::empty_tag('br') . html_writer::tag('i', extensions_plugin::date_difference($deadlines->date_deadline, $extension->date) . ' days', array('class' => 'days_extension'));
 
                     $activityTimeDueCell->text = userdate($deadlines->date_deadline);
                     $requestedDateCell->text   = userdate($extension->date) . ' ' . $date_diff;
@@ -1722,7 +1723,14 @@ class extensions_plugin extends deadline_plugin {
                     $editCell          = new html_table_cell();
 
                     $extensionDateCell->text = userdate($global_ext->date);
-                    $creatorCell->text = $global_ext->staff_id;
+
+                    $staff = $DB->get_record('user', array('id' => $global_ext->staff_id), '*', MUST_EXIST);
+
+                    $params = array('id' => $global_ext->staff_id);
+                    $staff_url = new moodle_url('/user/profile.php', $params);
+                    $staff_link = html_writer::link($staff_url, $staff->firstname . ' ' . $staff->lastname);
+
+                    $creatorCell->text = $staff_link;
 
                     $params = array('eid' => $global_ext->id, 'cmid' => $activity->id,  'page' => 'global_edit');
                     $edit_url  = new moodle_url('/deadline/extensions/', $params);
