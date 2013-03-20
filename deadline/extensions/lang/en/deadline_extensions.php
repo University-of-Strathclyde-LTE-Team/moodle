@@ -156,6 +156,7 @@ $string['extglobalextopen']         = 'Group Extension Open';
 $string['extglobalextclosed']       = 'Group Extension Closed';
 $string['extreason']                = 'Reason for Extension';
 $string['extapplyto']               = 'Apply Extension To';
+$string['exthideglobal']            = 'Hide Global Extension from students';
 $string['exthidegroup']             = 'Hide Group Extension from students';
 $string['extindivextopen']          = 'Individual Extension Open';
 $string['extindivextclosed']        = 'Individual Extension Closed';
@@ -292,6 +293,8 @@ $string['please_select'] = 'Please select: ';
 
 $string['ext_no_summ']           = 'There are no assignments available that allow extensions.';
 $string['ext_event_title_group'] = 'Class Due Date Extension';
+
+$string['ext_event_title']   = 'Individual Due Date Extension';
 $string['ext_event_title_ind']   = 'Individual Due Date Extension';
 
 $string['ext_event_description']     = 'Automatic Extension applied by Course Coordinator';
