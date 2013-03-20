@@ -30,6 +30,17 @@ require_once('form_staff_request_edit.php');
 
 class form_staff_request_create extends form_staff_request_edit {
 
+    protected $page_name = null;
+
+    public function __construct() {
+        parent::__construct();
+
+        $this->page_name = "Create Extension Request";
+
+        global $COURSE;
+        add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
+    }
+
     public function definition_after_data() {
         parent::definition_after_data();
 
@@ -96,7 +107,7 @@ class form_staff_request_create extends form_staff_request_edit {
 
     public function save_hook($form_data) {
 
-        global $DB, $USER;
+        global $DB, $USER, $COURSE;
 
         if(!is_null($form_data)) {
             if(isset($form_data->submitbutton)) {
@@ -123,6 +134,8 @@ class form_staff_request_create extends form_staff_request_edit {
 
                     $form_data->eid = $ext_id;
 
+                    add_to_log($COURSE->id, "extensions", "success", "index.php", "extension {$ext_id} created successfully", $this->get_cmid());
+
                     // Add to the extensions history table.
                     extensions_plugin::add_history($form_data);
 
@@ -130,6 +143,7 @@ class form_staff_request_create extends form_staff_request_edit {
                     extensions_plugin::notify_user($form_data);
 
                 } else {
+                    add_to_log($COURSE->id, "extensions", "error", "index.php", "extension creation failed!", $this->get_cmid());
                     return false;
                 }
 

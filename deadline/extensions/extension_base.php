@@ -241,25 +241,8 @@ class extension_base {
         return $this->student_id;
     }
 
-    /**
-     *
-     * Build the navigation used for breadcrumbs.
-     *
-     * @return Object
-     *
-     */
-    public function get_navigation() {
-        global $CFG, $SESSION;
-
-        $page = $this->get_page();
-
-        $navlinks = array();
-        $navlinks[] = array('name' => get_string("ext_module", extensions_plugin::EXTENSIONS_LANG), 'link' => '/deadline/extension/?id=' . $this->get_course()->id, 'type' => 'activity');
-        $navlinks[] = array('name' => $this->get_form($page)->get_page_name(), 'link' => '', 'type' => 'activity');
-        return build_navigation($navlinks);
-    }
-
     public function load_form($page = null) {
+        global $COURSE;
 
         $mform = $this->get_form($page);
 
@@ -292,6 +275,8 @@ class extension_base {
 
         $mform->post_form_load();
 
+        add_to_log($COURSE->id, "extensions", "view", "index.php", "view " . $page, $this->get_cmid());
+
         return $mform;
     }
 
@@ -316,7 +301,9 @@ class extension_base {
     }
 
     public function display() {
-        global $PAGE, $USER;
+        global $PAGE, $USER, $COURSE;
+
+        add_to_log($COURSE->id, "extensions", "access", "index.php", "access extensions", $this->get_cmid());
 
         $this->load_user_data();
 
@@ -344,10 +331,11 @@ class extension_base {
                     if(method_exists($mform, 'save_hook')) {
 
                         if(!$mform->save_hook($fromform)) {
+                            add_to_log($COURSE->id, "extensions", "error", "index.php", "error when saving data " . $mform->page_name, $this->get_cmid());
                             print_error('Error saving data.');
                         } else {
                             $this->saved = true;
-
+                            add_to_log($COURSE->id, "extensions", "success", "index.php", "data saved successfully " . $mform->page_name, $this->get_cmid());
                         } // end run save hook
 
                     } // end save hook exists

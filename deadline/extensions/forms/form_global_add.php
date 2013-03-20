@@ -17,12 +17,16 @@ class form_global_add extends form_base {
     public function __construct($arg) {
         parent::__construct($arg);
 
+        $this->page_name = get_string('ext_global_ext_create', extensions_plugin::EXTENSIONS_LANG);
+
+        global $COURSE;
+        add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
     }
 
     public function post_form_load() {
         parent::post_form_load();
 
-        $this->page_name = get_string('ext_global_ext_create', extensions_plugin::EXTENSIONS_LANG);
+
 
     }
 
@@ -224,10 +228,12 @@ class form_global_add extends form_base {
 
     public function save_hook($form_data = null) {
 
-        global $DB, $CFG, $USER;
+        global $DB, $CFG, $USER, $COURSE;
 
         // Save the selected groups from this items grouping to apply the
         // extension to.
+
+        add_to_log($COURSE->id, "extensions", "changing", "index.php", "changing global extension ", $this->get_cmid());
 
         // add extension to the extensions table
         $extension                = new stdClass;

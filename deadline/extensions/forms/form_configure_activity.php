@@ -29,10 +29,13 @@ require_once('form_base.php');
 
 class form_configure_activity extends form_base {
 
+    protected $page_name = "Configure Activity";
 
     public function __construct() {
         parent::__construct();
 
+        global $COURSE;
+        add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
     }
 
     public function definition() {
@@ -132,7 +135,9 @@ class form_configure_activity extends form_base {
 
     public function save_hook($form_data) {
 
-        global $DB;
+        global $DB, $COURSE;
+
+        add_to_log($COURSE->id, "extensions", "saving", "index.php", "saving changes " . $this->page_name, $this->get_cmid());
 
         $params = array(
                 'cm_id' => $form_data->cmid

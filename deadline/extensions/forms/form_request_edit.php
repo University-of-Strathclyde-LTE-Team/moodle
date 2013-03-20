@@ -36,6 +36,9 @@ class form_request_edit extends form_request_new {
         parent::__construct();
 
         $this->page_name = "Edit Extension Request";
+
+        global $COURSE;
+        add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
     }
 
     public function definition_after_data() {

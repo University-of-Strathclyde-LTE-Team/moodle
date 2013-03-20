@@ -35,7 +35,10 @@ class form_staff_requests extends form_base {
     public function __construct() {
         parent::__construct();
 
-        //        $this->page_name = get_string('ext_indiv_req', extensions_plugin::EXTENSIONS_LANG);
+        global $COURSE;
+
+        $this->page_name = get_string('ext_indiv_req', extensions_plugin::EXTENSIONS_LANG);
+        add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
 
     }
 
@@ -233,7 +236,7 @@ class form_staff_requests extends form_base {
     }
 
     public function save_hook($form_data) {
-        global $DB, $USER;
+        global $DB, $USER, $COURSE;
 
         // Quick Approve.
         if(isset($form_data->approve_selected)) {
@@ -257,6 +260,8 @@ class form_staff_requests extends form_base {
 
             if($ext_id = $DB->insert_record('deadline_extensions', $ext, true)) {
 
+                add_to_log($COURSE->id, "extensions", "success", "index.php", "extension {$ext_id} creation successful!", $this->get_cmid());
+
                 $form_data->eid             = $ext_id;
                 $form_data->ext_status_code = extensions_plugin::STATUS_APPROVED;
                 $form_data->response_text   = get_string('ext_act_add_reason', extensions_plugin::EXTENSIONS_LANG);
@@ -268,6 +273,9 @@ class form_staff_requests extends form_base {
                 extensions_plugin::notify_user($form_data);
 
                 return true;
+            } else {
+                add_to_log($COURSE->id, "extensions", "error", "index.php", "extension creation failed!", $this->get_cmid());
+                return false;
             }
 
         }

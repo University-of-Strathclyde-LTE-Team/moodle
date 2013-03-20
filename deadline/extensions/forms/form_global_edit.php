@@ -18,6 +18,9 @@ class form_global_edit extends form_global_add {
         parent::__construct($arg);
 
         $this->page_name = get_string('ext_global_ext_edit', extensions_plugin::EXTENSIONS_LANG);
+
+        global $COURSE;
+        add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
     }
 
     public function definition_after_data() {
@@ -29,8 +32,6 @@ class form_global_edit extends form_global_add {
         $mform->setDefault('header', get_string('ext_global_ext_edit', extensions_plugin::EXTENSIONS_LANG));
 
         $mform->setDefault('page', 'global_edit');
-
-
 
     }
 

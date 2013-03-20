@@ -34,8 +34,9 @@ class form_configure_activities extends form_base {
     public function __construct() {
         parent::__construct();
 
-        //        $this->page_name = get_string('ext_indiv_req', extensions_plugin::EXTENSIONS_LANG);
-
+//         $this->page_name = get_string('ext_indiv_req', extensions_plugin::EXTENSIONS_LANG);
+        global $COURSE;
+        add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
     }
 
     public function definition() {
@@ -71,8 +72,10 @@ class form_configure_activities extends form_base {
     }
 
     public function save_hook($form_data) {
-        global $DB;
+        global $DB, $COURSE;
         // Save the items changed to the database.
+
+        add_to_log($COURSE->id, "extensions", "saving", "index.php", "saving changes " . $this->page_name, $this->get_cmid());
 
         $data_to_save = array();
 
@@ -90,6 +93,8 @@ class form_configure_activities extends form_base {
 
             if($DB->record_exists('deadline_extensions_enabled', array('cm_id' => $cm_id))) {
 
+
+
                 $item = new stdClass;
                 $item->id     = extensions_plugin::get_extension_enable_id_by_cmid($cm_id);
                 $item->cm_id  = $cm_id;
@@ -103,6 +108,7 @@ class form_configure_activities extends form_base {
                 // create it, if it's being enabled.
 
                 if($data['enabled'] == extensions_plugin::EXT_ENABLED) {
+
                     $item = new stdClass;
                     $item->cm_id  = $cm_id;
                     $item->status = $data['enabled'];

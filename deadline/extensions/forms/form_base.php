@@ -40,7 +40,7 @@ class form_base extends moodleform {
     protected $course     = null;
     protected $ext_id     = null;
     protected $readonly   = false;
-    protected $cm_id      = false;
+    protected $cm_id      = null;
     protected $student_id = null;
 
     protected $activity_detail = null;
