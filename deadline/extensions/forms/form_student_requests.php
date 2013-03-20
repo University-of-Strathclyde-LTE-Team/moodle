@@ -42,6 +42,9 @@ class form_student_requests extends form_base {
         parent::__construct();
 
         $this->page_name = get_string('ext_student_requests',extensions_plugin::EXTENSIONS_LANG);
+
+        global $COURSE;
+        add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
     }
 
     public function definition() {

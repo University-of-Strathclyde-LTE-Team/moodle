@@ -35,14 +35,14 @@ class form_request_new extends form_base {
     public function __construct() {
         parent::__construct();
 
-        //        $this->page_name = get_string('ext_indiv_req', extensions_plugin::EXTENSIONS_LANG);
+        $this->page_name = get_string('ext_indiv_req', extensions_plugin::EXTENSIONS_LANG);
 
+        global $COURSE;
+        add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
     }
 
     public function post_form_load() {
         parent::post_form_load();
-
-        $this->page_name = get_string('ext_indiv_req', extensions_plugin::EXTENSIONS_LANG);
 
     }
 

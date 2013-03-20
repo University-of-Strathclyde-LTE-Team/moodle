@@ -14,6 +14,8 @@ class form_global extends form_base {
         parent::__construct($arg);
 
         $this->page_name = get_string('ext_global_ext', extensions_plugin::EXTENSIONS_LANG);
+        global $COURSE;
+        add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
     }
 
     public function definition() {
