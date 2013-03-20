@@ -90,7 +90,7 @@ class form_global_add extends form_base {
 
         $mform->setDefault('cmid', $this->get_cmid());
 
-        $deadline = $deadlines->get_date_deadline($this->get_cmid());
+        $deadline = $deadlines->get_deadline_date_deadline($this->get_cmid());
 
         $mform->setDefault('cur_due_date', $deadline);
         $mform->freeze('cur_due_date');
@@ -171,7 +171,7 @@ class form_global_add extends form_base {
 
         // make sure the date provided is NOT BEFORE the duedate of the assessment
         $deadlines = new deadlines_plugin();
-        $deadline = $deadlines->get_date_deadline($data['cmid']);
+        $deadline = $deadlines->get_deadline_date_deadline($data['cmid']);
 
         // check the extension is after any existing deadlines (includes existing extensions)
         if($deadline > $data['ext_date']) {

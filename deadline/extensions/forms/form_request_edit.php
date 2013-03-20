@@ -67,7 +67,7 @@ class form_request_edit extends form_request_new {
             if($mform->elementExists('time_ext')) {
 
                 $deadline = new deadlines_plugin();
-                $timelimit = $deadline->get_timelimit($ext->cm_id);
+                $timelimit = $deadline->get_deadline_timelimit($ext->cm_id);
 
                 $extension = $ext->timelimit - $timelimit;
 

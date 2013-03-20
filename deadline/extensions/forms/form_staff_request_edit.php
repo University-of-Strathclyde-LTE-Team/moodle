@@ -91,8 +91,8 @@ class form_staff_request_edit extends form_base {
         $mform =& $this->_form;
 
         $deadline   = new deadlines_plugin();
-        $current_deadline  = $deadline->get_date_deadline($this->get_cmid());
-        $current_timelimit = $deadline->get_timelimit($this->get_cmid());
+        $current_deadline  = $deadline->get_deadline_date_deadline($this->get_cmid());
+        $current_timelimit = $deadline->get_deadline_timelimit($this->get_cmid());
 
         if($this->get_extension_id()) {
             $extension = extensions_plugin::get_extension_by_id($this->get_extension_id());
@@ -363,7 +363,7 @@ class form_staff_request_edit extends form_base {
 
         $extension = extensions_plugin::get_extension_by_id($this->get_extension_id());
         $deadline   = new deadlines_plugin();
-        $due_date = $deadline->get_date_deadline($extension->cm_id);
+        $due_date = $deadline->get_deadline_date_deadline($extension->cm_id);
 
         // if the request is DENIED then the message is compulsory
         if($data['ext_status_code'] == extensions_plugin::STATUS_DENIED && strlen($data['response_text']) == '0' ) {
@@ -408,7 +408,7 @@ class form_staff_request_edit extends form_base {
                 }
                 if(isset($form_data->ext_timelimit)) {
                     $deadline = new deadlines_plugin();
-                    $timelimit = $deadline->get_timelimit($this->get_cmid());
+                    $timelimit = $deadline->get_deadline_timelimit($this->get_cmid());
 
                     $ext_data->timelimit = $timelimit + $form_data->ext_timelimit;
                     $ext_data->date      = 0;
