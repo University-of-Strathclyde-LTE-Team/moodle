@@ -245,7 +245,7 @@ class deadlines_plugin extends deadline_plugin {
         $data->date_open     = $this->get_open_date($cm_id, $user_id);
         $data->date_deadline = $this->get_due_date($cm_id, $user_id);
         $data->date_cutoff   = $this->get_cut_off_date($cm_id, $user_id);
-        $data->timelimit     = $this->get_deadline_timelimit($cm_id, $user_id);
+        $data->timelimit     = $this->get_timelimit($cm_id, $user_id);
         // insert attempts here when implemented.
 
         return $data;
