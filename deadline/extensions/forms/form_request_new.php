@@ -76,22 +76,25 @@ class form_request_new extends form_base {
         $file_params =  array('subdirs' => 0, 'maxfiles' => 4, 'accepted_types' => array('document') ); // make this dynamic.
         $mform->addElement('filemanager', 'attachments', get_string('extsupdoc',extensions_plugin::EXTENSIONS_LANG), null, $file_params);
 
-        $options = array(
-                extensions_plugin::EXTENSION_TYPE_NONE   => '&nbsp;',
-                extensions_plugin::EXTENSION_TYPE_DATE => get_string('date_extension', extensions_plugin::EXTENSIONS_LANG),
-                extensions_plugin::EXTENSION_TYPE_TIME => get_string('time_extension', extensions_plugin::EXTENSIONS_LANG)
-        );
+        if(get_config('deadline_extensions', 'deny_timelimit_reqs') == 0) {
+            $options = array(
+                    extensions_plugin::EXTENSION_TYPE_NONE   => '&nbsp;',
+                    extensions_plugin::EXTENSION_TYPE_DATE => get_string('date_extension', extensions_plugin::EXTENSIONS_LANG),
+                    extensions_plugin::EXTENSION_TYPE_TIME => get_string('time_extension', extensions_plugin::EXTENSIONS_LANG)
+            );
 
-        $mform->addElement('select', 'type', get_string('date_or_time', extensions_plugin::EXTENSIONS_LANG), $options);
-        $mform->addRule('type', get_string('required'), 'required', null, 'client');
+            $mform->addElement('select', 'type', get_string('date_or_time', extensions_plugin::EXTENSIONS_LANG), $options);
+            $mform->addRule('type', get_string('required'), 'required', null, 'client');
+        }
 
         $currdue = $mform->addElement('date_time_selector', 'currdue', get_string('extcurrduedate', extensions_plugin::EXTENSIONS_LANG), $this->date_options);
 
         $date = $mform->addElement('date_time_selector', 'date', get_string('extrequestdateacst', extensions_plugin::EXTENSIONS_LANG), $this->date_options);
 
-        $mform->addElement('static', 'static_time_limit', 'Current time limit');
-
-        $mform->addElement('select', 'time_ext', 'Time extension', extensions_plugin::get_timelimit_options());
+        if(get_config('deadline_extensions', 'deny_timelimit_reqs') == 0) {
+            $mform->addElement('static', 'static_time_limit', 'Current time limit');
+            $mform->addElement('select', 'time_ext', 'Time extension', extensions_plugin::get_timelimit_options());
+        }
 
         // -------------------------
 
@@ -274,7 +277,9 @@ class form_request_new extends form_base {
         }
 
         // If this is NOT a quiz, we need to hide some fields.
-        if(extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) == 'quiz') {
+        if(extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) == 'quiz' &&
+            get_config('deadline_extensions', 'deny_timelimit_reqs') == 0) {
+
             if($mform->elementExists('static_time_limit')) {
 
                 $limit = $deadline->timelimit / 60;

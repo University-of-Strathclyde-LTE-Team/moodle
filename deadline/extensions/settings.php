@@ -60,6 +60,9 @@ defined('EXTENSIONS_DUPLICATE_WARNING_ENA') or define('EXTENSIONS_DUPLICATE_WARN
 defined('EXTENSIONS_RESTRICT_AFTER_SUB_DIS') or define('EXTENSIONS_RESTRICT_AFTER_SUB_DIS', 0);
 defined('EXTENSIONS_RESTRICT_AFTER_SUB_ENA') or define('EXTENSIONS_RESTRICT_AFTER_SUB_ENA', 1);
 
+defined('EXTENSIONS_ALLOW_TIMELIMIT_DIS') or define('EXTENSIONS_ALLOW_TIMELIMIT_DIS', '0');
+defined('EXTENSIONS_ALLOW_TIMELIMIT_ENA') or define('EXTENSIONS_ALLOW_TIMELIMIT_ENA', '1');
+
 global $USER, $COURSE;
 
 // Admin config setting items here.
@@ -286,8 +289,6 @@ if ($hassiteconfig) { // needs this condition or there is error on login page
         // ------------------------------------------------------------
         // Prevent requests after submission
         // ------------------------------------------------------------
-        defined('EXTENSIONS_RESTRICT_AFTER_SUB_DIS') or define('EXTENSIONS_RESTRICT_AFTER_SUB_DIS', 0);
-        defined('EXTENSIONS_RESTRICT_AFTER_SUB_ENA') or define('EXTENSIONS_RESTRICT_AFTER_SUB_ENA', 1);
         $preventReqAfterSubmission = array(
                 EXTENSIONS_RESTRICT_AFTER_SUB_DIS => get_string('no'),
                 EXTENSIONS_RESTRICT_AFTER_SUB_ENA => get_string('yes')
@@ -302,7 +303,21 @@ if ($hassiteconfig) { // needs this condition or there is error on login page
         // Add the show/hide indiv/global menu item
         $settings->add($preventReqAfterSubmissionMenu);
 
+        // ------------------------------------------------------------
+        // Deny timelimit extension requests by students
+        // ------------------------------------------------------------
+        $preventTimeLimitRequests = array(
+                EXTENSIONS_ALLOW_TIMELIMIT_DIS => get_string('no'),
+                EXTENSIONS_ALLOW_TIMELIMIT_ENA => get_string('yes')
+        );
 
+        $preventTimeLimitMenu = new admin_setting_configselect(extensions_plugin::EXTENSIONS_MOD_NAME . '/deny_timelimit_reqs',
+                get_string('prevent_timelimit_reqs', extensions_plugin::EXTENSIONS_LANG),
+                get_string('prevent_timelimit_reqs_long', extensions_plugin::EXTENSIONS_LANG),
+                EXTENSIONS_ALLOW_TIMELIMIT_DIS,
+                $preventTimeLimitRequests);
+
+        $settings->add($preventTimeLimitMenu);
         // ------------------------------------------------------------
         // Approved
         // ------------------------------------------------------------

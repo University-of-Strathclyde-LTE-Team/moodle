@@ -272,6 +272,14 @@ class form_base extends moodleform {
             return $errors;
         }
 
+        if(get_config('deadline_extensions', 'deny_timelimit_reqs') == 1) {
+            // Timelimit extension requests are disabled, but someone is trying it anyway.
+            if(isset($data['type']) && $data['type'] == extensions_plugin::EXTENSION_TYPE_TIME) {
+                $errors['cmid'] = get_string('timelimit_req_denied', extensions_plugin::EXTENSIONS_LANG);
+                return $errors;
+            }
+        }
+
         // See if this activity even allows extensions
         if(!extensions_plugin::extensions_enabled_cmid($this->get_cmid())) {
             $errors['cmid'] = get_string('extmessnotpermitted', extensions_plugin::EXTENSIONS_LANG);
