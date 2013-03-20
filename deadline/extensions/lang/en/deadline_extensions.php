@@ -59,6 +59,10 @@ $string['only_grouping_groups']       = 'Only Groups assigned to this Grouping a
 $string['prevent_req_after_subm'] = 'Prevent After Submission.';
 $string['prevent_req_after_subm_long'] = 'Prevent extension requests after activity submission has been made.';
 
+$string['prevent_timelimit_reqs'] = 'Prevent Timelimit Requests';
+$string['prevent_timelimit_reqs_long'] = 'Prevent requests for timelimit extensions';
+$string['timelimit_req_denied'] = 'Requests for timelimit extensions are currently denied by configuration.';
+
 $string['configuration']     = 'Configuration';
 $string['group_extension']   = 'Group(s)';
 

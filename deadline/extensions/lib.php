@@ -1341,7 +1341,7 @@ class extensions_plugin extends deadline_plugin {
                 $status           = new html_table_cell();
 
                 if(extensions_plugin::is_timelimit_extension($extension->id)) {
-                    $extensionDate->text    = $extension->timelimit;
+                    $extensionDate->text    = ($extension->timelimit / 60) . ' ' . get_string('minutes', self::EXTENSIONS_LANG);
                 } else {
                     $diff_days           = extensions_plugin::date_difference($deadline->date_deadline, $extension->date);
                     $date_string         = userdate($extension->date);
@@ -1352,8 +1352,8 @@ class extensions_plugin extends deadline_plugin {
 
                 $requestDate->text      = userdate($extension->created);
 
-                $params = array('id' => $extension->staff_id);
-                $staff_url = new moodle_url('/user/profile.php', $params);
+                $params     = array('id' => $extension->staff_id);
+                $staff_url  = new moodle_url('/user/profile.php', $params);
                 $staff_link = html_writer::link($staff_url, $staff->firstname . ' ' . $staff->lastname);
 
                 $approver->text         = $staff_link;
@@ -1410,7 +1410,6 @@ class extensions_plugin extends deadline_plugin {
                 get_string("extensiondate",     self::EXTENSIONS_LANG),
                 get_string("extrequestdate",    self::EXTENSIONS_LANG),
                 get_string("extstatus",         self::EXTENSIONS_LANG),
-//                 get_string("extclass",          self::EXTENSIONS_LANG),
                 get_string("extsentto",         self::EXTENSIONS_LANG),
                 get_string("extapprove",        self::EXTENSIONS_LANG),
         );
@@ -1443,7 +1442,6 @@ class extensions_plugin extends deadline_plugin {
                 $requestedDateCell   = new html_table_cell();
                 $createdDateCell     = new html_table_cell();
                 $statusCell          = new html_table_cell();
-//                 $blankCell           = new html_table_cell();
                 $staffNameCell       = new html_table_cell();
                 $checkboxCell        = new html_table_cell();
 
@@ -1472,7 +1470,6 @@ class extensions_plugin extends deadline_plugin {
 
                 $createdDateCell->text     = userdate($extension->created);
                 $statusCell->text          = html_writer::link($extensionEditUrl, extensions_plugin::get_status_string($extension->status));
-//                 $blankCell->text           = "&nbsp;";
                 $staffNameCell->text       = html_writer::link($staffLink, $staffDetail->firstname . " " . $staffDetail->lastname);
                 $checkboxCell->text        = "{element}";
 
@@ -1487,7 +1484,6 @@ class extensions_plugin extends deadline_plugin {
                         $requestedDateCell,
                         $createdDateCell,
                         $statusCell,
-//                         $blankCell,
                         $staffNameCell,
                         $checkboxCell
                 );
