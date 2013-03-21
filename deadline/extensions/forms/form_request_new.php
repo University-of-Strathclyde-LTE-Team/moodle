@@ -342,27 +342,24 @@ class form_request_new extends form_base {
 
         // if we have a response from a teacher, this is probably an 'edit'.
         // if so, then show the response area.
-        if(isset($ext->response_message) && $ext->response_message != '') {
+        if(isset($ext->response_text) && $ext->response_text != '') {
 
-            $mform->setDefault('status', $this->get_status_by_code($ext->ext_status_code));
+            $mform->setDefault('status', $this->get_status_by_code($ext->status));
 
-            if($ext->ext_status_code == AG_EXT_APPROVED) {
+            if($ext->status == extensions_plugin::STATUS_APPROVED) {
                 $mform->setDefault('granted_ext_date', $ext->ext_granted_date);
                 $mform->freeze('granted_ext_date');
             }
 
-            $mform->setDefault('response_message', clean_param($ext->response_message, PARAM_TEXT));
+            $mform->setDefault('response_text', clean_param($ext->response_text, PARAM_TEXT));
 
         } else {
-            /*************************************
-             ***  3332 - BEGIN MODIFICATION    ***
-            *************************************/
             if($mform->elementExists('staff_general')) {
                 $mform->removeElement('staff_general');
             }
 
             if($mform->elementExists('status')) {
-                $mform->removeElement('status');
+                //$mform->removeElement('status');
             }
 
             if($mform->elementExists('granted_ext_date')) {
@@ -372,9 +369,6 @@ class form_request_new extends form_base {
             if($mform->elementExists('response_message')) {
                 $mform->removeElement('response_message');
             }
-            /*************************************
-             ***  3332 - END MODIFICATION      ***
-            *************************************/
         }
 
         $mform->setDefault('asmntid', $this->get_cmid()); // Assessment ID
