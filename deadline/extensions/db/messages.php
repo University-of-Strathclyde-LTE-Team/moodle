@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains all version information for this plugin.
+ * This file will define events that the Extensions module will respond to.
  *
  * @package   deadline_extensions
  * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
@@ -26,6 +26,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2013032102;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2012112900;        // Requires this Moodle version
-$plugin->component = 'deadline_extensions'; // Full name of the plugin (used for diagnostics)
+
+$messageproviders = array(
+        'extension_updated' => array(
+                'defaults' => array(
+                        'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN,
+                        'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_LOGGEDIN
+                )
+        )
+);

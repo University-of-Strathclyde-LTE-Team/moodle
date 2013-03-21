@@ -354,7 +354,6 @@ if ($hassiteconfig) { // needs this condition or there is error on login page
 
         $settings->add($deniedTextMenu);
 
-
         // ------------------------------------------------------------
         // Withdrawn
         // ------------------------------------------------------------
