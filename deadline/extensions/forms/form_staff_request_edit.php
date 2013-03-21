@@ -420,7 +420,7 @@ class form_staff_request_edit extends form_base {
 
                 if($DB->update_record('deadline_extensions', $ext_data)) {
 
-                    add_to_log($COURSE->id, "extensions", "success", "index.php", "extension {$form_data->eid} updated successfully" . $mform->page_name, $this->get_cmid());
+                    add_to_log($COURSE->id, "extensions", "success", "index.php", "extension {$form_data->eid} updated successfully");
 
                     // Add to the extensions history table.
                     extensions_plugin::add_history($form_data);
@@ -429,7 +429,7 @@ class form_staff_request_edit extends form_base {
                     extensions_plugin::notify_user($form_data);
 
                 } else {
-                    add_to_log($COURSE->id, "extensions", "error", "index.php", "extension creation failed!", $this->get_cmid());
+                    add_to_log($COURSE->id, "extensions", "error", "index.php", "extension creation failed!");
                     return false;
                 }
 
