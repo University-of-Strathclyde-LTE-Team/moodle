@@ -1089,7 +1089,7 @@ class extensions_plugin extends deadline_plugin {
                 $cal->eventtype   = '';
                 $cal->timestart   = $ext->date;
 
-                calendar_event::create($cal);
+                //calendar_event::create($cal);
 
             } else {
                 return false;
@@ -1961,7 +1961,7 @@ class extensions_plugin extends deadline_plugin {
             return false;
         }
 
-        add_to_log($COURSE->id, "extensions", "success", "index.php", "extension {$form_data->eid} history added!", $this->get_cmid());
+        add_to_log($COURSE->id, "extensions", "success", "index.php", "extension {$form_data->eid} history added!");
 
         return true;
     }
@@ -2054,10 +2054,10 @@ class extensions_plugin extends deadline_plugin {
         $message_data->smallmessage      = $email_subject;
 
         if(events_trigger('message_send', $message_data)) {
-            add_to_log($COURSE->id, "extensions", "success", "index.php", "extension notification message successful!", $this->get_cmid());
+            add_to_log($COURSE->id, "extensions", "success", "index.php", "extension notification message successful!");
             return true;
         } else {
-            add_to_log($COURSE->id, "extensions", "error", "index.php", "extension notification message failed!", $this->get_cmid());
+            add_to_log($COURSE->id, "extensions", "error", "index.php", "extension notification message failed!");
             return false;
         }
 

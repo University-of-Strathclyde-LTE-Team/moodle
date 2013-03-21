@@ -487,13 +487,13 @@ class form_request_new extends form_base {
                     $data->ext_id = $ext_id;
                     $data->group_id = $group;
 
-                    $DB->insert_record('deadline_extensions_appto', $extension);
+                    $DB->insert_record('deadline_extensions_appto', $data);
                 }
 
             }
 
             // Handle the documents here
-            $this->handle_documents($form_data, $data);
+            $this->handle_documents($form_data, $extension);
 
             $form_data->eid             = $ext_id;
             $form_data->ext_status_code = extensions_plugin::STATUS_PENDING;
@@ -512,7 +512,7 @@ class form_request_new extends form_base {
 
     }
 
-    public function handle_documents($data, $ext = null) {
+    public function handle_documents($form_data, $ext = null) {
 
         global $USER, $CFG;
 
@@ -527,10 +527,10 @@ class form_request_new extends form_base {
 
         $draftitemid = file_get_submitted_draft_itemid('attachments');
 
-        $data->attachments = $draftitemid;
+        $form_data->attachments = $draftitemid;
 
         file_prepare_draft_area($draftitemid, $context->id, $component, $file_area, $ext->id, $file_params);
-        file_save_draft_area_files($data->attachments, $context->id, $component, $file_area, $ext->id, $file_params);
+        file_save_draft_area_files($form_data->attachments, $context->id, $component, $file_area, $ext->id, $file_params);
 
     }
 
