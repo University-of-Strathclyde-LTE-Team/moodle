@@ -40,6 +40,7 @@ $string['extensions:deleteextension']   = 'Delete Extension';
 $string['extensions:readextension']     = 'Read Extension';
 
 $string['messageprovider:local_extensions_notification'] = 'Extensions Notification';
+$string['messageprovider:extension_updated'] = 'Extension Updated';
 
 // Other required strings here
 $string['enable_extensions']       = 'Enable Extensions';

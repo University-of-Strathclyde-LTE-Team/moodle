@@ -1970,9 +1970,7 @@ class extensions_plugin extends deadline_plugin {
         global $DB, $COURSE;
 
         // SEND USER NOTIFICATION OF UPDATE
-        // Moodle2 ways:
         // http://docs.moodle.org/dev/Messaging_2.0
-        // http://docs.moodle.org/dev/Events
 
         $data = extensions_plugin::get_extension_by_id($form_data->eid);
 
@@ -1982,7 +1980,7 @@ class extensions_plugin extends deadline_plugin {
         // Generate a message to the user. In our case it's very generic.
         $message_data            = new stdClass;
         $message_data->component = extensions_plugin::EXTENSIONS_MOD_NAME;
-        $message_data->name      = 'posts';
+        $message_data->name      = 'extension_updated';
         $message_data->userfrom  = $staff_detail;
         $message_data->userto    = $student_detail;
 
@@ -2037,8 +2035,8 @@ class extensions_plugin extends deadline_plugin {
         }
 
         // Add a link to the extension page at the bottom of the email
-        $params = array('eid' => $form_data->eid);
-        $link_url = new moodle_url('/deadline/extensions/', $params);
+        $params    = array('eid' => $form_data->eid);
+        $link_url  = new moodle_url('/deadline/extensions/', $params);
         $link_text = get_string('ext_email_link', extensions_plugin::EXTENSIONS_LANG);
 
         $email_content .= html_writer::empty_tag('br');
@@ -2050,13 +2048,20 @@ class extensions_plugin extends deadline_plugin {
 
         $message_data->subject           = $email_subject;
         $message_data->fullmessage       = $email_content;
+        $message_data->fullmessagehtml   = $email_content;
         $message_data->fullmessageformat = FORMAT_HTML;
         $message_data->smallmessage      = $email_subject;
 
-        if(events_trigger('message_send', $message_data)) {
+        if(message_send($message_data)) {
+
+            print"event trigger successful";
+
             add_to_log($COURSE->id, "extensions", "success", "index.php", "extension notification message successful!");
             return true;
         } else {
+
+            print"event trigger failed";
+
             add_to_log($COURSE->id, "extensions", "error", "index.php", "extension notification message failed!");
             return false;
         }
