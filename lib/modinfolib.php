@@ -1096,6 +1096,13 @@ class cm_info extends stdClass {
         $this->showdescription  = isset($mod->showdescription) ? $mod->showdescription : 0;
         $this->state            = self::STATE_BASIC;
 
+        // This special case handles old label data. Labels used to use the 'name' field for
+        // content
+        if ($this->modname === 'label' && $this->content === '') {
+            $this->content = $this->extra;
+            $this->extra = '';
+        }
+
         // Note: These fields from $cm were not present in cm_info in Moodle
         // 2.0.2 and prior. They may not be available if course cache hasn't
         // been rebuilt since then.

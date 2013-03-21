@@ -173,6 +173,16 @@ class mod_assign_mod_form extends moodleform_mod {
             $mform->freeze('blindmarking');
         }
 
+        // Plagiarism enabling form.
+        if (!empty($CFG->enableplagiarism)) {
+            require_once($CFG->libdir . '/plagiarismlib.php');
+            plagiarism_get_form_elements_module($mform, null, 'mod_assign');
+        }
+
+        $assignment->add_all_plugin_settings($mform);
+        $this->standard_grading_coursemodule_elements();
+
+
         $this->standard_coursemodule_elements();
 
         $this->add_action_buttons();
