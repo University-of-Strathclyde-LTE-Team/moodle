@@ -153,6 +153,7 @@ class deadlines_plugin extends deadline_plugin {
                 $fields->date_open     = 'timeopen';
                 $fields->date_deadline = 'timeclose';
                 $fields->date_cutoff   =  NULL;
+                $fields->timelimit     = 'timelimit';
                 return $fields;
 
                 break;
@@ -226,6 +227,10 @@ class deadlines_plugin extends deadline_plugin {
 
             if(isset($data->{$field_name->date_cutoff})) {
                 $this->set_cut_off_date($data->coursemodule, $data->{$field_name->date_cutoff});
+            }
+
+            if(isset($data->{$field_name->timelimit})) {
+                $this->set_timelimit($data->coursemodule, $data->{$field_name->timelimit});
             }
 
         } else {
