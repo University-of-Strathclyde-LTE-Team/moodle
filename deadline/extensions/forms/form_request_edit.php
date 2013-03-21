@@ -58,6 +58,7 @@ class form_request_edit extends form_request_new {
         $mform->setDefault('ext_staffmember_id', $ext->staff_id);
         $mform->setDefault('response_message', $ext->response_text);
 
+
         if($ext->date == 0) { // timelimit extension.
 
             if($mform->elementExists('type')) {
@@ -90,7 +91,21 @@ class form_request_edit extends form_request_new {
                 $mform->setDefault('type', extensions_plugin::EXTENSION_TYPE_DATE);
             }
 
+            if($mform->elementExists('time_ext')) {
+                $mform->removeElement('time_ext');
+            }
 
+            // Remove the static time limit option
+            if($mform->elementExists('static_time_limit')) {
+                $mform->removeElement('static_time_limit');
+            }
+
+        }
+
+        if(extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) == 'quiz') {
+            if($mform->elementExists('type')) {
+                $mform->removeElement('type');
+            }
         }
 
         // For some status' we need to lock the form down. Others it needs
