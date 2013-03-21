@@ -314,7 +314,7 @@ if ($hassiteconfig) { // needs this condition or there is error on login page
         $preventTimeLimitMenu = new admin_setting_configselect(extensions_plugin::EXTENSIONS_MOD_NAME . '/deny_timelimit_reqs',
                 get_string('prevent_timelimit_reqs', extensions_plugin::EXTENSIONS_LANG),
                 get_string('prevent_timelimit_reqs_long', extensions_plugin::EXTENSIONS_LANG),
-                EXTENSIONS_ALLOW_TIMELIMIT_DIS,
+                EXTENSIONS_ALLOW_TIMELIMIT_ENA,
                 $preventTimeLimitRequests);
 
         $settings->add($preventTimeLimitMenu);
