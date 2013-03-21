@@ -271,8 +271,8 @@ class deadlines_plugin extends deadline_plugin {
                 $data->cutoffdate               = $this->get_cut_off_date($data->cm_id, $user_id);
 
                 $data->deadlines                = true;
-
                 break;
+
             case 'quiz':
                 $data->timeopen                 = $this->get_open_date($data->cm_id, $user_id);
                 $data->timeclose                = $this->get_due_date($data->cm_id, $user_id);

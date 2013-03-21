@@ -331,11 +331,11 @@ class extension_base {
                     if(method_exists($mform, 'save_hook')) {
 
                         if(!$mform->save_hook($fromform)) {
-                            add_to_log($COURSE->id, "extensions", "error", "index.php", "error when saving data " . $mform->page_name, $this->get_cmid());
+                            add_to_log($COURSE->id, "extensions", "error", "index.php", "error when saving data " . $mform->get_page_name(), $this->get_cmid());
                             print_error('Error saving data.');
                         } else {
                             $this->saved = true;
-                            add_to_log($COURSE->id, "extensions", "success", "index.php", "data saved successfully " . $mform->page_name, $this->get_cmid());
+                            add_to_log($COURSE->id, "extensions", "success", "index.php", "data saved successfully " . $mform->get_page_name(), $this->get_cmid());
                         } // end run save hook
 
                     } // end save hook exists

@@ -58,10 +58,20 @@ class form_request_edit extends form_request_new {
         $mform->setDefault('ext_staffmember_id', $ext->staff_id);
         $mform->setDefault('response_message', $ext->response_text);
 
-        if($ext->date == 0) {
+        if($ext->date == 0) { // timelimit extension.
 
             if($mform->elementExists('type')) {
                 $mform->setDefault('type', extensions_plugin::EXTENSION_TYPE_TIME);
+            }
+
+            // Remove currdue
+            if($mform->elementExists('currdue')) {
+                $mform->removeElement('currdue');
+            }
+
+            // Remove date field
+            if($mform->elementExists('date')) {
+                $mform->removeElement('date');
             }
 
             if($mform->elementExists('time_ext')) {
@@ -75,9 +85,12 @@ class form_request_edit extends form_request_new {
             }
 
         } else {
+
             if($mform->elementExists('type')) {
                 $mform->setDefault('type', extensions_plugin::EXTENSION_TYPE_DATE);
             }
+
+
         }
 
         // For some status' we need to lock the form down. Others it needs
