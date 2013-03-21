@@ -281,7 +281,7 @@ class form_staff_request_edit extends form_base {
         $mform->setDefault('ext_reason_static', $extension->request_text);
         $mform->setDefault('ext_status_code',   $extension->status);
 
-        if($extension->date == 0) {
+        if($extension->date == 0 && extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) == 'quiz') {
 
             // Ext granted date is not required in Timelimit extension mode
             // Remove it.
@@ -313,6 +313,10 @@ class form_staff_request_edit extends form_base {
 
             $ext_diff = html_writer::tag('i', extensions_plugin::date_difference($current_deadline, $extension->date) . ' days', array('class' => 'days_extension'));
             $mform->setDefault('ext_due_static',     date(extensions_plugin::get_date_format(), $extension->date) . ' ' . $ext_diff);
+
+            if($mform->elementExists('ext_timelimit')) {
+                $mform->removeElement('ext_timelimit');
+            }
 
         }
 
