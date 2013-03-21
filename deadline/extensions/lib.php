@@ -2035,7 +2035,7 @@ class extensions_plugin extends deadline_plugin {
         }
 
         // Add a link to the extension page at the bottom of the email
-        $params    = array('eid' => $form_data->eid);
+        $params    = array('eid' => $form_data->eid, 'page' => 'request_edit');
         $link_url  = new moodle_url('/deadline/extensions/', $params);
         $link_text = get_string('ext_email_link', extensions_plugin::EXTENSIONS_LANG);
 
@@ -2051,6 +2051,9 @@ class extensions_plugin extends deadline_plugin {
         $message_data->fullmessagehtml   = $email_content;
         $message_data->fullmessageformat = FORMAT_HTML;
         $message_data->smallmessage      = $email_subject;
+        $message_data->notification      = true;
+        $message_data->contexturl        = $link_url->out(false);
+        $message_data->contexturlname    = $link_text;
 
         if(message_send($message_data)) {
 

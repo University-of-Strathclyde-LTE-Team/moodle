@@ -58,6 +58,7 @@ class form_request_edit extends form_request_new {
         $mform->setDefault('time_ext', $ext->timelimit);
         $mform->setDefault('ext_staffmember_id', $ext->staff_id);
         $mform->setDefault('response_message', $ext->response_text);
+        $mform->setDefault('status', extensions_plugin::get_status_string($ext->status));
 
 
         if($ext->date == 0) { // timelimit extension.
