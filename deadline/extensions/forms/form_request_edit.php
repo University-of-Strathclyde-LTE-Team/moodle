@@ -35,7 +35,7 @@ class form_request_edit extends form_request_new {
     public function __construct() {
         parent::__construct();
 
-        $this->page_name = "Edit Extension Request";
+        $this->page_name = get_string('edit_ext_request', extensions_plugin::EXTENSIONS_LANG);
 
         global $COURSE;
         add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
@@ -51,6 +51,7 @@ class form_request_edit extends form_request_new {
 
         $ext = extensions_plugin::get_extension_by_id($this->get_extension_id());
 
+        $mform->setDefault('general', $this->page_name);
         $mform->setDefault('reason', $ext->request_text);
 //         $mform->setDefault('attachments', ''); // how?
         $mform->setDefault('date', $ext->date);
@@ -102,7 +103,7 @@ class form_request_edit extends form_request_new {
 
         }
 
-        if(extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) == 'quiz') {
+        if(extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) != 'quiz') {
             if($mform->elementExists('type')) {
                 $mform->removeElement('type');
             }

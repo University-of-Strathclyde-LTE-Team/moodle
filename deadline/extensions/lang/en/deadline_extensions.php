@@ -66,6 +66,8 @@ $string['timelimit_req_denied'] = 'Requests for timelimit extensions are current
 $string['configuration']     = 'Configuration';
 $string['group_extension']   = 'Group(s)';
 
+$string['edit_ext_request'] = 'Edit Extension Request';
+
 $string['invalid_activity'] = 'Invalid Activity';
 
 $string['date_extension'] = 'Date extension';
