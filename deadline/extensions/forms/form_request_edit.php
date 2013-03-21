@@ -60,7 +60,6 @@ class form_request_edit extends form_request_new {
         $mform->setDefault('response_message', $ext->response_text);
         $mform->setDefault('status', extensions_plugin::get_status_string($ext->status));
 
-
         if($ext->date == 0) { // timelimit extension.
 
             if($mform->elementExists('type')) {

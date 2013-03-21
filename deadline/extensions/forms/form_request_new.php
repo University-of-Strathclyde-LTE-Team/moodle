@@ -110,7 +110,6 @@ class form_request_new extends form_base {
 
         $mform->addElement('static', 'response_message', get_string('ext_response_mesg', extensions_plugin::EXTENSIONS_LANG));
 
-
         $mform->addElement('hidden', 'cmid');
         $mform->setType('cmid', PARAM_INT);
 
@@ -351,7 +350,7 @@ class form_request_new extends form_base {
                 $mform->freeze('granted_ext_date');
             }
 
-            $mform->setDefault('response_text', clean_param($ext->response_text, PARAM_TEXT));
+            $mform->setDefault('response_message', clean_param($ext->response_text, PARAM_TEXT));
 
         } else {
             if($mform->elementExists('staff_general')) {
@@ -367,7 +366,7 @@ class form_request_new extends form_base {
             }
 
             if($mform->elementExists('response_message')) {
-                $mform->removeElement('response_message');
+                //$mform->removeElement('response_message');
             }
         }
 
