@@ -2054,13 +2054,9 @@ class extensions_plugin extends deadline_plugin {
 
         if(message_send($message_data)) {
 
-            print"event trigger successful";
-
             add_to_log($COURSE->id, "extensions", "success", "index.php", "extension notification message successful!");
             return true;
         } else {
-
-            print"event trigger failed";
 
             add_to_log($COURSE->id, "extensions", "error", "index.php", "extension notification message failed!");
             return false;
