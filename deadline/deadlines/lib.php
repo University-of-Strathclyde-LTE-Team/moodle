@@ -271,7 +271,7 @@ class deadlines_plugin extends deadline_plugin {
             case 'quiz':
                 $data->timeopen                 = $this->get_open_date($data->cm_id, $user_id);
                 $data->timeclose                = $this->get_due_date($data->cm_id, $user_id);
-                $data->timelimit                = $this->get_deadline_timelimit($data->cm_id, $user_id);
+                $data->timelimit                = $this->get_timelimit($data->cm_id, $user_id);
                 // To be implemented later.
                 //$data->attempts
                 //$data->password
