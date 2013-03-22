@@ -33,10 +33,7 @@ class deadlines_plugin extends deadline_plugin {
     const DEADLINES_URL_PATH = '/deadline/deadlines';
 
     public function get_form_elements($mform, $context, $modulename = "", $cm_id = null) {
-
-        $mform->addElement('header', 'general', get_string('settings', self::DEADLINES_LANG));
-        $mform->addElement('static', 'static', '', 'This is coming from the Deadlines module');
-
+        return;
     }
 
     /**

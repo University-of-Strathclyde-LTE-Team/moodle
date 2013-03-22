@@ -44,10 +44,15 @@ function deadline_get_form_elements($mform, $context = "", $modulename = "", $cm
             require_once($lib_file);
 
             if(class_exists($class)) {
+
                 $plugin_object = new $class;
-                $plugin_object->get_form_elements($mform, $context, $modulename, $cm_id);
+
+                if(method_exists($plugin_object, 'get_form_elements')) {
+                    $plugin_object->get_form_elements($mform, $context, $modulename, $cm_id);
+                }
 
             }
+
         }
     }
 }
