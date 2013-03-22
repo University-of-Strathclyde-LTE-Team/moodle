@@ -377,8 +377,6 @@ if ($mform->is_cancelled()) {
             if(!$deadlines->save_plugin_fields($fromform)) {
                 // handle the failure here?
             }
-
-
         }
         // MDL-7315
 
@@ -471,7 +469,6 @@ if ($mform->is_cancelled()) {
             if(!$deadlines->save_plugin_fields($fromform)) {
                 // handle the failure here?
             }
-
         }
         // MDL-7315
 

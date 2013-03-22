@@ -27,15 +27,13 @@
 
 
 
-function deadline_get_form_elements($mform, $context = "", $modulename = "") {
+function deadline_get_form_elements($mform, $context = "", $modulename = "", $cm_id = null) {
 
     global $CFG;
 
     $plugins = get_plugin_list('deadline');
 
     foreach($plugins as $plugin => $dir) {
-
-
 
         $lib_file = $dir . '/lib.php';
         $class    = $plugin . '_plugin';
@@ -47,14 +45,11 @@ function deadline_get_form_elements($mform, $context = "", $modulename = "") {
 
             if(class_exists($class)) {
                 $plugin_object = new $class;
-                $plugin_object->get_form_elements($mform, $context);
+                $plugin_object->get_form_elements($mform, $context, $modulename, $cm_id);
 
             }
-
         }
     }
-
-
 }
 
 function deadline_add_course_navigation(navigation_node $coursenode, $course) {

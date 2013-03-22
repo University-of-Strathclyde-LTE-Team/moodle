@@ -69,7 +69,7 @@ class extensions_plugin extends deadline_plugin {
      * @param object $context Context for this form
      * @param string $modulename Module Name that is calling this form fragment
      */
-    public function get_form_elements($mform, $context, $modulename = "") {
+    public function get_form_elements($mform, $context, $modulename = "", $cm_id = null) {
 
         // If deadline_extensions isn't explicitly enabled site-wide, don't
         // show the activity config items.
@@ -80,7 +80,7 @@ class extensions_plugin extends deadline_plugin {
         $mform->addElement('header', 'general', get_string('settings', self::EXTENSIONS_LANG));
 
         // Add the extension form item.
-        $this->extensions_form_item($mform);
+        $this->extensions_form_item($mform, $cm_id);
 
         if (get_config('deadline_extensions', 'req_cut_off') != '-1') {
             $mform->addElement('select', 'extensions_cutoff', get_string('extensions_cutoff', self::EXTENSIONS_LANG), self::get_cutoff_options());
@@ -89,7 +89,8 @@ class extensions_plugin extends deadline_plugin {
         // $usersPicker = $mform->addElement('select_picker', 'users', 'Users');
     }
 
-    public function extensions_form_item($mform) {
+    public function extensions_form_item($mform, $cm_id = null) {
+
         $mform->addElement('selectyesno', 'extensions_allowed', get_string('allow_ext_requests', self::EXTENSIONS_LANG));
 
         if (get_config('deadline_extensions', 'force_extension_enabled') == '1') {
