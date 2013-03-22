@@ -419,7 +419,11 @@ abstract class moodleform_mod extends moodleform {
         // Deadline enabling form.
         if ($this->_features->deadlines) {
             require_once($CFG->libdir . '/deadlinelib.php');
-            deadline_get_form_elements($mform, null, $this->_cm->modname, $this->_cm->id);
+            if (!empty($this->_cm)) {
+                deadline_get_form_elements($mform, null, $this->_cm->modname, $this->_cm->id);
+            } else {
+                deadline_get_form_elements($mform);
+            }
         }
         // MDL-7315
 
