@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,7 +25,7 @@
  */
 
 if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
+    die('Direct access to this script is forbidden.');    //  It must be included from a Moodle page
 }
 
 global $CFG;
@@ -41,20 +40,20 @@ class MoodleQuickForm_extension_configure extends MoodleQuickForm_group {
     private $table_data = null;
     private $renderer   = null;
 
-    public function MoodleQuickForm_extension_configure($elementName=null, $elementLabel=null, $table_data=null, $attributes=null, $showchoose=false) {
+    public function MoodleQuickForm_extension_configure($element_name=null, $element_label=null, $table_data=null, $attributes=null, $showchoose=false) {
 
         // This is essentially just to pass in the seperator argument, this works
         // ok without it, but puts a big ugly space before the group itself.
-        parent::MoodleQuickForm_group($elementName, $elementLabel, null, '');
+        parent::__construct($element_name, $element_label, null, '');
 
-        $this->HTML_QuickForm_element($elementName, $elementLabel, $attributes);
-        //        $this->setLabel('');
+        $this->HTML_QuickForm_element($element_name, $element_label, $attributes);
+        // $this->setLabel('');
         $this->_persistantFreeze = true;
-//         $this->_appendName = true;
+        // $this->_appendName = true;
         $this->_appendName = false;
         $this->_type = 'extension_configure';
 
-        if($table_data !== FALSE) {
+        if ($table_data !== false) {
             $this->set_table_data($table_data);
         }
 
@@ -63,65 +62,65 @@ class MoodleQuickForm_extension_configure extends MoodleQuickForm_group {
 
     public function set_table_data($table_data = null) {
 
-        if(!is_null($table_data)) {
+        if (!is_null($table_data)) {
             $this->table_data = $table_data;
-            $this->_createElements();
+            $this->_create_elements();
         }
 
     }
 
-    public function _createElements() {
+    public function _create_elements() {
 
         global $USER;
 
-        if(is_null($this->table_data)) {
+        if (is_null($this->table_data)) {
             return null;
         }
 
-        if(!is_object($this->table_data)) {
+        if (!is_object($this->table_data)) {
             return null;
         }
 
-        foreach($this->table_data as $key => $data) {
+        foreach ($this->table_data as $key => $data) {
 
-            if($key != 'data') {
+            if ($key != 'data') {
                 continue;
             }
 
-            foreach($data as $key => $row) {
+            foreach ($data as $key => $row) {
                 // For each row, add the options to enable/disable
                 // extensions for each item.
 
-                foreach($row->cells as $cell) {
-                    if(strcmp($cell->text, '##ext_enabled##') == 0) {
+                foreach ($row->cells as $cell) {
+                    if (strcmp($cell->text, '##ext_enabled##') == 0) {
 
-                        $thisItem = $key . '-enabled';
+                        $this_item = $key . '-enabled';
 
                         $element = new HTML_QuickForm_select('enabled['.$key.']', null, extensions_plugin::get_extension_enable_items());
 
-                        if(get_config('deadline_extensions','force_extension_enabled') == '1') {
+                        if (get_config('deadline_extensions', 'force_extension_enabled') == '1') {
                             $element->setSelected(1);
                             $element->freeze();
                         } else {
                             $element->setSelected(extensions_plugin::extensions_enabled_cmid($cm_id));
                         }
 
-                        $this->_elements[$thisItem] = $element;
+                        $this->_elements[$this_item] = $element;
                     }
 
-                    if(strcmp($cell->text, '##ext_cutoff##') == 0) {
+                    if (strcmp($cell->text, '##ext_cutoff##') == 0) {
 
-                        $thisItem = $key . '-cutoff';
+                        $this_item = $key . '-cutoff';
 
                         $element = new HTML_QuickForm_select('cutoff_date['.$key.']', null, extensions_plugin::get_cutoff_options());
-                        if(get_config('deadline_extensions', 'req_cut_off') == '-1') {
+                        if (get_config('deadline_extensions', 'req_cut_off') == '-1') {
                             $element->setSelected(get_config('deadline_extensions', 'req_cut_off'));
                             $element->freeze();
                         } else {
                             $element->setSelected(extensions_plugin::get_extension_cutoff_by_cmid($key));
                         }
 
-                        $this->_elements[$thisItem] = $element;
+                        $this->_elements[$this_item] = $element;
 
                     }
                 }
@@ -131,42 +130,42 @@ class MoodleQuickForm_extension_configure extends MoodleQuickForm_group {
         return true;
     }
 
-    //---
+    // ---
 
     public function toHtml() {
 
         parent::accept($this->renderer);
 
-        foreach($this->_elements as $key => $data) {
+        foreach ($this->_elements as $key => $data) {
 
             // Generate the HTML element as added previously, and replace the text with the item.
-            if(preg_match('#-enabled$#', $key)) {
-                $itemId = str_replace("-enabled", '', $key);
-                $this->table_data->data[$itemId]->cells['1']->text = $this->_elements[$key]->toHtml();
+            if (preg_match('#-enabled$#', $key)) {
+                $item_id = str_replace("-enabled", '', $key);
+                $this->table_data->data[$item_id]->cells['1']->text = $this->_elements[$key]->toHtml();
             }
 
-            if(preg_match('#-cutoff$#', $key)) {
-                $itemId = str_replace("-cutoff", '', $key);
-                $this->table_data->data[$itemId]->cells['2']->text = $this->_elements[$key]->toHtml();
+            if (preg_match('#-cutoff$#', $key)) {
+                $item_id = str_replace("-cutoff", '', $key);
+                $this->table_data->data[$item_id]->cells['2']->text = $this->_elements[$key]->toHtml();
             }
 
         }
 
-        if(is_null($this->table_data)) {
+        if (is_null($this->table_data)) {
             return get_string("ext_none_exist", extensions_plugin::EXTENSIONS_LANG);
         } else {
-            return html_writer::table($this->table_data, TRUE);
-            //return print_table($this->table_data, TRUE);
+            return html_writer::table($this->table_data, true);
+            //return print_table($this->table_data, true);
         }
     }
 
-    //---
+    // ---
 
     public function get_table_data() {
         return $this->table_data;
     }
 
-    function accept(&$renderer, $required = false, $error = null) {
+    public function accept(&$renderer, $required = false, $error = null) {
 
         // Add the custom template to the renderer for use.
         $renderer->_elementTemplates['empty'] = "<!-- BEGIN error --><span style=\"color: #ff0000\">{error}</span><br /><!-- END error -->\t{element}";
@@ -174,7 +173,7 @@ class MoodleQuickForm_extension_configure extends MoodleQuickForm_group {
         $renderer->renderElement($this, $required, $error, $this->table_data);
     }
 
-    function getElementTemplateType() {
+    public function getElementTemplateType() {
         return 'empty';
     }
 

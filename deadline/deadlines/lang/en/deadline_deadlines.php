@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,7 +22,7 @@
  * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
  * @author    James McLean <james.mclean@unisa.edu.au>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
+ */
 
 $string['default'] = 'Enabled by default';
 $string['default_help'] = 'If set, this module will control deadlines for all course modules.';

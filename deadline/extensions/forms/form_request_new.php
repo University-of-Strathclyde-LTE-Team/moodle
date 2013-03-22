@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -49,15 +48,12 @@ class form_request_new extends form_base {
     public function definition() {
         parent::definition();
 
-        // TODO: Make this work the Moodle2 way.
-        //$this->set_upload_manager(new upload_manager('', false, false, null, false, (1024000 * 5), true, true, false));
-
         // load a copy of the instanciated form object from this object.
         $mform =& $this->_form;
 
         $mform->addElement('header', 'general', get_string('new_extension_request', extensions_plugin::EXTENSIONS_LANG));
 
-        $mform->addElement('static','ext_error');
+        $mform->addElement('static', 'ext_error');
 
         $mform->addElement('static', 'assignment_name', get_string('extselectassignment', extensions_plugin::EXTENSIONS_LANG));
 
@@ -70,13 +66,13 @@ class form_request_new extends form_base {
         $mform->addRule('reason', get_string('max_length_error', extensions_plugin::EXTENSIONS_LANG), 'maxlength', 4000, 'client');
         $mform->setType('reason', PARAM_TEXT);
 
-//         $file_params = array('maxbytes' => $maxbytes, 'accepted_types' => '*');
+        // $file_params = array('maxbytes' => $maxbytes, 'accepted_types' => '*');
 
-//         $mform->addElement('filepicker', 'userfile', get_string('file'), null, $file_params);
-        $file_params =  array('subdirs' => 0, 'maxfiles' => 4, 'accepted_types' => array('document') ); // make this dynamic.
-        $mform->addElement('filemanager', 'attachments', get_string('extsupdoc',extensions_plugin::EXTENSIONS_LANG), null, $file_params);
+        // $mform->addElement('filepicker', 'userfile', get_string('file'), null, $file_params);
+        $file_params =  array('subdirs' => 0, 'maxfiles' => 4, 'accepted_types' => array('document') ); // TODO: Make this dynamic.
+        $mform->addElement('filemanager', 'attachments', get_string('extsupdoc', extensions_plugin::EXTENSIONS_LANG), null, $file_params);
 
-        if(get_config('deadline_extensions', 'deny_timelimit_reqs') == 0) {
+        if (get_config('deadline_extensions', 'deny_timelimit_reqs') == 0) {
             $options = array(
                     extensions_plugin::EXTENSION_TYPE_NONE   => '&nbsp;',
                     extensions_plugin::EXTENSION_TYPE_DATE => get_string('date_extension', extensions_plugin::EXTENSIONS_LANG),
@@ -91,17 +87,17 @@ class form_request_new extends form_base {
 
         $date = $mform->addElement('date_time_selector', 'date', get_string('extrequestdateacst', extensions_plugin::EXTENSIONS_LANG), $this->date_options);
 
-        if(get_config('deadline_extensions', 'deny_timelimit_reqs') == 0) {
+        if (get_config('deadline_extensions', 'deny_timelimit_reqs') == 0) {
             $mform->addElement('static', 'static_time_limit', 'Current time limit');
             $mform->addElement('select', 'time_ext', 'Time extension', extensions_plugin::get_timelimit_options());
         }
 
         // -------------------------
 
-        $mform->addElement('select', 'ext_staffmember_id', get_string('extsendto',extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('select', 'ext_staffmember_id', get_string('extsendto', extensions_plugin::EXTENSIONS_LANG));
         $mform->addRule('ext_staffmember_id', get_string("please_select", extensions_plugin::EXTENSIONS_LANG), 'required', null, 'client');
 
-        $mform->addElement('header', 'staff_general', get_string('ext_staff_feedback',extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('header', 'staff_general', get_string('ext_staff_feedback', extensions_plugin::EXTENSIONS_LANG));
 
         $mform->addElement('static', 'status', get_string('extstatus', extensions_plugin::EXTENSIONS_LANG));
 
@@ -119,19 +115,19 @@ class form_request_new extends form_base {
         $mform->addElement('hidden', 'action',  'save');
         $mform->setType('action', PARAM_ALPHA);
 
-        $mform->addElement('static','duplicate_message', '', '');
+        $mform->addElement('static', 'duplicate_message', '', '');
 
         // Create a button group for the cancel, withdraw and submit buttons.
         $buttonarray[] = &$mform->createElement('cancel');
         $buttonarray[] = &$mform->createElement('submit', 'withdrawbutton', get_string('extwithdraw', extensions_plugin::EXTENSIONS_LANG));
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton',   get_string('extresubmitreq', extensions_plugin::EXTENSIONS_LANG));
 
-        if(isset($buttonarray)) {
+        if (isset($buttonarray)) {
             // Add an over-lay over the UI when the form is submitted to prevent
             // multiple submissions.
             $js = "<script type=\"text/javascript\">
             //<![CDATA[
-            $('#mform2').submit(function(){
+            $('#mform2').submit(function() {
 
             $.blockUI.defaults.overlayCSS.backgroundColor = '#EDEDED';
             $.blockUI.defaults.overlayCSS.opacity = .4;
@@ -142,18 +138,18 @@ class form_request_new extends form_base {
             //]]>
             </script>";
 
-            $buttonarray[] = &$mform->createElement('static','js', '&nbsp;', $js);
+            $buttonarray[] = &$mform->createElement('static', 'js', '&nbsp;', $js);
         }
 
         // withdrawbutton
-        if($mform->elementExists('withdrawbutton')) {
-            $mform->disabledIf('withdrawbutton', 'reason', 'eq', '');
+        if ($mform->elementExists('withdrawbutton')) {
+            $mform->disabledif ('withdrawbutton', 'reason', 'eq', '');
         }
 
         // Only enable button if there is a reason present
-        //$mform->disabledIf('submitbutton', 'reason', 'eq', '');
+        // $mform->disabledif ('submitbutton', 'reason', 'eq', '');
         // Only enable button if there is a staffmember selected
-        $mform->disabledIf('submitbutton', 'ext_staffmember_id', 'eq', '0');
+        $mform->disabledif ('submitbutton', 'ext_staffmember_id', 'eq', '0');
 
         $mform->addGroup($buttonarray, 'buttona', '', array(' '), false);
 
@@ -174,38 +170,38 @@ class form_request_new extends form_base {
         $deadline = $deadlines->get_deadlines_for_cmid($this->get_cmid());
 
         // if $assignment does not allow extensions, set read-only.
-        if(!$extensions->extensions_enabled_cmid($this->get_cmid())) {
+        if (!$extensions->extensions_enabled_cmid($this->get_cmid())) {
             $this->set_readonly(true);
             $mform->setDefault('ext_error', get_string('ext_not_allowed', extensions_plugin::EXTENSIONS_LANG));
         }
 
-        if($deadline->date_open > date('U')) {
+        if ($deadline->date_open > date('U')) {
             $this->set_readonly(true);
             $mform->setDefault('ext_error', get_string('extnotopenyet', extensions_plugin::EXTENSIONS_LANG));
         }
 
         // See if the due date has passed
-        if($deadline->date_deadline < date('U')) {
+        if ($deadline->date_deadline < date('U')) {
             $this->set_readonly(true);
             $mform->setDefault('ext_error', get_string('extduedatepassed', extensions_plugin::EXTENSIONS_LANG));
         }
 
         // This is a new request. We need to modify the submit buttons.
-        $buttonGroup = $mform->getElement('buttona');
-        $wb = $buttonGroup->getElement('withdrawbutton');
+        $button_group = $mform->getElement('buttona');
+        $wb = $button_group->getElement('withdrawbutton');
 
-        foreach($buttonGroup->_elements as $key => $button) {
+        foreach ($button_group->_elements as $key => $button) {
 
             // Remove withdraw button
-            if($button->_type == 'submit' &&
+            if ($button->_type == 'submit' &&
                     $button->_attributes['name'] == 'withdrawbutton') {
-                unset($buttonGroup->_elements[$key]);
+                unset($button_group->_elements[$key]);
             }
 
             // Set the button to the correct text
-            if($button->_type == 'submit' &&
+            if ($button->_type == 'submit' &&
                     $button->_attributes['name'] == 'submitbutton') {
-                $buttonGroup->_elements[$key]->setValue(get_string('extsubmitreq', extensions_plugin::EXTENSIONS_LANG));
+                $button_group->_elements[$key]->setValue(get_string('extsubmitreq', extensions_plugin::EXTENSIONS_LANG));
             }
 
         }
@@ -224,7 +220,7 @@ class form_request_new extends form_base {
         $mform->setDefault('assignment_name', $activity_name);
 
         // group_detail
-        if($grouping_id = $extensions->get_group_submission_for_cmid($this->get_cmid())) {
+        if ($grouping_id = $extensions->get_group_submission_for_cmid($this->get_cmid())) {
 
             // List the users groups.
             $groups = groups_get_all_groups($this->get_course()->id, $USER->id, $grouping_id, 'g.id, name');
@@ -232,8 +228,8 @@ class form_request_new extends form_base {
             $group_list = '';
             $group_ids  = '';
 
-            foreach($groups as $group) {
-                $group_ids   = $group_ids . $group->id . ',';
+            foreach ($groups as $group) {
+                $group_ids   = $group_ids . $group->id . ', ';
                 $group_list .= $group->name . ' ';
             }
 
@@ -243,43 +239,43 @@ class form_request_new extends form_base {
 
             $mform->setDefault('group_detail', $group_text);
             $mform->setDefault('group_list', $group_ids);
-//             $mform->setDefault('hidden','group_detail', '1');
+            // $mform->setDefault('hidden', 'group_detail', '1');
 
-            if($mform->elementExists('group_submission')) {
+            if ($mform->elementExists('group_submission')) {
                 $mform->setDefault('group_submission', '1');
             }
 
         } else {
-            if($mform->elementExists('group_detail')) {
+            if ($mform->elementExists('group_detail')) {
                 $mform->removeElement('group_detail');
             }
 
-            if($mform->elementExists('group_submission')) {
+            if ($mform->elementExists('group_submission')) {
                 $mform->setDefault('group_submission', '0');
             }
         }
 
-        if($mform->elementExists('currdue')) {
+        if ($mform->elementExists('currdue')) {
             $mform->setDefault('currdue', $deadline->date_deadline);
             $mform->freeze('currdue');
         }
 
         // Add the configured amount of time to the extension
-        if($extension_default = get_config('deadline_extensions','default_ext_length')) {
+        if ($extension_default = get_config('deadline_extensions', 'default_ext_length')) {
             $extension_deadline = $deadline->date_deadline + ($extension_default * 3600);
         } else {
             $extension_deadline = $deadline->date_deadline + 3600;
         }
 
-        if($mform->elementExists('date')) {
+        if ($mform->elementExists('date')) {
             $mform->setDefault('date', $extension_deadline);
         }
 
         // If this is NOT a quiz, we need to hide some fields.
-        if(extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) == 'quiz' &&
+        if (extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) == 'quiz' &&
             get_config('deadline_extensions', 'deny_timelimit_reqs') == 0) {
 
-            if($mform->elementExists('static_time_limit')) {
+            if ($mform->elementExists('static_time_limit')) {
 
                 $limit = $deadline->timelimit / 60;
                 $limit = $limit . ' ' . get_string('minutes', extensions_plugin::EXTENSIONS_LANG);
@@ -289,38 +285,38 @@ class form_request_new extends form_base {
             }
 
             // Disable date if no type selection made
-            $mform->disabledIf('date', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_NONE);
+            $mform->disabledif ('date', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_NONE);
             // Disable date if selection matches Time Extension
-            $mform->disabledIf('date', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_TIME);
+            $mform->disabledif ('date', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_TIME);
 
             // Disable length if no type selection made
-            $mform->disabledIf('time_ext', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_NONE);
+            $mform->disabledif ('time_ext', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_NONE);
             // Disable length if selection matches Date Extension
-            $mform->disabledIf('time_ext', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_DATE);
+            $mform->disabledif ('time_ext', 'type', 'eq', extensions_plugin::EXTENSION_TYPE_DATE);
 
         } else {
 
             // Remove the extension type option
-            if($mform->elementExists('type')) {
+            if ($mform->elementExists('type')) {
                 $mform->removeElement('type');
             }
 
             // Remove the static time limit option
-            if($mform->elementExists('static_time_limit')) {
+            if ($mform->elementExists('static_time_limit')) {
                 $mform->removeElement('static_time_limit');
             }
 
             // Remove the time selection option
-            if($mform->elementExists('time_ext')) {
+            if ($mform->elementExists('time_ext')) {
                 $mform->removeElement('time_ext');
             }
 
         }
 
         // check for duplicates.
-        if($dups = extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id, $this->get_extension_id())) {
-            foreach($dups as $dup) {
-                if($mform->elementExists('duplicate_message')) {
+        if ($dups = extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id, $this->get_extension_id())) {
+            foreach ($dups as $dup) {
+                if ($mform->elementExists('duplicate_message')) {
 
                     $params = array(
                             'eid'  => $dup->id,
@@ -333,19 +329,18 @@ class form_request_new extends form_base {
                 }
             }
         } else {
-            if($mform->elementExists('duplicate_message')) {
+            if ($mform->elementExists('duplicate_message')) {
                 $mform->removeElement('duplicate_message');
             }
         }
 
-
         // if we have a response from a teacher, this is probably an 'edit'.
         // if so, then show the response area.
-        if(isset($ext->response_text) && $ext->response_text != '') {
+        if (isset($ext->response_text) && $ext->response_text != '') {
 
             $mform->setDefault('status', $this->get_status_by_code($ext->status));
 
-            if($ext->status == extensions_plugin::STATUS_APPROVED) {
+            if ($ext->status == extensions_plugin::STATUS_APPROVED) {
                 $mform->setDefault('granted_ext_date', $ext->ext_granted_date);
                 $mform->freeze('granted_ext_date');
             }
@@ -353,36 +348,36 @@ class form_request_new extends form_base {
             $mform->setDefault('response_message', clean_param($ext->response_text, PARAM_TEXT));
 
         } else {
-            if($mform->elementExists('staff_general')) {
+            if ($mform->elementExists('staff_general')) {
                 $mform->removeElement('staff_general');
             }
 
-            if($mform->elementExists('status')) {
-                //$mform->removeElement('status');
-            }
+            // if ($mform->elementExists('status')) {
+            //     $mform->removeElement('status');
+            // }
 
-            if($mform->elementExists('granted_ext_date')) {
+            if ($mform->elementExists('granted_ext_date')) {
                 $mform->removeElement('granted_ext_date');
             }
 
-            if($mform->elementExists('response_message')) {
-                //$mform->removeElement('response_message');
-            }
+            // if ($mform->elementExists('response_message')) {
+            //     $mform->removeElement('response_message');
+            // }
         }
 
         $mform->setDefault('asmntid', $this->get_cmid()); // Assessment ID
 
-        if($this->get_readonly()) {
+        if ($this->get_readonly()) {
 
-            if($mform->elementExists('reason')) {
+            if ($mform->elementExists('reason')) {
                 $mform->freeze('reason');
             }
 
-            if($mform->elementExists('date')) {
+            if ($mform->elementExists('date')) {
                 $mform->freeze('date');
             }
 
-            if($mform->elementExists('ext_staffmember_id')) {
+            if ($mform->elementExists('ext_staffmember_id')) {
                 $mform->freeze('ext_staffmember_id');
             }
 
@@ -399,11 +394,11 @@ class form_request_new extends form_base {
 
         $deadline = $deadlines->get_deadlines_for_cmid($this->get_cmid());
 
-        if(isset($form_data->withdrawbutton)) {
+        if (isset($form_data->withdrawbutton)) {
             $type = 'withdraw';
-        } else if(isset($form_data->submitbutton)) {
+        } else if (isset($form_data->submitbutton)) {
             $type = 'submit';
-        } else if(isset($form_data->cancel)) {
+        } else if (isset($form_data->cancel)) {
             return true;
         }
 
@@ -419,11 +414,11 @@ class form_request_new extends form_base {
         $form_data->id       = clean_param($form_data->id,       PARAM_INT);
         $form_data->cmid     = clean_param($form_data->cmid,     PARAM_INT);
 
-        if(isset($form_data->type)) {
+        if (isset($form_data->type)) {
             $form_data->type     = clean_param($form_data->type,     PARAM_INT);
         }
 
-        if(isset($form_data->time_ext)) {
+        if (isset($form_data->time_ext)) {
             $form_data->time_ext = clean_param($form_data->time_ext, PARAM_INT);
         }
 
@@ -432,7 +427,7 @@ class form_request_new extends form_base {
 
         $data                = new stdClass;
 
-        if(isset($form_data->group_submission) && $form_data->group_submission == 1) {
+        if (isset($form_data->group_submission) && $form_data->group_submission == 1) {
             $data->ext_type  = extensions_plugin::EXT_GROUP;
         } else {
             $data->ext_type  = extensions_plugin::EXT_INDIVIDUAL;
@@ -447,7 +442,7 @@ class form_request_new extends form_base {
         $data->created       = date('U');
 
         // See if the user has selected a time based extension (quizzes).
-        if(isset($form_data->type) && $form_data->type == extensions_plugin::EXTENSION_TYPE_TIME) {
+        if (isset($form_data->type) && $form_data->type == extensions_plugin::EXTENSION_TYPE_TIME) {
             $existing_timelimit  = $deadline->timelimit;
             $extension_timelimit = $form_data->time_ext;
 
@@ -459,20 +454,20 @@ class form_request_new extends form_base {
             $data->date          = $form_data->date;
         }
 
-        if($ext_id = $DB->insert_record('deadline_extensions', $data, true)) {
+        if ($ext_id = $DB->insert_record('deadline_extensions', $data, true)) {
 
             $extension = $data;
             $data->id = $ext_id;
 
             // If this is a group submission we need to add records to the appto
             // table for this.
-            if($form_data->group_submission == 1) {
+            if ($form_data->group_submission == 1) {
                 // Split the group_list field
-                $groups = explode(',', $form_data->group_list);
+                $groups = explode(', ', $form_data->group_list);
 
-                foreach($groups as $group) {
+                foreach ($groups as $group) {
 
-                    if($group == '') {
+                    if ($group == '') {
                         continue;
                     }
 
@@ -496,7 +491,7 @@ class form_request_new extends form_base {
             extensions_plugin::add_history($form_data);
 
             // Send a message to the user to notify of the update.
-//             extensions_plugin::notify_user($form_data);
+            // extensions_plugin::notify_user($form_data);
 
             return true;
         } else {
@@ -508,10 +503,6 @@ class form_request_new extends form_base {
     public function handle_documents($form_data, $ext = null) {
 
         global $USER, $CFG;
-
-//         $context = context_user::instance($USER->id);
-//         $component   = 'deadline_extensions';
-//         $file_area   = 'attachment';
 
         $context     = context_user::instance($ext->student_id);
         $component   = 'deadline';
@@ -531,8 +522,8 @@ class form_request_new extends form_base {
         return parent::validation($data, $files);
     }
 
-     public function get_save_destination() {
-         return 'requests';
-     }
+    public function get_save_destination() {
+        return 'requests';
+    }
 
 }

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -34,7 +33,7 @@ class form_configure_activities extends form_base {
     public function __construct() {
         parent::__construct();
 
-//         $this->page_name = get_string('ext_indiv_req', extensions_plugin::EXTENSIONS_LANG);
+        // $this->page_name = get_string('ext_indiv_req', extensions_plugin::EXTENSIONS_LANG);
         global $COURSE;
         add_to_log($COURSE->id, "extensions", "viewing", "index.php", "viewing " . $this->page_name, $this->get_cmid());
     }
@@ -59,7 +58,6 @@ class form_configure_activities extends form_base {
         // Add the table to the form to allow extension enable/disable.
         $activity_table = $mform->addElement('extension_configure', 'activity_list', get_string('activities'), extensions_plugin::build_activity_table($activities));
 
-        // name value attribs
         $submit = $mform->addElement('submit', 'submit_changes', get_string('ext_submit_changes', extensions_plugin::EXTENSIONS_LANG));
 
     }
@@ -80,20 +78,18 @@ class form_configure_activities extends form_base {
         $data_to_save = array();
 
         // loop through the 'enabled' items.
-        foreach($form_data->enabled as $key => $value) {
+        foreach ($form_data->enabled as $key => $value) {
             $data_to_save[$key]['enabled'] = $value;
         }
 
         // loop through the 'cutoff_date' items.
-        foreach($form_data->cutoff_date as $key => $value) {
+        foreach ($form_data->cutoff_date as $key => $value) {
             $data_to_save[$key]['cutoff_date'] = $value;
         }
 
-        foreach($data_to_save as $cm_id => $data) {
+        foreach ($data_to_save as $cm_id => $data) {
 
-            if($DB->record_exists('deadline_extensions_enabled', array('cm_id' => $cm_id))) {
-
-
+            if ($DB->record_exists('deadline_extensions_enabled', array('cm_id' => $cm_id))) {
 
                 $item = new stdClass;
                 $item->id     = extensions_plugin::get_extension_enable_id_by_cmid($cm_id);
@@ -107,7 +103,7 @@ class form_configure_activities extends form_base {
                 // this item doesn't exist in the extensions enabled table.
                 // create it, if it's being enabled.
 
-                if($data['enabled'] == extensions_plugin::EXT_ENABLED) {
+                if ($data['enabled'] == extensions_plugin::EXT_ENABLED) {
 
                     $item = new stdClass;
                     $item->cm_id  = $cm_id;
@@ -120,14 +116,11 @@ class form_configure_activities extends form_base {
 
             }
         }
-
     }
 
     public function validation($data, $files) {
-        // make sure that we're not disabling extensions on an item which has
+        // Make sure that we're not disabling extensions on an item which has
         // pending extension requests.
-
-
     }
 
 }

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -30,8 +29,8 @@ require_once('form_base.php');
 class form_staff_request_edit extends form_base {
 
     protected $page_name = null;
-    private   $read_only = false;
 
+    private $read_only = false;
     private $filters = null;
 
     public function __construct() {
@@ -58,28 +57,28 @@ class form_staff_request_edit extends form_base {
         $mform->addElement('static', 'ext_student_static', get_string('ext_student_name',  extensions_plugin::EXTENSIONS_LANG));
         $mform->addElement('static', 'group_static',       get_string('group_extension', extensions_plugin::EXTENSIONS_LANG));
         $mform->addElement('static', 'ext_reason_static',  get_string('extreasonfor',  extensions_plugin::EXTENSIONS_LANG));
-
-        $mform->addElement('static', 'supdoc1', get_string('extsupporting', extensions_plugin::EXTENSIONS_LANG), NULL);
-
+        $mform->addElement('static', 'supdoc1',            get_string('extsupporting', extensions_plugin::EXTENSIONS_LANG), null);
         $mform->addElement('static', 'asmt_due_static',    get_string('extasmntdue',    extensions_plugin::EXTENSIONS_LANG), null);
         $mform->addElement('static', 'ext_due_static',     get_string('extsubmission',  extensions_plugin::EXTENSIONS_LANG), null);
         $mform->addElement('static', 'ext_date_requested', get_string('extrequestdate', extensions_plugin::EXTENSIONS_LANG), null);
 
-        // ----------------------------------------------------------------
+        $extension_status = extensions_plugin::get_all_extension_status();
+        $extension_date_options =  extensions_plugin::get_date_options();
+        $extension_timelimit_options = extensions_plugin::get_timelimit_options();
 
-        $mform->addElement('header','general', get_string('extapproval', extensions_plugin::EXTENSIONS_LANG));
+        $mform->addElement('header', 'general', get_string('extapproval', extensions_plugin::EXTENSIONS_LANG));
 
-        $ext_status_code = $mform->addElement('select', 'ext_status_code', get_string('extstatus', extensions_plugin::EXTENSIONS_LANG), extensions_plugin::get_all_extension_status());
+        $mform->addElement('select', 'ext_status_code', get_string('extstatus', extensions_plugin::EXTENSIONS_LANG), $extension_status);
         $mform->addRule('ext_status_code', get_string('please_select', extensions_plugin::EXTENSIONS_LANG), 'required', null, 'client');
 
-        $ext_granted_date = $mform->addElement('date_time_selector', 'ext_granted_date', get_string('extapproveddate', extensions_plugin::EXTENSIONS_LANG), extensions_plugin::get_date_options());
+        $mform->addElement('date_time_selector', 'ext_granted_date', get_string('extapproveddate', extensions_plugin::EXTENSIONS_LANG), $extension_date_options);
 
-        $ext_timelimit = $mform->addElement('select', 'ext_timelimit', get_string('approved_timelimit', extensions_plugin::EXTENSIONS_LANG), extensions_plugin::get_timelimit_options());
+        $mform->addElement('select', 'ext_timelimit', get_string('approved_timelimit', extensions_plugin::EXTENSIONS_LANG), $extension_timelimit_options);
 
-        $response_text = $mform->addElement('htmleditor', 'response_text', get_string('extresponse',extensions_plugin::EXTENSIONS_LANG), array('cols' => 60, 'rows' => 6));
-        $mform->setType('response_text', PARAM_RAW); // to be cleaned before display
+        $mform->addElement('htmleditor', 'response_text', get_string('extresponse', extensions_plugin::EXTENSIONS_LANG), array('cols' => 60, 'rows' => 6));
+        $mform->setType('response_text', PARAM_RAW);
 
-        $this->add_action_buttons(TRUE);
+        $this->add_action_buttons(true);
     }
 
     public function definition_after_data() {
@@ -87,19 +86,19 @@ class form_staff_request_edit extends form_base {
 
         global $CFG, $COURSE, $course, $USER, $DB;
 
-        // load a copy of the instanciated form object from this object.
+        // Load a copy of the instanciated form object from this object.
         $mform =& $this->_form;
 
         $deadline   = new deadlines_plugin();
         $current_deadline  = $deadline->get_deadline_date_deadline($this->get_cmid());
         $current_timelimit = $deadline->get_deadline_timelimit($this->get_cmid());
 
-        if($this->get_extension_id()) {
+        if ($this->get_extension_id()) {
             $extension = extensions_plugin::get_extension_by_id($this->get_extension_id());
         } else {
 
             // Staff adding on a student behalf.
-            if($extension_default = get_config('deadline_extensions','default_ext_length')) {
+            if ($extension_default = get_config('deadline_extensions', 'default_ext_length')) {
                 $extension_deadline = $current_deadline + ($extension_default * 3600);
             } else {
                 $extension_deadline = $current_deadline + 3600;
@@ -117,24 +116,24 @@ class form_staff_request_edit extends form_base {
         }
 
         // Show duplicate extension warnings here.
-        if(get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_duplicate_warn') == 1) {
+        if (get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_duplicate_warn') == 1) {
 
-            if($dups = extensions_plugin::duplicate_requests($extension->cm_id, $extension->student_id, $extension->id)) {
+            if ($dups = extensions_plugin::duplicate_requests($extension->cm_id, $extension->student_id, $extension->id)) {
                 // If there is any duplicate requests, populate those fields.
 
                 $links = null;
 
                 $mform->setDefault('other_req', get_string('ext_other_req_exists', extensions_plugin::EXTENSIONS_LANG));
 
-                foreach($dups as $dup) {
+                foreach ($dups as $dup) {
 
                     $string = get_string('duplicate_request', extensions_plugin::EXTENSIONS_LANG);
                     $params = array('page' => 'request_edit', 'eid' => $dup->id);
                     $url = new moodle_url(extensions_plugin::EXTENSIONS_URL_PATH . '/', $params);
 
-                    if($dup->date != 0) {
+                    if ($dup->date != 0) {
                         $dt = date(extensions_plugin::get_date_format(), $dup->date);
-                    } else if($dup->date == 0 && $dup->timelimit != 0){
+                    } else if ($dup->date == 0 && $dup->timelimit != 0) {
                         $dt = $dup->timelimit / 60 . ' ' . get_string('minutes', extensions_plugin::EXTENSIONS_LANG);
                     }
 
@@ -149,19 +148,17 @@ class form_staff_request_edit extends form_base {
             } else {
                 // But if there isn't, we'll remove those fields as they leave
                 // a big space if there isnt anything populated.
-                if($mform->elementExists('other_req')) {
+                if ($mform->elementExists('other_req')) {
                     $mform->removeElement('other_req');
                 }
-                if($mform->elementExists('other_req_links')) {
+                if ($mform->elementExists('other_req_links')) {
                     $mform->removeElement('other_req_links');
                 }
             }
 
         }
 
-        //---------------
-
-        // Assignment Name
+        // Assignment Name.
         $name = extensions_plugin::get_activity_name($extension->cm_id);
         $mod  = extensions_plugin::get_activity_mod_by_cmid($extension->cm_id);
         $url  = new moodle_url('/mod/' . $mod . '/view.php', array('id' => $extension->cm_id));
@@ -169,7 +166,7 @@ class form_staff_request_edit extends form_base {
 
         $mform->setDefault('assignment_name', $link);
 
-        // Student Name
+        // Student Name.
         $user = $DB->get_record('user', array('id' => $extension->student_id));
         $params = array('id' => $user->id);
 
@@ -178,20 +175,19 @@ class form_staff_request_edit extends form_base {
         $mform->setDefault('ext_student_static', $user_link);
 
         // Group extension?
-        // group_static
-        if($extension->ext_type == extensions_plugin::EXT_GROUP) {
-            if($mform->elementExists('group_static')) {
+        if ($extension->ext_type == extensions_plugin::EXT_GROUP) {
+            if ($mform->elementExists('group_static')) {
 
                 $params = array(
                         'ext_id' => $extension->id
                 );
 
-                $groupNames = '';
+                $group_names = '';
 
-                // get the groups for this extension request.
-                if($groups = $DB->get_records('deadline_extensions_appto', $params)) {
+                // Get the groups for this extension request.
+                if ($groups = $DB->get_records('deadline_extensions_appto', $params)) {
 
-                    foreach($groups as $group) {
+                    foreach ($groups as $group) {
                         $params = array(
                                 'id' => $this->get_course()->id,
                                 'grouping' => '0',
@@ -202,14 +198,14 @@ class form_staff_request_edit extends form_base {
                         $group_name = groups_get_group_name($group->group_id);
                         $group_link = html_writer::link($group_url, $group_name, array('target' => 'blank'));
 
-                        $groupNames = $groupNames . $group_link;
+                        $group_names = $group_names . $group_link;
                     }
                 }
 
-                $mform->setDefault('group_static', $groupNames);
+                $mform->setDefault('group_static', $group_names);
             }
         } else {
-            if($mform->elementExists('group_static')) {
+            if ($mform->elementExists('group_static')) {
                 $mform->removeElement('group_static');
             }
         }
@@ -222,11 +218,11 @@ class form_staff_request_edit extends form_base {
 
         $files = $fs->get_area_files($user_context->id, $component, $file_area, $extension->id);
 
-        if($files){
+        if ($files) {
             $file_names = null;
             foreach ($files as $file) {
 
-                if($file->get_filename() == '.') {
+                if ($file->get_filename() == '.') {
                     continue;
                 }
 
@@ -252,7 +248,7 @@ class form_staff_request_edit extends form_base {
         $mform->setType('page', PARAM_ALPHAEXT);
 
         // Make sure this user can actaully be approving this extension request.
-        if(extensions_plugin::is_extension_approver($extension->id, $USER->id)) {
+        if (extensions_plugin::is_extension_approver($extension->id, $USER->id)) {
             $this->set_readonly(false);
             $approver = true;
         } else {
@@ -261,36 +257,34 @@ class form_staff_request_edit extends form_base {
         }
 
         // The request can only modified when it's pending.
-        if( ($extension->status == extensions_plugin::STATUS_PENDING || $extension->status == extensions_plugin::STATUS_APPROVED) && $approver == TRUE) {
+        if ( ($extension->status == extensions_plugin::STATUS_PENDING || $extension->status == extensions_plugin::STATUS_APPROVED) && $approver == true) {
             $this->set_readonly(false);
         } else {
             $this->set_readonly(true);
         }
 
         // Admins can always modify.
-        if(is_siteadmin($USER->id)) {
+        if (is_siteadmin($USER->id)) {
             $this->set_readonly(false);
         }
 
-        // ----------------------------------------------------------------
-
-        if($extension->status == extensions_plugin::STATUS_APPROVED || $extension->status == extensions_plugin::STATUS_DENIED) {
+        if ($extension->status == extensions_plugin::STATUS_APPROVED || $extension->status == extensions_plugin::STATUS_DENIED) {
             $readonly = true;
         }
 
         $mform->setDefault('ext_reason_static', $extension->request_text);
         $mform->setDefault('ext_status_code',   $extension->status);
 
-        if($extension->date == 0 && extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) == 'quiz') {
+        if ($extension->date == 0 && extensions_plugin::get_activity_type_by_cmid($this->get_cmid()) == 'quiz') {
 
-            // Ext granted date is not required in Timelimit extension mode
+            // Ext granted date is not required in Timelimit extension mode.
             // Remove it.
-            if($mform->elementExists('ext_granted_date')) {
+            if ($mform->elementExists('ext_granted_date')) {
                 $mform->removeElement('ext_granted_date');
             }
 
             // Set the current request in the dropdown.
-            if($mform->elementExists('ext_timelimit')) {
+            if ($mform->elementExists('ext_timelimit')) {
                 $element = $mform->getElement('ext_timelimit');
                 $selected_item =  $extension->timelimit - $current_timelimit;
 
@@ -314,7 +308,7 @@ class form_staff_request_edit extends form_base {
             $ext_diff = html_writer::tag('i', extensions_plugin::date_difference($current_deadline, $extension->date) . ' days', array('class' => 'days_extension'));
             $mform->setDefault('ext_due_static',     date(extensions_plugin::get_date_format(), $extension->date) . ' ' . $ext_diff);
 
-            if($mform->elementExists('ext_timelimit')) {
+            if ($mform->elementExists('ext_timelimit')) {
                 $mform->removeElement('ext_timelimit');
             }
 
@@ -322,7 +316,7 @@ class form_staff_request_edit extends form_base {
 
         $req_diff_days = extensions_plugin::date_difference($current_deadline, $extension->created);
 
-        if($req_diff_days > 0) {
+        if ($req_diff_days > 0) {
             // Request made AFTER due date.
             $req_diff = html_writer::tag('i', $req_diff_days . get_string('days_after', extensions_plugin::EXTENSIONS_LANG));
         } else {
@@ -333,28 +327,28 @@ class form_staff_request_edit extends form_base {
 
         $mform->setDefault('ext_date_requested', date(extensions_plugin::get_date_format(), $extension->created) . ' ' . $req_diff);
 
-        if(isset($extension->response_text) && $extension->response_text != false) {
+        if (isset($extension->response_text) && $extension->response_text != false) {
             $mform->setDefault('response_text', $extension->response_text);
         }
 
-        if($this->get_readonly()) {
+        if ($this->get_readonly()) {
             $mform->freeze('ext_status_code');
             $mform->freeze('response_text');
             $mform->freeze('ext_granted_date');
 
-            if($approver === false) {
+            if ($approver === false) {
                 $mform->addElement('static', 'static', null, get_string('ext_not_approver', extensions_plugin::EXTENSIONS_LANG));
             }
 
             // Remove the button group.
-            if($mform->elementExists('buttonar')) {
-                $buttonGroup = $mform->removeElement('buttonar');
+            if ($mform->elementExists('buttonar')) {
+                $mform->removeElement('buttonar');
             }
         }
 
-        // insert the history here.
-        if($history = extensions_plugin::build_extension_history_table($extension->id)) {
-            $mform->addElement('static', 'extension_history', get_string('extension_history', extensions_plugin::EXTENSIONS_LANG), html_writer::table($history, TRUE));
+        // Insert the history here.
+        if ($history = extensions_plugin::build_extension_history_table($extension->id)) {
+            $mform->addElement('static', 'extension_history', get_string('extension_history', extensions_plugin::EXTENSIONS_LANG), html_writer::table($history, true));
         }
 
     }
@@ -369,18 +363,18 @@ class form_staff_request_edit extends form_base {
         $deadline   = new deadlines_plugin();
         $due_date = $deadline->get_deadline_date_deadline($extension->cm_id);
 
-        // if the request is DENIED then the message is compulsory
-        if($data['ext_status_code'] == extensions_plugin::STATUS_DENIED && strlen($data['response_text']) == '0' ) {
+        // If the request is DENIED then the message is compulsory.
+        if ($data['ext_status_code'] == extensions_plugin::STATUS_DENIED && strlen($data['response_text']) == '0' ) {
             $errors['response_text'] = get_string('ext_message_required', extensions_plugin::EXTENSIONS_LANG);
         }
 
-        if(isset($data['ext_granted_date'])) {
-            if($data['ext_granted_date'] < $due_date) {
+        if (isset($data['ext_granted_date'])) {
+            if ($data['ext_granted_date'] < $due_date) {
                 $errors['ext_granted_date'] = get_string('ext_granted_before_due', extensions_plugin::EXTENSIONS_LANG);
             }
         }
 
-        if(!extensions_plugin::is_extension_approver($this->get_extension_id())) {
+        if (!extensions_plugin::is_extension_approver($this->get_extension_id())) {
             $errors['ext_status_code'] = get_string('ext_not_approver', extensions_plugin::EXTENSIONS_LANG);
         }
 
@@ -391,12 +385,11 @@ class form_staff_request_edit extends form_base {
 
         global $USER, $DB, $COURSE;
 
-        if(!is_null($form_data)) {
-            if(isset($form_data->submitbutton)) {
-                // Someone hit the save changes button. That's all they
-                // can really do anyway
+        if (!is_null($form_data)) {
+            if (isset($form_data->submitbutton)) {
 
-                if(!extensions_plugin::is_extension_approver($this->get_extension_id())) {
+                // Someone hit the save changes button. That's all they can really do anyway.
+                if (!extensions_plugin::is_extension_approver($this->get_extension_id())) {
                     add_to_log($COURSE->id, "extensions", "error", "index.php", "non-approver tried to modify", $this->get_cmid());
                     error(get_string('ext_not_approver', extensions_plugin::EXTENSIONS_LANG));
                     return false;
@@ -407,10 +400,10 @@ class form_staff_request_edit extends form_base {
                 $ext_data->status        = $form_data->ext_status_code;
                 $ext_data->response_text = $form_data->response_text;
 
-                if(isset($form_data->ext_granted_date)) {
+                if (isset($form_data->ext_granted_date)) {
                     $ext_data->date      = $form_data->ext_granted_date;
                 }
-                if(isset($form_data->ext_timelimit)) {
+                if (isset($form_data->ext_timelimit)) {
                     $deadline = new deadlines_plugin();
                     $timelimit = $deadline->get_deadline_timelimit($this->get_cmid());
 
@@ -418,7 +411,7 @@ class form_staff_request_edit extends form_base {
                     $ext_data->date      = 0;
                 }
 
-                if($DB->update_record('deadline_extensions', $ext_data)) {
+                if ($DB->update_record('deadline_extensions', $ext_data)) {
 
                     add_to_log($COURSE->id, "extensions", "success", "index.php", "extension {$form_data->eid} updated successfully");
 
@@ -437,10 +430,10 @@ class form_staff_request_edit extends form_base {
             }
         }
 
-    } // end save_hook
+    }
 
     public function set_readonly($read_only) {
-        if(is_bool($read_only)) {
+        if (is_bool($read_only)) {
             $this->read_only = $read_only;
         }
     }

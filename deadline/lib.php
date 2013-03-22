@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,10 +25,9 @@
  */
 
 if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
+    die('Direct access to this script is forbidden.');    //  It must be included from a Moodle page
 }
 
-//dummy class - all plugins should be based off this.
 abstract class deadline_plugin {
 
     private $plugin_weight = 0;
@@ -108,7 +106,7 @@ abstract class deadline_plugin {
      */
     public final function module_supports_deadlines($modname) {
 
-        if(preg_match('#^mod_#', $modname)) {
+        if (preg_match('#^mod_#', $modname)) {
             $modname = str_replace('mod_', '', $modname);
         }
 
@@ -123,12 +121,12 @@ abstract class deadline_plugin {
     public function extensions_installed() {
         global $CFG;
 
-        if(!file_exists($CFG->dirroot . '/deadline/extensions/lib.php')) {
+        if (!file_exists($CFG->dirroot . '/deadline/extensions/lib.php')) {
             return false;
         }
 
-        if(array_key_exists('extensions', $this->get_installed_plugins())) {
-            if(get_config('deadline_extensions','enabled') =='1') {
+        if (array_key_exists('extensions', $this->get_installed_plugins())) {
+            if (get_config('deadline_extensions', 'enabled') =='1') {
                 return true;
             }
         }
@@ -149,7 +147,7 @@ abstract class deadline_plugin {
             'cm_id' => $cm_id
         );
 
-        if($DB->record_exists('deadline_deadlines', $options)) {
+        if ($DB->record_exists('deadline_deadlines', $options)) {
             return $DB->get_field('deadline_deadlines', 'id', $options, MUST_EXIST);
         } else {
             return false;
@@ -165,7 +163,7 @@ abstract class deadline_plugin {
 
         global $DB;
 
-        if(!$this->deadline_exists($cm_id)) {
+        if (!$this->deadline_exists($cm_id)) {
             $params = new stdClass();
             $params->cm_id = $cm_id;
             return $DB->insert_record('deadline_deadlines', $params, true);
@@ -193,7 +191,7 @@ abstract class deadline_plugin {
         return get_plugin_list('deadline');
     }
 
-    //--------------------------------------------------------
+    // --------------------------------------------------------
 
     /**
      * Core function to get the open date for a specific course module ID and user.
@@ -206,18 +204,18 @@ abstract class deadline_plugin {
 
         $plugins = $this->get_installed_plugins();
 
-        if(!$plugins = $this->get_installed_plugins()) {
+        if (!$plugins = $this->get_installed_plugins()) {
             return 0;
         }
 
         $dates = array();
 
         // check the installed plugins for due dates.
-        foreach($plugins as $plugin => $path) {
+        foreach ($plugins as $plugin => $path) {
 
             $plugin_code = $CFG->dirroot . '/deadline/' . $plugin . '/lib.php';
 
-            if(file_exists($plugin_code)) {
+            if (file_exists($plugin_code)) {
                 require_once($plugin_code);
             } else {
                 // Skip this plugin. It's either some kind of ghost, or it's
@@ -228,7 +226,7 @@ abstract class deadline_plugin {
             $plugin_class = $plugin . '_plugin';
             $this_plugin = new $plugin_class;
 
-            if(method_exists($this_plugin, 'get_my_open_date')) {
+            if (method_exists($this_plugin, 'get_my_open_date')) {
                 // Call the function from the plugin which will find the dates
                 // that apply to this student.
                 $dates[$plugin] = new stdClass;
@@ -254,7 +252,7 @@ abstract class deadline_plugin {
 
         global $DB;
 
-        if(!$deadline_id = $this->deadline_exists($cm_id)) {
+        if (!$deadline_id = $this->deadline_exists($cm_id)) {
             print_error('cannotadddeadline', '', course_get_url($data->course, $data->section), $data->modulename);
         }
 
@@ -262,12 +260,12 @@ abstract class deadline_plugin {
         $data->id        = $deadline_id;
         $data->date_open = $date;
 
-        if(!$DB->update_record('deadline_deadlines', $data)) {
+        if (!$DB->update_record('deadline_deadlines', $data)) {
             print_error('cannotupdatedeadline', '', course_get_url($data->course, $data->section), $data->modulename);
         }
     }
 
-    //--------------------------------------------------------
+    // --------------------------------------------------------
 
     /**
      * Get each due date from all installed deadline plugins, and determine the
@@ -279,18 +277,18 @@ abstract class deadline_plugin {
     public function get_due_date($cm_id, $user_id) {
         global $DB, $CFG;
 
-        if(!$plugins = $this->get_installed_plugins()) {
+        if (!$plugins = $this->get_installed_plugins()) {
             return 0;
         }
 
         $dates = array();
 
         // check the installed plugins for due dates.
-        foreach($plugins as $plugin => $path) {
+        foreach ($plugins as $plugin => $path) {
 
             $plugin_code = $CFG->dirroot . '/deadline/' . $plugin . '/lib.php';
 
-            if(file_exists($plugin_code)) {
+            if (file_exists($plugin_code)) {
                 require_once($plugin_code);
             } else {
                 // Skip this plugin. It's either some kind of ghost, or it's
@@ -301,7 +299,7 @@ abstract class deadline_plugin {
             $plugin_class = $plugin . '_plugin';
             $this_plugin = new $plugin_class;
 
-            if(method_exists($this_plugin, 'get_my_due_date')) {
+            if (method_exists($this_plugin, 'get_my_due_date')) {
                 // Call the function from the plugin which will find the dates
                 // that apply to this student.
                 $dates[$plugin] = new stdClass;
@@ -326,7 +324,7 @@ abstract class deadline_plugin {
     public function set_due_date($cm_id, $date) {
         global $DB;
 
-        if(!$deadline_id = $this->deadline_exists($cm_id)) {
+        if (!$deadline_id = $this->deadline_exists($cm_id)) {
             print_error('cannotadddeadline', '', course_get_url($data->course, $data->section), $data->modulename);
         }
 
@@ -334,13 +332,13 @@ abstract class deadline_plugin {
         $data->id            = $deadline_id;
         $data->date_deadline = $date;
 
-        if(!$DB->update_record('deadline_deadlines', $data)) {
+        if (!$DB->update_record('deadline_deadlines', $data)) {
             print_error('cannotupdatedeadline', '', course_get_url($data->course, $data->section), $data->modulename);
         }
 
     }
 
-    //--------------------------------------------------------
+    // --------------------------------------------------------
 
     public function get_cut_off_date($cm_id, $user_id) {
         global $CFG;
@@ -350,11 +348,11 @@ abstract class deadline_plugin {
         $dates = array();
 
         // check the installed plugins for due dates.
-        foreach($plugins as $plugin => $path) {
+        foreach ($plugins as $plugin => $path) {
 
             $plugin_code = $CFG->dirroot . '/deadline/' . $plugin . '/lib.php';
 
-            if(file_exists($plugin_code)) {
+            if (file_exists($plugin_code)) {
                 require_once($plugin_code);
             } else {
                 // Skip this plugin. It's either some kind of ghost, or it's
@@ -365,7 +363,7 @@ abstract class deadline_plugin {
             $plugin_class = $plugin . '_plugin';
             $this_plugin = new $plugin_class;
 
-            if(method_exists($this_plugin, 'get_my_cutoff_date')) {
+            if (method_exists($this_plugin, 'get_my_cutoff_date')) {
                 // Call the function from the plugin which will find the dates
                 // that apply to this student.
                 $dates[$plugin] = new stdClass;
@@ -385,7 +383,7 @@ abstract class deadline_plugin {
 
         global $DB;
 
-        if(!$deadline_id = $this->deadline_exists($cm_id)) {
+        if (!$deadline_id = $this->deadline_exists($cm_id)) {
             print_error('cannotadddeadline', '', course_get_url($data->course, $data->section), $data->modulename);
         }
 
@@ -393,13 +391,13 @@ abstract class deadline_plugin {
         $data->id          = $deadline_id;
         $data->date_cutoff = $date;
 
-        if(!$DB->update_record('deadline_deadlines', $data)) {
+        if (!$DB->update_record('deadline_deadlines', $data)) {
             print_error('cannotupdatedeadline', '', course_get_url($data->course, $data->section), $data->modulename);
         }
 
     }
 
-    //--------------------------------------------------------
+    // --------------------------------------------------------
 
     public function get_timelimit($cm_id, $user_id) {
         global $CFG;
@@ -409,11 +407,11 @@ abstract class deadline_plugin {
         $dates = array();
 
         // check the installed plugins for due dates.
-        foreach($plugins as $plugin => $path) {
+        foreach ($plugins as $plugin => $path) {
 
             $plugin_code = $CFG->dirroot . '/deadline/' . $plugin . '/lib.php';
 
-            if(file_exists($plugin_code)) {
+            if (file_exists($plugin_code)) {
                 require_once($plugin_code);
             } else {
                 // Skip this plugin. It's either some kind of ghost, or it's
@@ -424,7 +422,7 @@ abstract class deadline_plugin {
             $plugin_class = $plugin . '_plugin';
             $this_plugin = new $plugin_class;
 
-            if(method_exists($this_plugin, 'get_my_timelimit')) {
+            if (method_exists($this_plugin, 'get_my_timelimit')) {
                 // Call the function from the plugin which will find the dates
                 // that apply to this student.
                 $dates[$plugin] = new stdClass;
@@ -444,7 +442,7 @@ abstract class deadline_plugin {
 
         global $DB;
 
-        if(!$deadline_id = $this->deadline_exists($cm_id)) {
+        if (!$deadline_id = $this->deadline_exists($cm_id)) {
             print_error('cannotadddeadline', '', course_get_url($data->course, $data->section), $data->modulename);
         }
 
@@ -452,13 +450,13 @@ abstract class deadline_plugin {
         $data->id          = $deadline_id;
         $data->timelimit   = $timelimit;
 
-        if(!$DB->update_record('deadline_deadlines', $data)) {
+        if (!$DB->update_record('deadline_deadlines', $data)) {
             print_error('cannotupdatedeadline', '', course_get_url($data->course, $data->section), $data->modulename);
         }
 
     }
 
-    //--------------------------------------------------------
+    // --------------------------------------------------------
 
     public final function get_longest_date($dates, $field = 'date_deadline') {
 
@@ -505,10 +503,10 @@ abstract class deadline_plugin {
 
         $plugins = $this->get_installed_plugins();
 
-//         foreach($plugins as $plugin) {
-//             // delete any records this plugin has saved.
-//             $plugin->delete_cmid($eventdata->cmid);
-//         }
+        // foreach ($plugins as $plugin) {
+        //     // delete any records this plugin has saved.
+        //     $plugin->delete_cmid($eventdata->cmid);
+        // }
 
         return true;
     }
@@ -519,16 +517,15 @@ abstract class deadline_plugin {
 
         $courses = array();
 
-        // handle the case of a 0 course ID
-        if(!is_null($course) && $course->id == 0) {
+        // Handle the case of a 0 course ID
+        if (!is_null($course) && $course->id == 0) {
             // get a list of all the course id's for this user.
             $courses = extensions_plugin::get_courses_with_extensions_for_userid($USER);
         } else {
             $courses[] = $COURSE;
         }
 
-
-        foreach($courses as $course) {
+        foreach ($courses as $course) {
 
             // Use modinfo to get section order and also add in names
             if (empty($modinfo)) {
@@ -542,17 +539,17 @@ abstract class deadline_plugin {
 
                     // this function will need to accept the modname and check it
                     // is an activity.
-                    if(!$this->is_activity($modinfo->cms[$cmid]->modname)) {
+                    if (!$this->is_activity($modinfo->cms[$cmid]->modname)) {
                         continue;
                     }
 
                     // If this activity does not support deadlines, we can't do anything
                     // with it. We'll just have to ignore it...
-                    if(!$this->module_supports_deadlines($modinfo->cms[$cmid]->modname)) {
+                    if (!$this->module_supports_deadlines($modinfo->cms[$cmid]->modname)) {
                         continue;
                     }
 
-                    if($modinfo->cms[$cmid]->visible == 1) {
+                    if ($modinfo->cms[$cmid]->visible == 1) {
                         $detail             = new stdClass;
                         $detail->id         = $cmid;
                         $detail->modname    = $modinfo->cms[$cmid]->modname;
@@ -566,7 +563,7 @@ abstract class deadline_plugin {
             }
         }
 
-        if(isset($result)) {
+        if (isset($result)) {
             return $result;
         }
     }
@@ -583,11 +580,11 @@ abstract class deadline_plugin {
         $plugins = $this->get_installed_plugins();
 
         // send the data to every plugin.
-        foreach($plugins as $plugin => $path) {
+        foreach ($plugins as $plugin => $path) {
 
             $plugin_code = $CFG->dirroot . '/deadline/' . $plugin . '/lib.php';
 
-            if(file_exists($plugin_code)) {
+            if (file_exists($plugin_code)) {
                 require_once($plugin_code);
             } else {
                 // Skip this plugin. It's either some kind of ghost, or it's

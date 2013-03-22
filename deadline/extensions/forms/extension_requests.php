@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,7 +25,7 @@
  */
 
 if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
+    die('Direct access to this script is forbidden.');    //  It must be included from a Moodle page
 }
 
 global $CFG;
@@ -40,18 +39,18 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
     private $table_data = null;
     private $renderer   = null;
 
-    public function MoodleQuickForm_extension_requests($elementName=null, $elementLabel=null, $table_data=null, $attributes=null, $showchoose=false) {
+    public function MoodleQuickForm_extension_requests($element_name=null, $element_label=null, $table_data=null, $attributes=null, $showchoose=false) {
 
         // This is essentially just to pass in the seperator argument, this works
         // ok without it, but puts a big ugly space before the group itself.
-        parent::MoodleQuickForm_group($elementName, $elementLabel, null, '');
+        parent::MoodleQuickForm_group($element_name, $element_label, null, '');
 
-        $this->HTML_QuickForm_element($elementName, $elementLabel, $attributes);
+        $this->HTML_QuickForm_element($element_name, $element_label, $attributes);
         $this->_persistantFreeze = true;
         $this->_appendName = true;
         $this->_type = 'extension_requests';
 
-        if($table_data !== FALSE) {
+        if ($table_data !== false) {
             $this->set_table_data($table_data);
         }
 
@@ -62,38 +61,38 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
 
     public function set_table_data($table_data = null) {
 
-        if(!is_null($table_data)) {
+        if (!is_null($table_data)) {
             $this->table_data = $table_data;
-            if(!$this->_createElements()) {
+            if (!$this->_create_elements()) {
                 error('Error creating table elements');
             }
         }
 
     }
 
-    public function _createElements() {
+    public function _create_elements() {
 
         global $USER, $DB;
 
-        if(is_null($this->table_data)) {
+        if (is_null($this->table_data)) {
             return false;
         }
 
-        if(!is_object($this->table_data)) {
+        if (!is_object($this->table_data)) {
             return false;
         }
 
-        foreach($this->table_data as $key => $data) {
-            if($key == 'data') {
+        foreach ($this->table_data as $key => $data) {
+            if ($key == 'data') {
 
-                foreach($data as $key => $row) {
+                foreach ($data as $key => $row) {
 
-                    if(isset($row->cells['10']->text) && strcmp($row->cells['10']->text, '{element}') == '0') {
+                    if (isset($row->cells['10']->text) && strcmp($row->cells['10']->text, '{element}') == '0') {
                         // match found. Replace the string with the element.
                         $this->_elements[$key] = new HTML_QuickForm_checkbox($key, null, null);
 
                         // Any items that are already approved cannot be selected in this view.
-                        if($DB->get_field('deadline_extensions', 'status', array('id' => $key)) == extensions_plugin::STATUS_APPROVED) {
+                        if ($DB->get_field('deadline_extensions', 'status', array('id' => $key)) == extensions_plugin::STATUS_APPROVED) {
                             $this->_elements[$key]->removeAttribute('checked');
                             $this->_elements[$key]->updateAttributes(array('disabled'=>'disabled'));
                         }
@@ -110,21 +109,21 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
 
         parent::accept($this->renderer);
 
-        foreach($this->_elements as $key => $data) {
+        foreach ($this->_elements as $key => $data) {
 
             // Set the name of the group on the item
             $name = $this->getName();
-            $elementName = $this->_elements[$key]->getName();
-            $this->_elements[$key]->setName($name . '['. (strlen($elementName)? $elementName: $key) .']');
+            $element_name = $this->_elements[$key]->getName();
+            $this->_elements[$key]->setName($name . '['. (strlen($element_name)? $element_name: $key) .']');
 
             // Generate the HTML element as added previously, and replace the text with the item.
             $this->table_data->data[$key]->cells['10']->text = $this->_elements[$key]->toHtml();
         }
 
-        if(is_null($this->table_data)) {
+        if (is_null($this->table_data)) {
             return get_string("ext_none_exist", extensions_plugin::EXTENSIONS_LANG);
         } else {
-            return html_writer::table($this->table_data, TRUE);
+            return html_writer::table($this->table_data, true);
         }
     }
 
@@ -132,7 +131,7 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
         return $this->table_data;
     }
 
-    function accept(&$renderer, $required = false, $error = null) {
+    public function accept(&$renderer, $required = false, $error = null) {
 
         // Add the custom template to the renderer for use.
         $renderer->_elementTemplates['empty'] = "<!-- BEGIN error --><span style=\"color: #ff0000\">{error}</span><br /><!-- END error -->\t{element}";
@@ -140,7 +139,7 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
         $renderer->renderElement($this, $required, $error, $this->table_data);
     }
 
-    function getElementTemplateType() {
+    public function getElementTemplateType() {
         return 'empty';
     }
 

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -56,23 +55,23 @@ class form_staff_requests extends form_base {
         $mform->addElement('header', 'general', get_string('ext_act_section_header', extensions_plugin::EXTENSIONS_LANG));
 
         $extoptions = array();
-        $extoptions[] = $mform->createElement('select', 'ext_student_list', NULL);
-        $extoptions[] = $mform->createElement('select', 'ext_activity', NULL);
+        $extoptions[] = $mform->createElement('select', 'ext_student_list', null);
+        $extoptions[] = $mform->createElement('select', 'ext_activity', null);
         $extoptions[] = $mform->createElement('static', 'ext_date_txt', "", get_string('ext_act_ext_date', extensions_plugin::EXTENSIONS_LANG));
         $extoptions[] = $mform->createElement('date_time_selector', 'ext_date');
         $extoptions[] = $mform->createElement('submit', 'create_stu_ext', get_string('ext_act_grant_ext', extensions_plugin::EXTENSIONS_LANG));
         $mform->addGroup($extoptions, 'create_ext', '&nbsp;', array('&nbsp;'), false);
 
         // Make sure a student and assifnment has been selected.
-        $mform->disabledIf('create_stu_ext', 'ext_activity', 'eq', 0);
-        $mform->disabledIf('create_stu_ext', 'ext_student_list', 'eq', 0);
+        $mform->disabledif ('create_stu_ext', 'ext_activity', 'eq', 0);
+        $mform->disabledif ('create_stu_ext', 'ext_student_list', 'eq', 0);
 
-        $mform->addElement('header','filters_general', 'Filters');
+        $mform->addElement('header', 'filters_general', 'Filters');
 
         // Build the group for the Filter.
         $buttonarray = array();
         $buttonarray[] = $mform->createElement('static', 'filterby',      "", get_string('extfilterby', extensions_plugin::EXTENSIONS_LANG));
-        $buttonarray[] = $mform->createElement('select', 'activity',      NULL);
+        $buttonarray[] = $mform->createElement('select', 'activity',      null);
         $buttonarray[] = $mform->createElement('select', 'status',        "");
         $buttonarray[] = $mform->createElement('select', 'group',         "");
         $buttonarray[] = $mform->createElement('select', 'users',         "");
@@ -80,32 +79,27 @@ class form_staff_requests extends form_base {
         $buttonarray[] = $mform->createElement('submit', 'clear_filters', get_string("extclearfilter", extensions_plugin::EXTENSIONS_LANG));
         $mform->addGroup($buttonarray, 'buttonar', '&nbsp;', array('&nbsp;'), false);
 
-        // end filters
-
-        $mform->addElement('header','general', $this->page_name);
+        $mform->addElement('header', 'general', $this->page_name);
         // Insert the table and data here.
 
-        // Get extension data
-        $extension_table = $mform->addElement('extension_requests','extension_requests', 'Requests', extensions_plugin::build_extensions_table($filters));
-
-        // set the element template here.
+        // Get extension data.
+        $extension_table = $mform->addElement('extension_requests', 'extension_requests', 'Requests', extensions_plugin::build_extensions_table($filters));
 
         // Only show the button to submit if there is requests in the system.
-        if($extension_table->get_table_data() !== NULL) {
+        if ($extension_table->get_table_data() !== null) {
             // Add the approval buttons
             $submit_arr = array();
 
-//             $PAGE->requires->js_init_call('M.deadline_extensions.check_uncheck_all');
+            // $PAGE->requires->js_init_call('M.deadline_extensions.check_uncheck_all');
 
-            $selectAllAttribs   = array('onClick' => 'checkUncheckAll(this);');
-            $quickApproveArribs = array('onClick' => 'return popup(\'Are you sure you would like to approve these extensions?\');');
+            $select_all_attribs   = array('onClick' => 'checkUncheckAll(this);');
+            $quick_approve_atrribs = array('onClick' => 'return popup(\'Are you sure you would like to approve these extensions?\');');
 
-            $submit_arr[] = $mform->createElement('button', 'select_all', get_string('ext_select_all', extensions_plugin::EXTENSIONS_LANG), $selectAllAttribs);
-            $submit_arr[] = $mform->createElement('submit', 'approve_selected', get_string('ext_appr_selected', extensions_plugin::EXTENSIONS_LANG), $quickApproveArribs);
-            $mform->disabledIf('approve_selected', 'extension_requests', 'noneselected');
+            $submit_arr[] = $mform->createElement('button', 'select_all', get_string('ext_select_all', extensions_plugin::EXTENSIONS_LANG), $select_all_attribs);
+            $submit_arr[] = $mform->createElement('submit', 'approve_selected', get_string('ext_appr_selected', extensions_plugin::EXTENSIONS_LANG), $quick_approve_atrribs);
+            $mform->disabledif ('approve_selected', 'extension_requests', 'noneselected');
             $mform->addGroup($submit_arr, 'submit_arr', '&nbsp;', array(' '), false);
         }
-
 
     }
 
@@ -114,55 +108,51 @@ class form_staff_requests extends form_base {
         global $CFG, $COURSE, $USER;
         $mform =& $this->_form;
 
-        //---------------
+        // ---------------
         // set the assignemnt filters
         // Get the group so we can load the elements individually
         $button_group = $mform->getElement('buttonar');
         $create_ext   = $mform->getElement('create_ext');
 
         // Student here.
-        $students = $this->getGroupElement('ext_student_list', $create_ext);
+        $students = $this->get_group_element('ext_student_list', $create_ext);
         $students->addOption('Student', '0');
 
         // get all students in this course
         // add to the dropdown.
-        if($all_students = $this->get_all_students()) {
-            foreach($all_students as $student) {
+        if ($all_students = $this->get_all_students()) {
+            foreach ($all_students as $student) {
                 $students->addOption($student->firstname . ' ' . $student->lastname, $student->id);
             }
         }
 
-        // assignment
-        $ele_activity = $this->getGroupElement('activity', $button_group);
+        $ele_activity = $this->get_group_element('activity', $button_group);
         $ele_activity->addOption('Activity', '0');
 
-        $ext_activity = $this->getGroupElement('ext_activity', $create_ext);
+        $ext_activity = $this->get_group_element('ext_activity', $create_ext);
         $ext_activity->addOption('Activity', '0');
 
         $ext = new extensions_plugin;
 
-        if($activities = $ext->get_activity_names($this->get_course())) {
-            foreach($activities as $activity) {
+        if ($activities = $ext->get_activity_names($this->get_course())) {
+            foreach ($activities as $activity) {
                 $ele_activity->addOption($activity->name, $activity->id);
                 $ext_activity->addOption($activity->name, $activity->id);
             }
         }
 
-        // status
-        if($status = extensions_plugin::get_all_extension_status()) {
-            $ele_status = $this->getGroupElement('status', $button_group);
+        if ($status = extensions_plugin::get_all_extension_status()) {
+            $ele_status = $this->get_group_element('status', $button_group);
             $ele_status->load($status);
         }
 
-        // class
-        if($groups = $this->get_course_groups($this->get_course())) {
-            $ele_group = $this->getGroupElement('group', $button_group);
+        if ($groups = $this->get_course_groups($this->get_course())) {
+            $ele_group = $this->get_group_element('group', $button_group);
             $ele_group->load($groups);
         }
 
-        // users
-        if($users = $this->get_extension_approvers_by_course($this->get_course())) {
-            $ele_users = $this->getGroupElement('users', $button_group);
+        if ($users = $this->get_extension_approvers_by_course($this->get_course())) {
+            $ele_users = $this->get_group_element('users', $button_group);
             $ele_users->load($users);
         }
 
@@ -176,7 +166,7 @@ class form_staff_requests extends form_base {
         // ensure everything about each of these is correct.
 
         // Check if someone is adding an extension on a students behalf.
-        if(isset($data['create_stu_ext'])) {
+        if (isset($data['create_stu_ext'])) {
 
             // Any errors set here, must use 'create_ext' so they show correctly
             // if they don't they won't show at all.
@@ -196,7 +186,7 @@ class form_staff_requests extends form_base {
             );
 
             // Make sure this activity has a deadline entry.
-            if(!$DB->record_exists('deadline_deadlines', $params)) {
+            if (!$DB->record_exists('deadline_deadlines', $params)) {
                 $errors['create_ext'] = get_string('no_deadline_setup', extensions_plugin::EXTENSIONS_LANG);
                 return $errors;
             }
@@ -206,22 +196,20 @@ class form_staff_requests extends form_base {
             $deadline = $deadlines->get_deadlines_for_cmid($data['ext_activity'], $data['ext_student_list']);
 
             // check the extension is after any existing deadlines (includes existing extensions)
-            if($deadline->date_deadline > $data['ext_date']) {
+            if ($deadline->date_deadline > $data['ext_date']) {
                 $errors['create_ext'] = get_string('extbeforedue', extensions_plugin::EXTENSIONS_LANG) . ' of ' . userdate($deadline->date_deadline);
                 return $errors;
             }
 
-
-
         }
 
-        if(isset($data['extension_requests']) && is_array($data['extension_requests'])) {
+        if (isset($data['extension_requests']) && is_array($data['extension_requests'])) {
 
-            foreach($data['extension_requests'] as $ext_id => $val) {
+            foreach ($data['extension_requests'] as $ext_id => $val) {
                 // Make sure the activity is expecting extensions
                 $cm_id = extensions_plugin::get_activity_id_by_extid($ext_id);
 
-                if(!extensions_plugin::extensions_enabled_cmid($cm_id)) {
+                if (!extensions_plugin::extensions_enabled_cmid($cm_id)) {
                     $errors['extension_requests'] = get_string('extnotpermitted_staff', extensions_plugin::EXTENSIONS_LANG);
                 }
 
@@ -239,7 +227,7 @@ class form_staff_requests extends form_base {
         global $DB, $USER, $COURSE;
 
         // Quick Approve.
-        if(isset($form_data->approve_selected)) {
+        if (isset($form_data->approve_selected)) {
             return extensions_plugin::save_quick_approve($form_data);
         }
 
@@ -258,7 +246,7 @@ class form_staff_requests extends form_base {
             $ext->status        = extensions_plugin::STATUS_APPROVED;
             $ext->created       = date("U");
 
-            if($ext_id = $DB->insert_record('deadline_extensions', $ext, true)) {
+            if ($ext_id = $DB->insert_record('deadline_extensions', $ext, true)) {
 
                 add_to_log($COURSE->id, "extensions", "success", "index.php", "extension {$ext_id} creation successful!", $this->get_cmid());
 

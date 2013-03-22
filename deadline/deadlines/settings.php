@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,7 +22,7 @@
  * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
  * @author    James McLean <james.mclean@unisa.edu.au>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
+ */
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -32,8 +31,8 @@ defined('DEADLINES_ENABLED')  or define('DEADLINES_ENABLED', 1);
 
 require_once($CFG->dirroot . '/deadline/deadlines/lib.php');
 
-// Define the 'Enabled' yes/no field
-$optionsArray = array(
+// Define the 'Enabled' yes/no field.
+$options_array = array(
         DEADLINES_DISABLED => get_string('no'),
         DEADLINES_ENABLED  => get_string('yes'),
 );
@@ -42,7 +41,7 @@ $deadlines_enabled = new admin_setting_configselect(deadlines_plugin::DEADLINES_
         get_string('enable_deadlines', deadlines_plugin::DEADLINES_LANG),
         get_string('enable_deadlines', deadlines_plugin::DEADLINES_LANG),
         DEADLINES_ENABLED,
-        $optionsArray);
+        $options_array);
 
-// Add the 'Enabled' yes/no field
+// Add the 'Enabled' yes/no field.
 $settings->add($deadlines_enabled);

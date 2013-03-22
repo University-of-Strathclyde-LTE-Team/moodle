@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -46,11 +45,11 @@ class form_staff_request_create extends form_staff_request_edit {
 
         $mform =& $this->_form;
 
-        if(!is_null($this->get_cmid())) {
+        if (!is_null($this->get_cmid())) {
             $mform->addElement('hidden', 'cmid', $this->get_cmid());
         }
 
-        if(!is_null($this->get_student_id())) {
+        if (!is_null($this->get_student_id())) {
             $mform->addElement('hidden', 'student_id', $this->get_student_id());
         }
 
@@ -59,28 +58,28 @@ class form_staff_request_create extends form_staff_request_edit {
         }
 
         // remove fields that make no sense in this view
-        if($mform->elementExists('ext_due_static')) {
+        if ($mform->elementExists('ext_due_static')) {
             $mform->removeElement('ext_due_static');
         }
 
-        if($mform->elementExists('ext_reason_static')) {
+        if ($mform->elementExists('ext_reason_static')) {
             $mform->removeElement('ext_reason_static');
         }
 
-        if($mform->elementExists('ext_date_requested')) {
+        if ($mform->elementExists('ext_date_requested')) {
             $mform->removeElement('ext_date_requested');
         }
 
-        if($mform->elementExists('supdoc1')) {
+        if ($mform->elementExists('supdoc1')) {
             $mform->removeElement('supdoc1');
         }
 
-        if($mform->elementExists('ext_status_code')) {
+        if ($mform->elementExists('ext_status_code')) {
             $status = $mform->getElement('ext_status_code');
             $status->freeze();
         }
 
-        if($mform->elementExists('extension_history')) {
+        if ($mform->elementExists('extension_history')) {
             $mform->removeElement('extension_history');
         }
 
@@ -94,11 +93,11 @@ class form_staff_request_create extends form_staff_request_edit {
         $deadline   = new deadlines_plugin();
         $due_date = $deadline->get_deadline_date_deadline($data['cmid']);
 
-        if($data['ext_granted_date'] < $due_date) {
+        if ($data['ext_granted_date'] < $due_date) {
             $errors['ext_granted_date'] = get_string('ext_granted_before_due', extensions_plugin::EXTENSIONS_LANG);
         }
 
-        if(!extensions_plugin::is_extension_approver(null, null, $data['cmid'])) {
+        if (!extensions_plugin::is_extension_approver(null, null, $data['cmid'])) {
             $errors['ext_status_code'] = get_string('ext_not_approver', extensions_plugin::EXTENSIONS_LANG);
         }
 
@@ -109,12 +108,12 @@ class form_staff_request_create extends form_staff_request_edit {
 
         global $DB, $USER, $COURSE;
 
-        if(!is_null($form_data)) {
-            if(isset($form_data->submitbutton)) {
+        if (!is_null($form_data)) {
+            if (isset($form_data->submitbutton)) {
                 // Someone hit the save changes button. That's all they
                 // can really do anyway
 
-                if(!extensions_plugin::is_extension_approver(null, null, $form_data->cmid)) {
+                if (!extensions_plugin::is_extension_approver(null, null, $form_data->cmid)) {
                     error(get_string('ext_not_approver', extensions_plugin::EXTENSIONS_LANG));
                     exit;
                 }
@@ -130,7 +129,7 @@ class form_staff_request_create extends form_staff_request_edit {
                 $ext_data->status        = $form_data->ext_status_code;
                 $ext_data->created       = date('U');
 
-                if($ext_id = $DB->insert_record('deadline_extensions', $ext_data, true)) {
+                if ($ext_id = $DB->insert_record('deadline_extensions', $ext_data, true)) {
 
                     $form_data->eid = $ext_id;
 

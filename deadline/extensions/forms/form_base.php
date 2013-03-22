@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,10 +23,10 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once ($CFG->libdir  . '/formslib.php');
-require_once ($CFG->libdir  . '/form/group.php');
-require_once ($CFG->dirroot . '/user/lib.php');
-require_once ($CFG->dirroot . '/deadline/deadlines/lib.php');
+require_once($CFG->libdir  . '/formslib.php');
+require_once($CFG->libdir  . '/form/group.php');
+require_once($CFG->dirroot . '/user/lib.php');
+require_once($CFG->dirroot . '/deadline/deadlines/lib.php');
 
 MoodleQuickForm::registerElementType('extension_requests',         "forms/extension_requests.php",  'MoodleQuickForm_extension_requests');
 MoodleQuickForm::registerElementType('extension_configure',        "forms/extension_configure.php", 'MoodleQuickForm_extension_configure');
@@ -45,7 +44,7 @@ class form_base extends moodleform {
 
     protected $activity_detail = null;
 
-    public    $date_options = null;
+    public $date_options = null;
 
     /**
      * Constructor method.
@@ -91,7 +90,7 @@ class form_base extends moodleform {
 
     public function load_activity_detail($cm_id = null) {
 
-        if(is_null($cm_id)) {
+        if (is_null($cm_id)) {
             return false;
         }
 
@@ -115,7 +114,7 @@ class form_base extends moodleform {
     }
 
     public function set_student_id($sid = null) {
-        if(!is_null($sid)) {
+        if (!is_null($sid)) {
             $this->student_id = $sid;
         }
     }
@@ -125,7 +124,7 @@ class form_base extends moodleform {
     }
 
     public function set_cmid($cm_id = null) {
-        if(!is_null($cm_id)) {
+        if (!is_null($cm_id)) {
             $this->cm_id = $cm_id;
         }
     }
@@ -155,7 +154,7 @@ class form_base extends moodleform {
 
     public function set_course($course = null) {
 
-        if(!is_null($course)) {
+        if (!is_null($course)) {
             $this->course = $course;
         }
 
@@ -171,7 +170,7 @@ class form_base extends moodleform {
 
 
     public function set_extension_id($ext_id = null) {
-        if(!is_null($ext_id)) {
+        if (!is_null($ext_id)) {
             $this->ext_id = $ext_id;
         }
     }
@@ -181,16 +180,16 @@ class form_base extends moodleform {
     }
 
 
-    public function getGroupElement($index = null, $elementGroup = null) {
+    public function get_group_element($index = null, $element_group = null) {
 
-        if(is_null($index)) {
+        if (is_null($index)) {
             return false;
         }
 
-        foreach (array_keys($elementGroup->_elements) as $key) {
-            $elementName = $elementGroup->_elements[$key]->getName();
-            if ($index == $elementName) {
-                return $elementGroup->_elements[$key];
+        foreach (array_keys($element_group->_elements) as $key) {
+            $element_name = $element_group->_elements[$key]->getName();
+            if ($index == $element_name) {
+                return $element_group->_elements[$key];
                 break;
             }
         }
@@ -203,7 +202,7 @@ class form_base extends moodleform {
 
         $all_groups = array();
         $all_groups['-1'] = get_string('group', 'group');
-        foreach($groups as $id => $data) {
+        foreach ($groups as $id => $data) {
             $all_groups[$id] = $data->name;
         }
 
@@ -217,7 +216,7 @@ class form_base extends moodleform {
                 'ext_en_id' => extensions_plugin::get_extension_enable_id_by_cmid($cm_id)
         );
 
-        if($DB->record_exists('deadline_extensions_appv', $params)) {
+        if ($DB->record_exists('deadline_extensions_appv', $params)) {
             // there are approvers listed for this activity. Only select those
             $users = $DB->get_records('deadline_extensions_appv', $params);
         } else {
@@ -229,12 +228,12 @@ class form_base extends moodleform {
 
         }
 
-        if(isset($users)) {
+        if (isset($users)) {
             $user_list = array();
             $user_list[-1] = "&nbsp;";
 
-            foreach($users as $user) {
-                if(isset($user->user_id)) {
+            foreach ($users as $user) {
+                if (isset($user->user_id)) {
                     $detail = $DB->get_record('user', array('id' => $user->user_id));
                     $user_list[$user->user_id] = $detail->firstname . ' ' . $detail->lastname;
                 } else {
@@ -267,29 +266,29 @@ class form_base extends moodleform {
 
         $errors = array();
 
-        if($this->get_cmid() == '-1') {
+        if ($this->get_cmid() == '-1') {
             $errors['cmid'] = get_string('invalid_activity', extensions_plugin::EXTENSIONS_LANG);
             return $errors;
         }
 
-        if(get_config('deadline_extensions', 'deny_timelimit_reqs') == 1) {
+        if (get_config('deadline_extensions', 'deny_timelimit_reqs') == 1) {
             // Timelimit extension requests are disabled, but someone is trying it anyway.
-            if(isset($data['type']) && $data['type'] == extensions_plugin::EXTENSION_TYPE_TIME) {
+            if (isset($data['type']) && $data['type'] == extensions_plugin::EXTENSION_TYPE_TIME) {
                 $errors['cmid'] = get_string('timelimit_req_denied', extensions_plugin::EXTENSIONS_LANG);
                 return $errors;
             }
         }
 
         // See if this activity even allows extensions
-        if(!extensions_plugin::extensions_enabled_cmid($this->get_cmid())) {
+        if (!extensions_plugin::extensions_enabled_cmid($this->get_cmid())) {
             $errors['cmid'] = get_string('extmessnotpermitted', extensions_plugin::EXTENSIONS_LANG);
             return $errors;
         }
 
         // See if this user already has and extension request that's pending.
-        if(!isset($data['page'])) {
-            if(get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_duplicate_warn') == 1) {
-                if(extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id, null, extensions_plugin::STATUS_PENDING)) {
+        if (!isset($data['page'])) {
+            if (get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_duplicate_warn') == 1) {
+                if (extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id, null, extensions_plugin::STATUS_PENDING)) {
                     $errors['cmid'] = get_string('ext_already_pending', extensions_plugin::EXTENSIONS_LANG);
                 }
             }
@@ -297,8 +296,8 @@ class form_base extends moodleform {
 
         // Check to see if there is already an existing submission for this activity for
         // this user.
-        if(get_config('deadline_extensions', 'prevent_req_after_sub') == '1') {
-            if(extensions_plugin::activity_has_submission($this->get_cmid(), $USER->id)) {
+        if (get_config('deadline_extensions', 'prevent_req_after_sub') == '1') {
+            if (extensions_plugin::activity_has_submission($this->get_cmid(), $USER->id)) {
                 $errors['cmid'] = get_string('extalreadysubmitted', 'u_extension_lang');
                 return $errors;
             }
@@ -308,22 +307,24 @@ class form_base extends moodleform {
         $deadlines = new deadlines_plugin();
         $deadline = $deadlines->get_deadlines_for_cmid($this->get_cmid());
 
-        if($deadline->date_open > date('U')) {
+        if ($deadline->date_open > date('U')) {
             $errors['date'] = get_string('extnotopenyet', extensions_plugin::EXTENSIONS_LANG);
         }
 
         // See if the due date has passed
-        if($deadline->date_deadline < date('U')) {
+        if ($deadline->date_deadline < date('U')) {
             $errors['date'] = get_string('extduedatepassed', extensions_plugin::EXTENSIONS_LANG);
         }
 
-        if(extensions_plugin::get_activity_mod_by_cmid($this->get_cmid()) == 'quiz') {
+        if (extensions_plugin::get_activity_mod_by_cmid($this->get_cmid()) == 'quiz') {
 
-            if(isset($data['type']) && $data['type'] == extensions_plugin::EXTENSION_TYPE_DATE) {
+            if (isset($data['type']) && $data['type'] == extensions_plugin::EXTENSION_TYPE_DATE) {
                 $errors = $this->check_deadline($data, $errors, $deadline);
-            } else if (isset($data['type']) && $data['type'] == extensions_plugin::EXTENSION_TYPE_TIME) {
-                // Not sure what we can even check here.
             }
+
+            // if (isset($data['type']) && $data['type'] == extensions_plugin::EXTENSION_TYPE_TIME) {
+                // Not sure what we can even check here.
+            // }
 
         } else {
             $errors = $this->check_deadline($data, $errors, $deadline);
@@ -335,8 +336,8 @@ class form_base extends moodleform {
     private function check_deadline($data, $errors, $deadline) {
 
         // If this is a new request or an edit, check the requested date against the due date
-        if(isset($data['page']) && ($data['page'] == 'request_new' || $data['page'] == 'request_edit')) {
-            if(isset($data['date']) && $data['date'] < $deadline->date_deadline) {
+        if (isset($data['page']) && ($data['page'] == 'request_new' || $data['page'] == 'request_edit')) {
+            if (isset($data['date']) && $data['date'] < $deadline->date_deadline) {
                 $errors['date'] = get_string('extbeforedue', extensions_plugin::EXTENSIONS_LANG);
             }
         }

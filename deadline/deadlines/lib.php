@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,7 +22,7 @@
  * @copyright 2013 University of South Australia {@link http://www.unisa.edu.au}
  * @author    James McLean <james.mclean@unisa.edu.au>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
+ */
 
 require_once($CFG->dirroot . '/deadline/lib.php');
 
@@ -52,7 +51,7 @@ class deadlines_plugin extends deadline_plugin {
     protected function delete_cmid($cmid) {
         global $DB;
 
-        if(!$DB->delete_records('deadline_deadlines', array('cmid' => $cmid))) {
+        if (!$DB->delete_records('deadline_deadlines', array('cmid' => $cmid))) {
             print_error('cannotdeletedeadlines', '', course_get_url($data->course, $data->section), $data->modulename);
         }
 
@@ -66,7 +65,7 @@ class deadlines_plugin extends deadline_plugin {
      */
     public function get_deadline_date_deadline($cm_id) {
 
-        if(is_null($cm_id)) {
+        if (is_null($cm_id)) {
             return 0;
         }
 
@@ -75,7 +74,7 @@ class deadlines_plugin extends deadline_plugin {
 
     public function get_deadline_date_open($cm_id) {
 
-        if(is_null($cm_id)) {
+        if (is_null($cm_id)) {
             return 0;
         }
 
@@ -84,7 +83,7 @@ class deadlines_plugin extends deadline_plugin {
 
     public function get_deadline_date_cutoff($cm_id) {
 
-        if(is_null($cm_id)) {
+        if (is_null($cm_id)) {
             return 0;
         }
 
@@ -93,7 +92,7 @@ class deadlines_plugin extends deadline_plugin {
 
     public function get_deadline_timelimit($cm_id) {
 
-        if(is_null($cm_id)) {
+        if (is_null($cm_id)) {
             return 0;
         }
 
@@ -102,7 +101,7 @@ class deadlines_plugin extends deadline_plugin {
 
     public function get_deadline_attempts($cm_id) {
 
-        if(is_null($cm_id)) {
+        if (is_null($cm_id)) {
             return 0;
         }
 
@@ -116,15 +115,15 @@ class deadlines_plugin extends deadline_plugin {
                 'cm_id' => $cm_id
         );
 
-        if($DB->record_exists('deadline_deadlines', $params)) {
+        if ($DB->record_exists('deadline_deadlines', $params)) {
             return $DB->get_field('deadline_deadlines', $field, $params);
         }
     }
 
     private function get_module_fields($modname) {
 
-        // Sanity check the name
-        if(preg_match('#^mod_#', $modname)) {
+        // Sanity check the name.
+        if (preg_match('#^mod_#', $modname)) {
             $modname = str_replace('mod_', '', $modname);
         }
 
@@ -143,7 +142,7 @@ class deadlines_plugin extends deadline_plugin {
                 $fields = new stdClass;
                 $fields->date_open     = 'timeavailable';
                 $fields->date_deadline = 'timedue';
-                $fields->date_cutoff   =  NULL;
+                $fields->date_cutoff   =  null;
                 return $fields;
 
                 break;
@@ -152,7 +151,7 @@ class deadlines_plugin extends deadline_plugin {
                 $fields = new stdClass;
                 $fields->date_open     = 'timeopen';
                 $fields->date_deadline = 'timeclose';
-                $fields->date_cutoff   =  NULL;
+                $fields->date_cutoff   =  null;
                 $fields->timelimit     = 'timelimit';
                 return $fields;
 
@@ -162,7 +161,7 @@ class deadlines_plugin extends deadline_plugin {
                 $fields = new stdClass;
                 $fields->date_open     = 'timeopen';
                 $fields->date_deadline = 'timeclose';
-                $fields->date_cutoff   =  NULL;
+                $fields->date_cutoff   =  null;
                 return $fields;
 
                 break;
@@ -171,7 +170,7 @@ class deadlines_plugin extends deadline_plugin {
                 $fields = new stdClass;
                 $fields->date_open     = 'assesstimestart';
                 $fields->date_deadline = 'assesstimefinish';
-                $fields->date_cutoff   =  NULL;
+                $fields->date_cutoff   =  null;
                 return $fields;
 
                 break;
@@ -180,7 +179,7 @@ class deadlines_plugin extends deadline_plugin {
                 $fields = new stdClass;
                 $fields->date_open     = 'available';
                 $fields->date_deadline = 'deadline';
-                $fields->date_cutoff   =  NULL;
+                $fields->date_cutoff   =  null;
                 return $fields;
 
                 break;
@@ -189,7 +188,7 @@ class deadlines_plugin extends deadline_plugin {
                 $fields = new stdClass;
                 $fields->date_open     = 'timeopen';
                 $fields->date_deadline = 'timeclose';
-                $fields->date_cutoff   =  NULL;
+                $fields->date_cutoff   =  null;
                 return $fields;
 
                 break;
@@ -198,7 +197,7 @@ class deadlines_plugin extends deadline_plugin {
                 $fields = new stdClass;
                 $fields->date_open     = 'assessmentstart';
                 $fields->date_deadline = 'assessmentend';
-                $fields->date_cutoff   =  NULL;
+                $fields->date_cutoff   =  null;
                 return $fields;
 
                 break;
@@ -211,25 +210,25 @@ class deadlines_plugin extends deadline_plugin {
         global $DB;
 
         // Make sure the course module id exists already.
-        if(!$DB->record_exists('course_modules', array('id' => $data->coursemodule))) {
+        if (!$DB->record_exists('course_modules', array('id' => $data->coursemodule))) {
             print_error('cannotadddeadline', '', course_get_url($data->course, $data->section), $data->modulename);
         }
 
-        if($field_name = $this->get_module_fields($modulename)) {
+        if ($field_name = $this->get_module_fields($modulename)) {
 
-            if(isset($data->{$field_name->date_open})) {
+            if (isset($data->{$field_name->date_open})) {
                 $this->set_open_date($data->coursemodule, $data->{$field_name->date_open});
             }
 
-            if(isset($data->{$field_name->date_deadline})) {
+            if (isset($data->{$field_name->date_deadline})) {
                 $this->set_due_date($data->coursemodule, $data->{$field_name->date_deadline});
             }
 
-            if(isset($data->{$field_name->date_cutoff})) {
+            if (isset($data->{$field_name->date_cutoff})) {
                 $this->set_cut_off_date($data->coursemodule, $data->{$field_name->date_cutoff});
             }
 
-            if(isset($data->{$field_name->timelimit})) {
+            if (isset($data->{$field_name->timelimit})) {
                 $this->set_timelimit($data->coursemodule, $data->{$field_name->timelimit});
             }
 
@@ -242,7 +241,7 @@ class deadlines_plugin extends deadline_plugin {
 
     public function get_deadlines_for_cmid($cm_id = null, $user_id = null) {
 
-        if(is_null($cm_id)) {
+        if (is_null($cm_id)) {
             return false;
         }
 
@@ -251,7 +250,7 @@ class deadlines_plugin extends deadline_plugin {
         $data->date_deadline = $this->get_due_date($cm_id, $user_id);
         $data->date_cutoff   = $this->get_cut_off_date($cm_id, $user_id);
         $data->timelimit     = $this->get_timelimit($cm_id, $user_id);
-        // insert attempts here when implemented.
+        // Insert attempts here when implemented.
 
         return $data;
     }
@@ -260,7 +259,7 @@ class deadlines_plugin extends deadline_plugin {
 
         // On edit the first call of this does not have a cm_id set.
         // Just do nothing, as there will be nothing to return anyway.
-        if(!isset($data->cm_id)) {
+        if (!isset($data->cm_id)) {
             return $data;
         }
 
@@ -278,9 +277,9 @@ class deadlines_plugin extends deadline_plugin {
                 $data->timeclose                = $this->get_due_date($data->cm_id, $user_id);
                 $data->timelimit                = $this->get_timelimit($data->cm_id, $user_id);
                 // To be implemented later.
-                //$data->attempts
-                //$data->password
-                //$data->extrapasswords
+                // $data->attempts
+                // $data->password
+                // $data->extrapasswords
 
                 $data->deadlines                = true;
                 break;
@@ -303,7 +302,7 @@ class deadlines_plugin extends deadline_plugin {
             'cm_id' => $cm_id
         );
 
-        if($DB->record_exists($table, $params)) {
+        if ($DB->record_exists($table, $params)) {
             $record = $DB->get_record($table, $params, '*', MUST_EXIST);
 
             return $record->date_deadline;
@@ -322,7 +321,7 @@ class deadlines_plugin extends deadline_plugin {
                 'cm_id' => $cm_id
         );
 
-        if($DB->record_exists('deadline_deadlines', $params)) {
+        if ($DB->record_exists('deadline_deadlines', $params)) {
             $record = $DB->get_record('deadline_deadlines', $params, '*', MUST_EXIST);
 
             return $record->date_open;
@@ -341,7 +340,7 @@ class deadlines_plugin extends deadline_plugin {
                 'cm_id' => $cm_id
         );
 
-        if($DB->record_exists('deadline_deadlines', $params)) {
+        if ($DB->record_exists('deadline_deadlines', $params)) {
             $record = $DB->get_record('deadline_deadlines', $params, '*', MUST_EXIST);
 
             return $record->date_cutoff;
@@ -354,7 +353,7 @@ class deadlines_plugin extends deadline_plugin {
 
         global $DB;
 
-        if(is_null($cm_id)) {
+        if (is_null($cm_id)) {
             return false;
         }
 
@@ -375,7 +374,7 @@ class deadlines_plugin extends deadline_plugin {
                 'cm_id' => $cm_id
         );
 
-        if($DB->record_exists('deadline_deadlines', $params)) {
+        if ($DB->record_exists('deadline_deadlines', $params)) {
             $record = $DB->get_record('deadline_deadlines', $params, '*', MUST_EXIST);
 
             return $record->timelimit;

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -57,14 +56,14 @@ class form_configure_activity extends form_base {
         $mform->addElement('static', 'activity_name', get_string('activity'));
         $mform->addElement('select', 'extensions_enabled', get_string('enable_extensions', extensions_plugin::EXTENSIONS_LANG), extensions_plugin::get_extension_enable_items());
 
-        if(get_config('deadline_extensions', 'req_cut_off') != '-1') {
+        if (get_config('deadline_extensions', 'req_cut_off') != '-1') {
             $mform->addElement('select', 'extensions_cutoff', get_string('extensions_cutoff', extensions_plugin::EXTENSIONS_LANG), extensions_plugin::get_cutoff_options());
         }
 
         $picker = $mform->addElement('select_picker', 'staff_approvers', get_string('extension_approvers', extensions_plugin::EXTENSIONS_LANG));
-        $picker->set_multiple(TRUE);
+        $picker->set_multiple(true);
 
-        $this->add_action_buttons(TRUE, get_string("save", extensions_plugin::EXTENSIONS_LANG));
+        $this->add_action_buttons(true, get_string("save", extensions_plugin::EXTENSIONS_LANG));
     }
 
     public function definition_after_data() {
@@ -87,28 +86,28 @@ class form_configure_activity extends form_base {
 
         $roles = get_roles_used_in_context($context);
 
-        foreach($roles as $role) {
+        foreach ($roles as $role) {
 
-            if($role->shortname == 'student') {
+            if ($role->shortname == 'student') {
                 continue;
             }
 
             $users = get_role_users($role->id, $context, false, 'u.id, u.username, u.firstname, u.lastname');
 
-            foreach($users as $user) {
+            foreach ($users as $user) {
                 $ext_users['right'][$user->id] = $user->firstname . ' ' . $user->lastname . ' (' . $role->shortname . ')';
             }
         }
 
         $enabled = $mform->getElement('extensions_enabled');
-        if(get_config('deadline_extensions','force_extension_enabled') == '1') {
+        if (get_config('deadline_extensions', 'force_extension_enabled') == '1') {
             $enabled->setSelected(extensions_plugin::EXT_ENABLED);
             $enabled->freeze();
         } else {
             $enabled->setSelected(extensions_plugin::get_extension_status_by_cmid($this->get_cmid()));
         }
 
-        if($mform->elementExists('extensions_cutoff')) {
+        if ($mform->elementExists('extensions_cutoff')) {
             $cutoff = $mform->getElement('extensions_cutoff');
             $cutoff->setSelected(extensions_plugin::get_extension_cutoff_by_cmid($this->get_cmid()));
         }
@@ -122,9 +121,9 @@ class form_configure_activity extends form_base {
 
         $errors = array();
 
-        if(isset($data['extensions_enabled']) && $data['extensions_enabled'] == extensions_plugin::EXT_ENABLED) {
+        if (isset($data['extensions_enabled']) && $data['extensions_enabled'] == extensions_plugin::EXT_ENABLED) {
 
-            if(isset($data['staff_approvers']['leftContents']) && $data['staff_approvers']['leftContents'] == '') {
+            if (isset($data['staff_approvers']['leftContents']) && $data['staff_approvers']['leftContents'] == '') {
                 $errors['staff_approvers'] = get_string('must_select_one_approver', extensions_plugin::EXTENSIONS_LANG);
             }
 
@@ -148,12 +147,12 @@ class form_configure_activity extends form_base {
         $data->cm_id  = $form_data->cmid;
         $data->status = $form_data->extensions_enabled;
 
-        if(isset($form_data->extensions_cutoff)) {
+        if (isset($form_data->extensions_cutoff)) {
             $data->request_cutoff = $form_data->extensions_cutoff;
         }
 
         // check to see if this record exists.
-        if(!$DB->record_exists('deadline_extensions_enabled', $params)) {
+        if (!$DB->record_exists('deadline_extensions_enabled', $params)) {
 
             $data->date_enabled = date('U');
 
@@ -174,9 +173,9 @@ class form_configure_activity extends form_base {
         }
 
         // save the staff members as approvers for this activity.
-        $staff_ids = explode(',', $form_data->staff_approvers['leftContents']);
+        $staff_ids = explode(', ', $form_data->staff_approvers['leftContents']);
 
-        foreach($staff_ids as $staff_id) {
+        foreach ($staff_ids as $staff_id) {
 
             $staff = new stdClass;
             $staff->ext_en_id = $id;

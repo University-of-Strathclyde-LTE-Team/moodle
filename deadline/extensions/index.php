@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -46,8 +45,8 @@ $url_params['eid']    = $eid;
 $url_params['action'] = $action;
 $url_params['cmid']   = $cm_id;
 
-// If we have a CM_ID then we should be in module context
-if(isset($cm_id) && $cm_id > 0) {
+// If we have a CM_ID then we should be in module context.
+if (isset($cm_id) && $cm_id > 0) {
 
     $cm = get_coursemodule_from_id(0, $cm_id, 0, false, MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
@@ -55,7 +54,7 @@ if(isset($cm_id) && $cm_id > 0) {
     require_login($course, true, $cm);
     $context = context_module::instance($cm->id);
 
-} else if(isset($eid) && $eid > 0) {
+} else if (isset($eid) && $eid > 0) {
 
     // Get the $cm_id based on the extension ID.
     $cm_id = extensions_plugin::get_activity_id_by_extid($eid);
@@ -66,7 +65,7 @@ if(isset($cm_id) && $cm_id > 0) {
     require_login($course, true, $cm);
     $context = context_module::instance($cm->id);
 
-} else if(isset($id) && $id > SITEID) {
+} else if (isset($id) && $id > SITEID) {
 
     $params = array('id' => $id);
     $course = $DB->get_record('course', $params, '*', MUST_EXIST);

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -58,75 +57,75 @@ class extension_base {
 
     public function get_form_by_page($page = null) {
 
-        $pageObj = new stdClass;
+        $page_obj = new stdClass;
 
-        if(is_null($page)) {
+        if (is_null($page)) {
             $page = $this->get_page();
         }
 
-        if($this->user_type == self::USR_STUDENT) {
+        if ($this->user_type == self::USR_STUDENT) {
             switch($page) {
                 case 'requests':
-                    $pageObj->file  = 'forms/form_student_requests.php';
-                    $pageObj->class = 'form_student_requests';
+                    $page_obj->file  = 'forms/form_student_requests.php';
+                    $page_obj->class = 'form_student_requests';
                 break;
                 case 'request_edit':
-                    $pageObj->file  = 'forms/form_request_edit.php';
-                    $pageObj->class = 'form_request_edit';
+                    $page_obj->file  = 'forms/form_request_edit.php';
+                    $page_obj->class = 'form_request_edit';
                 break;
                 case 'request_new':
-                    $pageObj->file  = 'forms/form_request_new.php';
-                    $pageObj->class = 'form_request_new';
+                    $page_obj->file  = 'forms/form_request_new.php';
+                    $page_obj->class = 'form_request_new';
                 break;
 
             }
 
-            return $pageObj;
+            return $page_obj;
         }
 
         if ($this->user_type == self::USR_STAFF) {
             // Staff/Admin pages are here.
             switch ($page) {
                 case 'requests':
-                    $pageObj->file  = 'forms/form_staff_requests.php';
-                    $pageObj->class = 'form_staff_requests';
+                    $page_obj->file  = 'forms/form_staff_requests.php';
+                    $page_obj->class = 'form_staff_requests';
                     break;
                 case 'request_edit':
-                    $pageObj->file  = 'forms/form_staff_request_edit.php';
-                    $pageObj->class = 'form_staff_request_edit';
+                    $page_obj->file  = 'forms/form_staff_request_edit.php';
+                    $page_obj->class = 'form_staff_request_edit';
                     break;
                 case 'request_create':
-                    $pageObj->file  = 'forms/form_staff_request_create.php';
-                    $pageObj->class = 'form_staff_request_create';
+                    $page_obj->file  = 'forms/form_staff_request_create.php';
+                    $page_obj->class = 'form_staff_request_create';
                     break;
                 case 'global':
-                    $pageObj->file  = 'forms/form_global.php';
-                    $pageObj->class = 'form_global';
+                    $page_obj->file  = 'forms/form_global.php';
+                    $page_obj->class = 'form_global';
                     break;
                 case 'global_add':
-                    $pageObj->file  = 'forms/form_global_add.php';
-                    $pageObj->class = 'form_global_add';
+                    $page_obj->file  = 'forms/form_global_add.php';
+                    $page_obj->class = 'form_global_add';
                     break;
                 case 'global_edit':
-                    $pageObj->file  = 'forms/form_global_edit.php';
-                    $pageObj->class = 'form_global_edit';
+                    $page_obj->file  = 'forms/form_global_edit.php';
+                    $page_obj->class = 'form_global_edit';
                     break;
                 case 'configure_activities':
-                    $pageObj->file  = 'forms/form_configure_activities.php';
-                    $pageObj->class = 'form_configure_activities';
+                    $page_obj->file  = 'forms/form_configure_activities.php';
+                    $page_obj->class = 'form_configure_activities';
                     break;
                 case 'configure_activity':
-                    $pageObj->file  = 'forms/form_configure_activity.php';
-                    $pageObj->class = 'form_configure_activity';
+                    $page_obj->file  = 'forms/form_configure_activity.php';
+                    $page_obj->class = 'form_configure_activity';
                     break;
             }
 
-            return $pageObj;
+            return $page_obj;
         }
 
     }
 
-    //----------
+    // ----------
 
     public function set_asmnt_id($asmnt_id = null) {
         $this->asmnt_id = $asmnt_id;
@@ -137,7 +136,7 @@ class extension_base {
     }
 
     public function set_extension_id($ext_id = null) {
-        if(!is_null($ext_id)) {
+        if (!is_null($ext_id)) {
             $this->ext_id = $ext_id;
         }
     }
@@ -177,10 +176,6 @@ class extension_base {
                 throw new Exception('Form was found, but class could not be loaded.');
             }
         } else {
-//            $this->unset_page();
-
-//             print 'No relevant Form found for Page ' . $page;
-
             throw new Exception('No relevant Form found for Page ' . $page);
         }
     }
@@ -191,9 +186,9 @@ class extension_base {
 
         $course_id = clean_param($course_id, PARAM_INT);
 
-        if(!is_null($course_id)) {
+        if (!is_null($course_id)) {
 
-            if($course_id != '0') {
+            if ($course_id != '0') {
                 $course = $DB->get_record('course', array('id' => $course_id), '*', MUST_EXIST);
             } else {
                 $course = new stdClass;
@@ -211,7 +206,7 @@ class extension_base {
     }
 
     public function set_page($page = null) {
-        if(!is_null($page)) {
+        if (!is_null($page)) {
             $this->page = $page;
         }
 
@@ -222,7 +217,7 @@ class extension_base {
     }
 
     public function set_cmid($cm_id = null) {
-        if(!is_null($cm_id)) {
+        if (!is_null($cm_id)) {
             $this->cm_id = $cm_id;
         }
     }
@@ -232,7 +227,7 @@ class extension_base {
     }
 
     public function set_student_id($sid = null) {
-        if(!is_null($sid)) {
+        if (!is_null($sid)) {
             $this->student_id = $sid;
         }
     }
@@ -246,32 +241,32 @@ class extension_base {
 
         $mform = $this->get_form($page);
 
-        if(!is_null($this->course)) {
+        if (!is_null($this->course)) {
             $mform->set_course($this->course);
         }
 
-        if(!is_null($this->get_extension_id())) {
+        if (!is_null($this->get_extension_id())) {
             $mform->set_extension_id($this->get_extension_id());
         }
 
-        if($this->get_cmid() != 0) {
+        if ($this->get_cmid() != 0) {
             $mform->set_cmid($this->get_cmid());
             $mform->load_activity_detail($this->get_cmid());
         }
 
-        if($this->get_student_id() != 0) {
+        if ($this->get_student_id() != 0) {
             $mform->set_student_id($this->get_student_id());
         }
 
-//         if(!is_null($this->get_asmnt_id())) {
-//             $mform->set_asmnt_id($this->get_asmnt_id());
-//         }
+        // if (!is_null($this->get_asmnt_id())) {
+        //     $mform->set_asmnt_id($this->get_asmnt_id());
+        // }
 
-//         if(isset($this->saved)) {
-//             if(method_exists($mform, 'set_saved')) {
-//                 $mform->set_saved($this->saved);
-//             }
-//         }
+        // if (isset($this->saved)) {
+        //     if (method_exists($mform, 'set_saved')) {
+        //         $mform->set_saved($this->saved);
+        //     }
+        // }
 
         $mform->post_form_load();
 
@@ -287,10 +282,10 @@ class extension_base {
         // are a staff member. Show Staff pages.
         $course_id = $this->get_course()->id;
 
-        if($course_id != 0) {
+        if ($course_id != 0) {
             if (has_capability('deadline/extensions:approveextension', context_course::instance($this->get_course()->id))) {
                 $this->user_type = self::USR_STAFF;
-            } else if(has_capability('deadline/extensions:requestextension', context_course::instance($this->get_course()->id))) {
+            } else if (has_capability('deadline/extensions:requestextension', context_course::instance($this->get_course()->id))) {
                 $this->user_type = self::USR_STUDENT;
             }
         } else {
@@ -321,16 +316,16 @@ class extension_base {
 
             redirect(new moodle_url('/deadline/extensions', array('id' => $this->get_course()->id)));
 
-        } elseif ($fromform = $mform->get_data()) {
+        } else if ($fromform = $mform->get_data()) {
 
             if ($mform->is_submitted()) {
                 // Handle the form submission here.
 
-                if($this->get_action() == 'save') {
+                if ($this->get_action() == 'save') {
 
-                    if(method_exists($mform, 'save_hook')) {
+                    if (method_exists($mform, 'save_hook')) {
 
-                        if(!$mform->save_hook($fromform)) {
+                        if (!$mform->save_hook($fromform)) {
                             add_to_log($COURSE->id, "extensions", "error", "index.php", "error when saving data " . $mform->get_page_name(), $this->get_cmid());
                             print_error('Error saving data.');
                         } else {
@@ -342,11 +337,10 @@ class extension_base {
 
                 } // end get action
 
-
                 // Get the destination for this form when it's submitted
                 // successfully.
                 $page = null;
-                if(method_exists($mform, 'get_save_destination')) {
+                if (method_exists($mform, 'get_save_destination')) {
                     $page = $mform->get_save_destination();
                 }
 
@@ -369,7 +363,7 @@ class extension_base {
         $url_params = array('id' => $this->get_course()->id);
 
         // Make sure the user is NOT a student, and the menu is enabled.
-        if($this->user_type == self::USR_STAFF && get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_indiv_group')) {
+        if ($this->user_type == self::USR_STAFF && get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_indiv_group')) {
 
             $content = "<div style=\"display: block; width: 450px; padding-bottom: 40px;\">";
 
