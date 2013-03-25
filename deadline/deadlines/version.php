@@ -25,6 +25,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2013022604;
+$plugin->version   = 2013032504;
 $plugin->requires  = 2012112900;
 $plugin->component = 'deadline_deadlines';

@@ -131,6 +131,7 @@ class deadlines_plugin extends deadline_plugin {
                 $fields->date_open     = 'allowsubmissionsfromdate';
                 $fields->date_deadline = 'duedate';
                 $fields->date_cutoff   = 'cutoffdate';
+                $fields->timelimit     = null;
                 return $fields;
 
                 break;

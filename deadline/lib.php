@@ -140,7 +140,7 @@ abstract class deadline_plugin {
      *
      * @param int $cm_id Activity to check for deadline existance.
      */
-    private function deadline_exists($cm_id = null) {
+    public function deadline_exists($cm_id = null) {
         global $DB;
 
         $options = array(

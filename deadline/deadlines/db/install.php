@@ -23,8 +23,54 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+
 function xmldb_deadline_deadlines_install() {
-    // Load all instances of modules that support deadlines and copy
-    // their data into deadlines.
+
+    global $DB, $CFG;
+
+    require_once($CFG->dirroot . '/deadline/lib.php');
+    require_once($CFG->dirroot . '/deadline/deadlines/lib.php');
+
+    $deadlines = new deadlines_plugin();
+
+    // Load all entries in course_modules.
+    $course_modules = $DB->get_records('course_modules');
+
+    // For items that support deadlines, copy the data into the deadlines
+    // records.
+    foreach($course_modules as $course_module) {
+
+        $module = $DB->get_record('modules', array('id' => $course_module->module));
+
+        if(!$deadlines->module_supports_deadlines($module->name)) {
+            continue;
+        }
+
+        if($course_module->instance == 0) {
+            continue;
+        }
+
+        // Get the activity detail now.
+        $module_detail = $DB->get_record($module->name, array('id' => $course_module->instance), '*', MUST_EXIST);
+
+        if (!$deadlines->deadline_exists($course_module->id)) {
+
+            if(!$deadlines->create_deadline_record($course_module->id)) {
+                throw new moodle_exception('Creation of deadline record failed!');
+            } else {
+
+                $module_detail->coursemodule = $course_module->id;
+
+                if(!$deadlines->save_deadlines($module_detail, $module->name)) {
+                    throw new moodle_exception('Saving deadline detail failed!');
+                }
+
+            }
+        }
+
+    }
+
     return true;
 }
