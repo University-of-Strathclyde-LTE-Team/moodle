@@ -32,7 +32,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/eventslib.php');
 require_once($CFG->dirroot . '/calendar/lib.php');
 
-
 /**#@+
  * Option controlling what options are offered on the quiz settings form.
  */
@@ -238,11 +237,13 @@ function quiz_delete_all_overrides($quiz) {
  * @return object $quiz The updated quiz object.
  */
 function quiz_update_effective_access($quiz, $userid) {
-    global $DB;
-
     // MDL-7315
-    if(get_config('deadline_deadlines', 'enabled') == 1 &&
-       get_config('deadline_extensions', 'enabled') == 1) {
+    global $DB, $CFG;
+
+    if(get_config('deadline_deadlines', 'enabled') == 1) {
+
+        require_once($CFG->dirroot . '/deadline/deadlines/lib.php');
+
         $deadlines = new deadlines_plugin();
         return $deadlines->get_deadline_dates($quiz, 'quiz', $userid);
     }
