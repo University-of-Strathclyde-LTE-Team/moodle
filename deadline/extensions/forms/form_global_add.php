@@ -194,27 +194,31 @@ class form_global_add extends form_base {
         if (isset($data['groups']['leftContents']) && $data['groups']['leftContents'] != "") {
             // Groups are set, make sure they don't already have a global extension
 
-            $groups = explode(', ', $data['groups']['leftContents']);
+            $group_list = array();
 
-            foreach ($groups as $group_key => $group) {
+            $groups = explode(',', $data['groups']['leftContents']);
 
-                $params = array(
-                        'gid'      => $group,
-                        'cm_id'    => $data['cmid'],
-                        'ext_type' => extensions_plugin::EXT_GLOBAL
-                );
+            list($groups_sql, $params) = $DB->get_in_or_equal($groups, SQL_PARAMS_NAMED);
 
-                $sql = "SELECT 1 " .
-                       "FROM {deadline_extensions} de, {deadline_extensions_appto} dea " .
-                       "WHERE de.id = dea.ext_id " .
-                       "AND de.ext_type = :ext_type " .
-                       "AND de.cm_id = :cm_id " .
-                       "AND dea.group_id = :gid";
+            $params['cm_id'] = $data['cmid'];
+            $params['ext_type'] = extensions_plugin::EXT_GLOBAL;
 
-                if ($DB->get_records_sql($sql, $params)) { // group with extension found
-                    $group_name = groups_get_group($group, 'name');
-                    $errors['groups'] = get_string('group_has_extension', extensions_plugin::EXTENSIONS_LANG, $group_name->name);
+            $sql = "SELECT dea.id, dea.group_id " .
+                    "FROM {deadline_extensions} de, {deadline_extensions_appto} dea " .
+                    "WHERE de.id = dea.ext_id " .
+                    "AND de.ext_type = :ext_type " .
+                    "AND de.cm_id = :cm_id " .
+                    "AND dea.group_id " . $groups_sql;
+
+            if ($invalid_groups = $DB->get_records_sql($sql, $params)) { // group with extension found
+
+                $group_names = array();
+
+                foreach($invalid_groups as $invalid_group) {
+                    $group_names[] = groups_get_group($invalid_group->group_id, 'name')->name;
                 }
+
+                $errors['groups'] = get_string('group_has_extension', extensions_plugin::EXTENSIONS_LANG, implode(', ', $group_names));
             }
 
         }
