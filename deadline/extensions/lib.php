@@ -128,14 +128,14 @@ class extensions_plugin extends deadline_plugin {
 
                 $DB->insert_record('deadline_extensions_enabled', $ext_enabled);
 
-                add_to_log($COURSE->id, "extensions", "success", "index.php", "saving (inserting) form elements.", $this->get_cmid());
+                add_to_log($COURSE->id, "extensions", "success", "index.php", "saving (inserting) form elements.", $data->coursemodule);
             } else {
 
                 $ext_enabled->id = $DB->get_record('deadline_extensions_enabled', array('cm_id' => $data->coursemodule), 'id')->id;
 
                 $DB->update_record('deadline_extensions_enabled', $ext_enabled);
 
-                add_to_log($COURSE->id, "extensions", "success", "index.php", "saving (updating) form elements.", $this->get_cmid());
+                add_to_log($COURSE->id, "extensions", "success", "index.php", "saving (updating) form elements.", $data->coursemodule);
             }
 
             return true;
@@ -1440,11 +1440,11 @@ class extensions_plugin extends deadline_plugin {
                 $activity = self::get_activity_detail_by_cmid($extension->cm_id);
 
                 // Define the links used in the table below here.
-                $student_name_link     = new moodle_url('/user/profile.php', array('id' => $student_detail->id));
+                $student_name_link      = new moodle_url('/user/profile.php', array('id' => $student_detail->id));
                 $student_user_name_link = new moodle_url('/user/profile.php', array('id' => $student_detail->id));
-                $activity_link        = new moodle_url('/mod/{$activity->modname}/view.php', array('id' => $extension->cm_id));
-                $staff_link          = new moodle_url('/user/view.php', array('id' => $staff_detail->id));
-                $extension_edit_url    = new moodle_url(self::EXTENSIONS_URL_PATH . '/', array('page' => 'request_edit', 'eid' => $extension->id));
+                $activity_link          = new moodle_url('/mod/' . $activity->modname . '/view.php', array('id' => $extension->cm_id));
+                $staff_link             = new moodle_url('/user/view.php', array('id' => $staff_detail->id));
+                $extension_edit_url     = new moodle_url(self::EXTENSIONS_URL_PATH . '/', array('page' => 'request_edit', 'eid' => $extension->id));
 
                 // Create the cell objects
                 $picture_cell           = new html_table_cell();
@@ -1463,7 +1463,7 @@ class extensions_plugin extends deadline_plugin {
                 $deadlines = $deadline->get_deadlines_for_cmid($activity->id);
 
                 // Add the text to each cell in the table.
-                $picture_cell->text          = $OUTPUT->user_picture($student_detail, array('size' => 50));
+                $picture_cell->text           = $OUTPUT->user_picture($student_detail, array('size' => 50));
                 $student_name_cell->text      = html_writer::link($student_name_link, $student_detail->firstname . " " . $student_detail->lastname);
                 $student_user_name_cell->text = html_writer::link($student_user_name_link, $student_detail->username);
                 $request_type_cell->text      = self::get_type_string($extension->ext_type);
@@ -1473,7 +1473,7 @@ class extensions_plugin extends deadline_plugin {
                 if ($extension->date == 0 && $extension->timelimit != 0) {
                     // Timelimit extension
                     $activity_time_due_cell->text = ($deadlines->timelimit / 60) . ' ' . get_string('minutes', self::EXTENSIONS_LANG);
-                    $requested_date_cell->text   = ($extension->timelimit / 60) . ' ' . get_string('minutes', self::EXTENSIONS_LANG);
+                    $requested_date_cell->text    = ($extension->timelimit / 60) . ' ' . get_string('minutes', self::EXTENSIONS_LANG);
                 } else {
                     // Date extension
                     $params = array('class' => 'days_extension');
