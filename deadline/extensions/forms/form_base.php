@@ -288,7 +288,7 @@ class form_base extends moodleform {
         // See if this user already has and extension request that's pending.
         if (!isset($data['page'])) {
             if (get_config(extensions_plugin::EXTENSIONS_MOD_NAME, 'show_duplicate_warn') == 1) {
-                if (extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id, null, extensions_plugin::STATUS_PENDING)) {
+                if (extensions_plugin::duplicate_requests($this->get_cmid(), $USER->id, null, extensions_plugin::EXTENSION_STATUS_PENDING)) {
                     $errors['cmid'] = get_string('ext_already_pending', extensions_plugin::EXTENSIONS_LANG);
                 }
             }

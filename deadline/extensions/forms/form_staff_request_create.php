@@ -119,7 +119,7 @@ class form_staff_request_create extends form_staff_request_edit {
                 }
 
                 $ext_data                = new stdClass;
-                $ext_data->ext_type      = extensions_plugin::EXT_INDIVIDUAL; // This might need to change to allow groups too?
+                $ext_data->ext_type      = extensions_plugin::EXTENSION_INDIVIDUAL; // This might need to change to allow groups too?
                 $ext_data->cm_id         = $form_data->cmid;
                 $ext_data->deadline_id   = deadlines_plugin::get_deadline_id_by_cmid($form_data->cmid);
                 $ext_data->student_id    = $form_data->student_id;

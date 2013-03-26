@@ -236,14 +236,14 @@ class form_staff_requests extends form_base {
 
             // this needs to check these details...
             $ext                = new stdClass();
-            $ext->ext_type      = extensions_plugin::EXT_INDIVIDUAL;
+            $ext->ext_type      = extensions_plugin::EXTENSION_INDIVIDUAL;
             $ext->cm_id         = $form_data->ext_activity;
             $ext->deadline_id   = deadlines_plugin::get_deadline_id_by_cmid($form_data->ext_activity);
             $ext->student_id    = $form_data->ext_student_list;
             $ext->staff_id      = $USER->id;
             $ext->response_text = get_string('ext_act_add_reason', extensions_plugin::EXTENSIONS_LANG);
             $ext->date          = $form_data->ext_date;
-            $ext->status        = extensions_plugin::STATUS_APPROVED;
+            $ext->status        = extensions_plugin::EXTENSION_STATUS_APPROVED;
             $ext->created       = date("U");
 
             if ($ext_id = $DB->insert_record('deadline_extensions', $ext, true)) {
@@ -251,7 +251,7 @@ class form_staff_requests extends form_base {
                 add_to_log($COURSE->id, "extensions", "success", "index.php", "extension {$ext_id} creation successful!", $this->get_cmid());
 
                 $form_data->eid             = $ext_id;
-                $form_data->ext_status_code = extensions_plugin::STATUS_APPROVED;
+                $form_data->ext_status_code = extensions_plugin::EXTENSION_STATUS_APPROVED;
                 $form_data->response_text   = get_string('ext_act_add_reason', extensions_plugin::EXTENSIONS_LANG);
 
                 // Add to the extensions history table.

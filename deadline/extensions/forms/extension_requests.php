@@ -95,7 +95,7 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
                     $this->_elements[$key] = new HTML_QuickForm_checkbox($key, null, null);
 
                     // Any items that are not pending, cannot be selected in this view.
-                    if ($DB->get_field('deadline_extensions', 'status', array('id' => $key)) != extensions_plugin::STATUS_PENDING) {
+                    if ($DB->get_field('deadline_extensions', 'status', array('id' => $key)) != extensions_plugin::EXTENSION_STATUS_PENDING) {
                         $this->_elements[$key]->removeAttribute('checked');
                         $this->_elements[$key]->updateAttributes(array('disabled'=>'disabled'));
                     }

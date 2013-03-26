@@ -108,7 +108,7 @@ class form_staff_request_edit extends form_base {
             $extension->id            = null;
             $extension->cm_id         = $this->get_cmid();
             $extension->student_id    = $this->get_student_id();
-            $extension->status        = extensions_plugin::STATUS_APPROVED;
+            $extension->status        = extensions_plugin::EXTENSION_STATUS_APPROVED;
             $extension->request_text  = null;
             $extension->date          = $extension_deadline;
             $extension->created       = date('U');
@@ -175,7 +175,7 @@ class form_staff_request_edit extends form_base {
         $mform->setDefault('ext_student_static', $user_link);
 
         // Group extension?
-        if ($extension->ext_type == extensions_plugin::EXT_GROUP) {
+        if ($extension->ext_type == extensions_plugin::EXTENSION_GROUP) {
             if ($mform->elementExists('group_static')) {
 
                 $params = array(
@@ -257,13 +257,13 @@ class form_staff_request_edit extends form_base {
         }
 
         // The request can only modified when it's pending.
-        if ( ($extension->status == extensions_plugin::STATUS_PENDING || $extension->status == extensions_plugin::STATUS_APPROVED) && $approver == true) {
+        if ( ($extension->status == extensions_plugin::EXTENSION_STATUS_PENDING || $extension->status == extensions_plugin::EXTENSION_STATUS_APPROVED) && $approver == true) {
             $this->set_readonly(false);
         } else {
             $this->set_readonly(true);
         }
 
-        if ($extension->status == extensions_plugin::STATUS_APPROVED || $extension->status == extensions_plugin::STATUS_DENIED) {
+        if ($extension->status == extensions_plugin::EXTENSION_STATUS_APPROVED || $extension->status == extensions_plugin::EXTENSION_STATUS_DENIED) {
             $this->set_readonly(true);
         }
 
@@ -364,7 +364,7 @@ class form_staff_request_edit extends form_base {
         $due_date = $deadline->get_deadline_date_deadline($extension->cm_id);
 
         // If the request is DENIED then the message is compulsory.
-        if ($data['ext_status_code'] == extensions_plugin::STATUS_DENIED && strlen($data['response_text']) == '0' ) {
+        if ($data['ext_status_code'] == extensions_plugin::EXTENSION_STATUS_DENIED && strlen($data['response_text']) == '0' ) {
             $errors['response_text'] = get_string('ext_message_required', extensions_plugin::EXTENSIONS_LANG);
         }
 

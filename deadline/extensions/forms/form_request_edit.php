@@ -110,10 +110,10 @@ class form_request_edit extends form_request_new {
 
         // For some status' we need to lock the form down. Others it needs
         // to stay open so it can be modified.
-        if ($ext->status == extensions_plugin::STATUS_APPROVED  ||
-                $ext->status == extensions_plugin::STATUS_DENIED    ||
-                $ext->status == extensions_plugin::STATUS_WITHDRAWN ||
-                $ext->status == extensions_plugin::STATUS_REVOKED) {
+        if ($ext->status == extensions_plugin::EXTENSION_STATUS_APPROVED  ||
+                $ext->status == extensions_plugin::EXTENSION_STATUS_DENIED    ||
+                $ext->status == extensions_plugin::EXTENSION_STATUS_WITHDRAWN ||
+                $ext->status == extensions_plugin::EXTENSION_STATUS_REVOKED) {
             $this->set_readonly(true);
         } else {
             // Remove the field showing what is in 'approved date' if this

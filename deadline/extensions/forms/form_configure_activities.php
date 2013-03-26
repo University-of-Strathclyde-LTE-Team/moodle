@@ -103,7 +103,7 @@ class form_configure_activities extends form_base {
                 // this item doesn't exist in the extensions enabled table.
                 // create it, if it's being enabled.
 
-                if ($data['enabled'] == extensions_plugin::EXT_ENABLED) {
+                if ($data['enabled'] == extensions_plugin::EXTENSION_ENABLED) {
 
                     $item = new stdClass;
                     $item->cm_id  = $cm_id;

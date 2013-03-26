@@ -157,7 +157,7 @@ class form_global_add extends form_base {
 
             $params = array(
                     'cm_id'    => $data['cmid'],
-                    'ext_type' => extensions_plugin::EXT_GROUP
+                    'ext_type' => extensions_plugin::EXTENSION_GROUP
             );
 
             // See if a global extensions exists already
@@ -201,7 +201,7 @@ class form_global_add extends form_base {
             list($groups_sql, $params) = $DB->get_in_or_equal($groups, SQL_PARAMS_NAMED);
 
             $params['cm_id'] = $data['cmid'];
-            $params['ext_type'] = extensions_plugin::EXT_GLOBAL;
+            $params['ext_type'] = extensions_plugin::EXTENSION_GLOBAL;
 
             $sql = "SELECT dea.id, dea.group_id " .
                     "FROM {deadline_extensions} de, {deadline_extensions_appto} dea " .
@@ -238,13 +238,13 @@ class form_global_add extends form_base {
 
         // Add extension to the extensions table.
         $extension                = new stdClass;
-        $extension->ext_type      = extensions_plugin::EXT_GLOBAL;
+        $extension->ext_type      = extensions_plugin::EXTENSION_GLOBAL;
         $extension->deadline_id   = deadlines_plugin::get_deadline_id_by_cmid($form_data->cmid);
         $extension->cm_id         = $form_data->cmid;
         $extension->staff_id      = $USER->id;
         $extension->response_text = $form_data->ext_reason;
         $extension->date          = $form_data->ext_date;
-        $extension->status        = extensions_plugin::STATUS_APPROVED; // duh!
+        $extension->status        = extensions_plugin::EXTENSION_STATUS_APPROVED; // duh!
         $extension->created       = date('U');
 
         if (!$ext_id = $DB->insert_record('deadline_extensions', $extension)) {

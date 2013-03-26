@@ -101,7 +101,7 @@ class form_configure_activity extends form_base {
 
         $enabled = $mform->getElement('extensions_enabled');
         if (get_config('deadline_extensions', 'force_extension_enabled') == '1') {
-            $enabled->setSelected(extensions_plugin::EXT_ENABLED);
+            $enabled->setSelected(extensions_plugin::EXTENSION_ENABLED);
             $enabled->freeze();
         } else {
             $enabled->setSelected(extensions_plugin::get_extension_status_by_cmid($this->get_cmid()));
@@ -121,7 +121,7 @@ class form_configure_activity extends form_base {
 
         $errors = array();
 
-        if (isset($data['extensions_enabled']) && $data['extensions_enabled'] == extensions_plugin::EXT_ENABLED) {
+        if (isset($data['extensions_enabled']) && $data['extensions_enabled'] == extensions_plugin::EXTENSION_ENABLED) {
 
             if (isset($data['staff_approvers']['leftContents']) && $data['staff_approvers']['leftContents'] == '') {
                 $errors['staff_approvers'] = get_string('must_select_one_approver', extensions_plugin::EXTENSIONS_LANG);

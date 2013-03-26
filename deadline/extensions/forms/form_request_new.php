@@ -340,7 +340,7 @@ class form_request_new extends form_base {
 
             $mform->setDefault('status', $this->get_status_by_code($ext->status));
 
-            if ($ext->status == extensions_plugin::STATUS_APPROVED) {
+            if ($ext->status == extensions_plugin::EXTENSION_STATUS_APPROVED) {
                 $mform->setDefault('granted_ext_date', $ext->ext_granted_date);
                 $mform->freeze('granted_ext_date');
             }
@@ -428,9 +428,9 @@ class form_request_new extends form_base {
         $data                = new stdClass;
 
         if (isset($form_data->group_submission) && $form_data->group_submission == 1) {
-            $data->ext_type  = extensions_plugin::EXT_GROUP;
+            $data->ext_type  = extensions_plugin::EXTENSION_GROUP;
         } else {
-            $data->ext_type  = extensions_plugin::EXT_INDIVIDUAL;
+            $data->ext_type  = extensions_plugin::EXTENSION_INDIVIDUAL;
         }
 
         $data->cm_id         = $this->get_cmid();
@@ -438,7 +438,7 @@ class form_request_new extends form_base {
         $data->student_id    = $USER->id;
         $data->staff_id      = $form_data->ext_staffmember_id;
         $data->request_text  = $form_data->reason;
-        $data->status        = extensions_plugin::STATUS_PENDING;
+        $data->status        = extensions_plugin::EXTENSION_STATUS_PENDING;
         $data->created       = date('U');
 
         // See if the user has selected a time based extension (quizzes).
@@ -484,7 +484,7 @@ class form_request_new extends form_base {
             $this->handle_documents($form_data, $extension);
 
             $form_data->eid             = $ext_id;
-            $form_data->ext_status_code = extensions_plugin::STATUS_PENDING;
+            $form_data->ext_status_code = extensions_plugin::EXTENSION_STATUS_PENDING;
             $form_data->response_text   = get_string('ext_act_add_reason', extensions_plugin::EXTENSIONS_LANG);
 
             // Add to the extensions history table.
