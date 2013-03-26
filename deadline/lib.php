@@ -30,10 +30,9 @@ if (!defined('MOODLE_INTERNAL')) {
 
 abstract class deadline_plugin {
 
-    private $plugin_weight = 0;
-
     /**
-     * hook to add deadline specific settings to a module settings page
+     * hook to add deadline specific settings to a module settings page.
+     *
      * @param object $mform  - Moodle form
      * @param object $context - current context
      * @param string $modulename - Name of the module
@@ -41,7 +40,8 @@ abstract class deadline_plugin {
     abstract public function get_form_elements($mform, $context, $modulename = "");
 
     /**
-     * hook to save extensions specific settings on a module settings page
+     * hook to save extensions specific settings on a module settings page.
+     *
      * @param object $data - data from an mform submission.
      */
     abstract public function save_form_elements($data);
@@ -91,20 +91,11 @@ abstract class deadline_plugin {
     abstract protected function delete_cmid($cmid);
 
     /**
-     * Get the weight for a particular plugin.
-     *
-     * @return number
-     */
-    public final function get_deadline_plugin_weight() {
-        return $this->plugin_weight;
-    }
-
-    /**
      * Method checks if a specific module supports Deadline functionality.
      *
      * @param string $modname Module to check for deadline support.
      */
-    public final function module_supports_deadlines($modname) {
+    public final function activity_supports_deadlines($modname) {
 
         if (preg_match('#^mod_#', $modname)) {
             $modname = str_replace('mod_', '', $modname);
@@ -172,7 +163,7 @@ abstract class deadline_plugin {
     }
 
     /**
-     * Get the
+     * Get the activity detail based on it's course module ID.
      * @param int $cm_id Course Module ID.
      * @return stdClass
      */
@@ -340,6 +331,13 @@ abstract class deadline_plugin {
 
     // --------------------------------------------------------
 
+    /**
+     * Get the cutoff date from each deadlines plugin and then return the date
+     * furthest in the future.
+     *
+     * @param int $cm_id Course Module ID
+     * @param int $user_id User ID that this query relates to.
+     */
     public function get_cut_off_date($cm_id, $user_id) {
         global $CFG;
 
@@ -379,6 +377,12 @@ abstract class deadline_plugin {
         return $this->get_longest_date($dates, 'date_cutoff');
     }
 
+    /**
+     * Set the cutoff date in the deadlines table
+     *
+     * @param int $cm_id Course Module ID this date is for.
+     * @param int $date Date to set the cutoff to.
+     */
     public function set_cut_off_date($cm_id, $date) {
 
         global $DB;
@@ -399,6 +403,12 @@ abstract class deadline_plugin {
 
     // --------------------------------------------------------
 
+    /**
+     * Check each plugin for a specific timelimit for a specfic user.
+     *
+     * @param int $cm_id Course Module ID this query relates to.
+     * @param int $user_id User ID this query relates to.
+     */
     public function get_timelimit($cm_id, $user_id) {
         global $CFG;
 
@@ -438,6 +448,12 @@ abstract class deadline_plugin {
         return $this->get_longest_date($dates, 'timelimit');
     }
 
+    /**
+     * Set the timelimit on a specific course module ID.
+     *
+     * @param int $cm_id Course module ID to set the date for.
+     * @param int $timelimit Timelimit to set for this course module ID
+     */
     public function set_timelimit($cm_id, $timelimit) {
 
         global $DB;
@@ -458,6 +474,17 @@ abstract class deadline_plugin {
 
     // --------------------------------------------------------
 
+    /**
+     * Get the largest number/longest date. Designed to be passed an array of
+     * objects containing dates as returned from different plugins and then
+     * return a single date to be used as the actual date.
+     *
+     * This can be upgraded at a later date to suit some kind of configuration
+     * to allow people to apply some kind of config to the item.
+     *
+     * @param array $dates Array of dates to be checked
+     * @param string $field Field name that should be checked for dates.
+     */
     public final function get_longest_date($dates, $field = 'date_deadline') {
 
         // This function orders the items by the content of the field supplied
@@ -466,20 +493,24 @@ abstract class deadline_plugin {
 
         // Return the date that is the furthest in the future. In my limited
         // short sigted view this should always be the date that's returned,
-        // assuming it's always an APPROVED date.
+        // assuming it's always an APPROVED date (up to the plugin to determine).
         return $dates['0']->{$field};
     }
 
+    /**
+     * Using a closure, order the items in the array according in highest to lowest
+     *
+     * @param array $data Array of objects to order
+     * @param string $field Field that contains the data to check.
+     * @return array Ordered array.
+     */
     protected function date_sort($data, $field = 'date_deadline') {
+
         usort($data, function($a, $b) use ($field) {
             return $a->{$field} > $b->{$field} ? -1 : 1;
         });
 
         return $data;
-    }
-
-    public final function get_all_activities($course_id = null) {
-        return $this->date_sort($dates, $field);
     }
 
     /**
@@ -511,6 +542,13 @@ abstract class deadline_plugin {
         return true;
     }
 
+    /**
+     * Given a course detail, usually a course object or course ID, return a list
+     * of all activities in the course.
+     *
+     * @param mixed $course Course to get a list of activities from.
+     * @return Array Array containing an object with all activities in the requested course.
+     */
     public function get_activity_names($course = null) {
 
         global $DB, $COURSE, $USER;
@@ -545,7 +583,7 @@ abstract class deadline_plugin {
 
                     // If this activity does not support deadlines, we can't do anything
                     // with it. We'll just have to ignore it...
-                    if (!$this->module_supports_deadlines($modinfo->cms[$cmid]->modname)) {
+                    if (!$this->activity_supports_deadlines($modinfo->cms[$cmid]->modname)) {
                         continue;
                     }
 
@@ -568,11 +606,24 @@ abstract class deadline_plugin {
         }
     }
 
+    /**
+     * Check to see if a module is an activity.
+     *
+     * @param string $mod_name Module name to check.
+     * @return boolean True if item is an activity. False if it is not.
+     */
     public function is_activity($mod_name) {
         $archetype = plugin_supports('mod', $mod_name, FEATURE_MOD_ARCHETYPE, MOD_ARCHETYPE_OTHER);
         return ($archetype !== MOD_ARCHETYPE_RESOURCE && $archetype !== MOD_ARCHETYPE_SYSTEM);
     }
 
+    /**
+     * Code to save the open/close/cutoff/timelimit dates from the edit page of
+     * an activity in the deadlines module dynamically.
+     *
+     * @param object $formdata Data from the Moodke form.
+     * @return boolean Returns true if the save was successful.
+     */
     public function save_plugin_fields($formdata = null) {
 
         global $CFG;
