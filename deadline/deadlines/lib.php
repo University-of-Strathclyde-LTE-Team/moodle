@@ -363,7 +363,7 @@ class deadlines_plugin extends deadline_plugin {
     }
 
     public function get_my_timelimit($cm_id, $user_id = null) {
-            global $DB;
+        global $DB;
 
         // As this is the 'deadlines' plugin, the deadlines here should be
         // considered to be 'global' hence the $user_id being ignored here.
@@ -372,17 +372,15 @@ class deadlines_plugin extends deadline_plugin {
                 'cm_id' => $cm_id
         );
 
-        if ($DB->record_exists('deadline_deadlines', $params)) {
-            $record = $DB->get_record('deadline_deadlines', $params, '*', MUST_EXIST);
-
+        if ($record = $DB->get_record('deadline_deadlines', $params, '*', MUST_EXIST)) {
             if(isset($record->timelimit)) {
                 return $record->timelimit;
             } else {
                 return 0;
-            }    
-    
+            }
+
         } else {
-            return false;
+            return 0;
         }
     }
 
