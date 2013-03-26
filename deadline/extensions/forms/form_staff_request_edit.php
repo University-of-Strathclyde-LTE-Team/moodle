@@ -263,13 +263,13 @@ class form_staff_request_edit extends form_base {
             $this->set_readonly(true);
         }
 
+        if ($extension->status == extensions_plugin::STATUS_APPROVED || $extension->status == extensions_plugin::STATUS_DENIED) {
+            $this->set_readonly(true);
+        }
+
         // Admins can always modify.
         if (is_siteadmin($USER->id)) {
             $this->set_readonly(false);
-        }
-
-        if ($extension->status == extensions_plugin::STATUS_APPROVED || $extension->status == extensions_plugin::STATUS_DENIED) {
-            $readonly = true;
         }
 
         $mform->setDefault('ext_reason_static', $extension->request_text);
@@ -430,6 +430,10 @@ class form_staff_request_edit extends form_base {
             }
         }
 
+    }
+
+    public function get_save_destination() {
+        return 'requests';
     }
 
     public function set_readonly($read_only) {

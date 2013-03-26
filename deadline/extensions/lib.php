@@ -765,7 +765,17 @@ class extensions_plugin extends deadline_plugin {
 
 
     public static function is_extension_approver($ext = null, $user = null, $cmid = null) {
-        // TODO: IMPLEMENT THIS!
+        global $DB;
+
+        $params = array(
+                'ext_en_id' =>  $ext,
+                'user_id'   => $user
+        );
+
+        if($DB->record_exists('deadline_extensions_appv')) {
+
+        }
+
         return true;
     }
 
@@ -774,7 +784,7 @@ class extensions_plugin extends deadline_plugin {
      *
      * @return boolean True of the module is enabled, otherwise false.
      */
-    public function is_enabled() {
+    public static function is_enabled() {
         if (get_config('deadline_extensions', 'enabled') == 1) {
             return true;
         }

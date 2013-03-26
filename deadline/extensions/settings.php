@@ -69,7 +69,7 @@ if ($hassiteconfig) {
 
     // Only show these if Extensions is enabled?
     if (has_capability('moodle/site:config', context_system::instance()) &&
-            get_config('deadline_extensions', 'enabled') == 1) {
+            extensions_plugin::is_enabled()) {
 
         $args = array();
         $ext_url = extensions_plugin::EXTENSIONS_URL_PATH . '/index.php';

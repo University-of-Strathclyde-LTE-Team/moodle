@@ -126,7 +126,7 @@ abstract class deadline_plugin {
         }
 
         if (array_key_exists('extensions', $this->get_installed_plugins())) {
-            if (get_config('deadline_extensions', 'enabled') =='1') {
+            if (extensions_plugin::is_enabled()) {
                 return true;
             }
         }

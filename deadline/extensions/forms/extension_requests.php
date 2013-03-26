@@ -83,22 +83,23 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
         }
 
         foreach ($this->table_data as $key => $data) {
-            if ($key == 'data') {
 
-                foreach ($data as $key => $row) {
+            if ($key != 'data') {
+                continue;
+            }
 
-                    if (isset($row->cells['10']->text) && strcmp($row->cells['10']->text, '{element}') == '0') {
-                        // match found. Replace the string with the element.
-                        $this->_elements[$key] = new HTML_QuickForm_checkbox($key, null, null);
+            foreach ($data as $key => $row) {
 
-                        // Any items that are already approved cannot be selected in this view.
-                        if ($DB->get_field('deadline_extensions', 'status', array('id' => $key)) != extensions_plugin::STATUS_PENDING) {
-                            $this->_elements[$key]->removeAttribute('checked');
-                            $this->_elements[$key]->updateAttributes(array('disabled'=>'disabled'));
-                        }
+                if (isset($row->cells['10']->text) && strcmp($row->cells['10']->text, '{element}') == '0') {
+                    // Match found. Replace the string with the element.
+                    $this->_elements[$key] = new HTML_QuickForm_checkbox($key, null, null);
+
+                    // Any items that are not pending, cannot be selected in this view.
+                    if ($DB->get_field('deadline_extensions', 'status', array('id' => $key)) != extensions_plugin::STATUS_PENDING) {
+                        $this->_elements[$key]->removeAttribute('checked');
+                        $this->_elements[$key]->updateAttributes(array('disabled'=>'disabled'));
                     }
                 }
-
             }
         }
 
@@ -111,7 +112,7 @@ class MoodleQuickForm_extension_requests extends MoodleQuickForm_group {
 
         foreach ($this->_elements as $key => $data) {
 
-            // Set the name of the group on the item
+            // Set the name of the group on the item.
             $name = $this->getName();
             $element_name = $this->_elements[$key]->getName();
             $this->_elements[$key]->setName($name . '['. (strlen($element_name)? $element_name: $key) .']');
