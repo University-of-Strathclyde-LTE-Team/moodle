@@ -375,7 +375,12 @@ class deadlines_plugin extends deadline_plugin {
         if ($DB->record_exists('deadline_deadlines', $params)) {
             $record = $DB->get_record('deadline_deadlines', $params, '*', MUST_EXIST);
 
-            return $record->timelimit;
+            if(isset($record->timelimit)) {
+                return $record->timelimit;
+            } else {
+                return 0;
+            }    
+    
         } else {
             return false;
         }
