@@ -44,7 +44,7 @@ function xmldb_deadline_deadlines_install() {
 
         $module = $DB->get_record('modules', array('id' => $course_module->module));
 
-        if(!$deadlines->module_supports_deadlines($module->name)) {
+        if(!$deadlines->activity_supports_deadlines($module->name)) {
             continue;
         }
 
